@@ -1,0 +1,31 @@
+version: '2'
+
+services:
+  auth:
+    image: vibioh/auth
+    command:
+    - -githubState
+    - ${GITHUB_OAUTH_STATE}
+    - -githubClientId
+    - ${GITHUB_OAUTH_CLIENT_ID}
+    - -githubClientSecret
+    - ${GITHUB_OAUTH_CLIENT_SECRET}
+    labels:
+      traefik.frontend.passHostHeader: 'true'
+      traefik.frontend.rule: 'Host: auth.vibioh.fr'
+      traefik.port: '1080'
+    logging:
+      driver: json-file
+      options:
+        max-size: '50m'
+    restart: on-failure:5
+    read_only: true
+    cpu_shares: 128
+    mem_limit: 16777216
+    security_opt:
+    - no-new-privileges
+
+networks:
+  default:
+    external:
+      name: traefik
