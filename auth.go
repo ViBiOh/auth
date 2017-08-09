@@ -12,6 +12,8 @@ import (
 	"github.com/ViBiOh/auth/basic"
 	"github.com/ViBiOh/auth/github"
 	"github.com/ViBiOh/httputils"
+	"github.com/ViBiOh/httputils/cors"
+	"github.com/ViBiOh/httputils/owasp"
 )
 
 const basicPrefix = `Basic `
@@ -60,11 +62,6 @@ func githubTokenHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func authHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add(`Access-Control-Allow-Origin`, `*`)
-	w.Header().Add(`Access-Control-Allow-Headers`, `Content-Type`)
-	w.Header().Add(`Access-Control-Allow-Methods`, `GET`)
-	w.Header().Add(`X-Content-Type-Options`, `nosniff`)
-
 	if r.URL.Path == `/user` {
 		userHandler(w, r)
 	} else if r.URL.Path == `/token/github` {
@@ -92,7 +89,7 @@ func main() {
 
 	server := &http.Server{
 		Addr:    `:` + *port,
-		Handler: http.HandlerFunc(authHandler),
+		Handler: owasp.Handler{Handler: cors.Handler{Handler: http.HandlerFunc(authHandler)}},
 	}
 
 	go server.ListenAndServe()
