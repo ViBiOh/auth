@@ -14,6 +14,7 @@ import (
 	"github.com/ViBiOh/httputils"
 	"github.com/ViBiOh/httputils/cors"
 	"github.com/ViBiOh/httputils/owasp"
+	"github.com/ViBiOh/httputils/prometheus"
 )
 
 const basicPrefix = `Basic `
@@ -89,7 +90,7 @@ func main() {
 
 	server := &http.Server{
 		Addr:    `:` + *port,
-		Handler: owasp.Handler{Handler: cors.Handler{Handler: http.HandlerFunc(authHandler)}},
+		Handler: prometheus.NewPrometheusHandler(`http`, owasp.Handler{Handler: cors.Handler{Handler: http.HandlerFunc(authHandler)}}),
 	}
 
 	go server.ListenAndServe()
