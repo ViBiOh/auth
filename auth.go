@@ -63,6 +63,11 @@ func githubTokenHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func authHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		w.Write(nil)
+		return
+	}
+
 	if r.URL.Path == `/user` {
 		userHandler(w, r)
 	} else if r.URL.Path == `/token/github` {
