@@ -14,17 +14,15 @@ You can use GitHub OAuth Provider or a simple username/password file for authent
 
 Create your OAuth app on [GitHub interface](https://github.com/settings/developers). The authorization callback URL must be set for pointing your app.
 
-### Username/Password file
+### Basic Username/Password
 
-Write user's credentials file with one line per user, each line having the following format :
+Write user's credentials with the following format :
 
 ```
-[username],[bcrypt password]
+[username]:[bcrypt password],[username2]:[bcrypt password]
 ```
 
 You can generate bcrypted password using `bin/bcrypt_pass`.
-
-You have ton configure `-basicFile` filepath on the Auth API server and change variable `BASIC_AUTH_ENABLED` value from `false` to `true` on front server.
 
 ## Build
 
@@ -38,8 +36,8 @@ It will compile both auth API server and password encrypter.
 
 ```
 Usage of auth:
-  -basicFile string
-      Path of authentification file
+  -basicUsers string
+      Basic users in the form "username:password,username2:password"
   -c string
       URL to healthcheck (check and exit)
   -githubClientId string

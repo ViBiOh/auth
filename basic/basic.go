@@ -1,12 +1,9 @@
 package basic
 
 import (
-	"bufio"
-	"bytes"
 	"encoding/base64"
 	"flag"
 	"fmt"
-	"os"
 	"strings"
 
 	"golang.org/x/crypto/bcrypt"
@@ -21,36 +18,33 @@ type User struct {
 var users map[string]*User
 
 var (
-	authFile = flag.String(`basicFile`, ``, `Path of authentification file`)
+	authUsers = flag.String(`basicUsers`, ``, `Basic users in the form "username:password,username2:password"`)
 )
 
 // Init auth
 func Init() error {
-	if *authFile != `` {
-		if err := LoadAuthFile(*authFile); err != nil {
-			return err
-		}
+	if err := LoadUsers(*authUsers); err != nil {
+		return err
 	}
 
 	return nil
 }
 
-// LoadAuthFile loads given file into users map
-func LoadAuthFile(path string) error {
+// LoadUsers loads given users into users map
+func LoadUsers(authUsers string) error {
 	users = make(map[string]*User)
 
-	configFile, err := os.Open(path)
-	if err != nil {
-		return fmt.Errorf(`Error while opening auth file: %v`, err)
+	if authUsers == `` {
+		return nil
 	}
 
-	defer configFile.Close()
+	for _, authUser := range strings.Split(authUsers, `,`) {
+		parts := strings.Split(authUser, `:`)
+		if len(parts) != 2 {
+			return fmt.Errorf(`Invalid format of user for %s`, authUser)
+		}
 
-	scanner := bufio.NewScanner(configFile)
-	for scanner.Scan() {
-		parts := bytes.Split(scanner.Bytes(), []byte(`,`))
-		user := User{strings.ToLower(string(parts[0])), parts[1]}
-
+		user := User{strings.ToLower(parts[0]), []byte(parts[1])}
 		users[strings.ToLower(user.Username)] = &user
 	}
 

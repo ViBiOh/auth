@@ -8,25 +8,49 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func TestLoadAuthFile(t *testing.T) {
+func TestLoadUsers(t *testing.T) {
 	var tests = []struct {
-		path string
-		want int
+		input   string
+		want    int
+		wantErr error
 	}{
 		{
-			`notExistingFile`,
+			``,
 			0,
+			nil,
 		},
 		{
-			`users_test`,
+			`invalid_username`,
+			0,
+			fmt.Errorf(`Invalid format of user for invalid_username`),
+		},
+		{
+			`admin:admin,guest:guest`,
 			2,
+			nil,
 		},
 	}
 
+	var failed bool
+
 	for _, test := range tests {
-		LoadAuthFile(test.path)
-		if len(users) != test.want {
-			t.Errorf(`LoadAuthFile(%v) = %v, want %v`, test.path, users, test.want)
+		err := LoadUsers(test.input)
+		result := len(users)
+
+		failed = false
+
+		if err == nil && test.wantErr != nil {
+			failed = true
+		} else if err != nil && test.wantErr == nil {
+			failed = true
+		} else if err != nil && err.Error() != test.wantErr.Error() {
+			failed = true
+		} else if result != test.want {
+			failed = true
+		}
+
+		if failed {
+			t.Errorf(`LoadUsers(%v) = (%v, %v), want (%v, %v)`, test.input, result, err, test.want, test.wantErr)
 		}
 	}
 }
