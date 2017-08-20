@@ -40,12 +40,22 @@ Usage of auth:
       Basic users in the form "username:password,username2:password"
   -c string
       URL to healthcheck (check and exit)
+  -corsHeaders string
+      Access-Control-Allow-Headers (default "Content-Type")
+  -corsMethods string
+      Access-Control-Allow-Methods (default "GET")
+  -corsOrigin string
+      Access-Control-Allow-Origin (default "*")
+  -csp string
+      Content-Security-Policy (default "default-src 'self'")
   -githubClientId string
       GitHub OAuth Client ID
   -githubClientSecret string
       GitHub OAuth Client Secret
   -githubState string
       GitHub OAuth State
+  -hsts
+      Indicate Strict Transport Security (default true)
   -port string
       Listen port (default "1080")
 ```
