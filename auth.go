@@ -68,11 +68,11 @@ func authHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.URL.Path == `/user` {
+	if r.Method == http.MethodGet && r.URL.Path == `/user` {
 		userHandler(w, r)
 	} else if r.URL.Path == `/token/github` {
 		githubTokenHandler(w, r)
-	} else if r.URL.Path == `/health` {
+	} else if r.Method == http.MethodGet && r.URL.Path == `/health` {
 		healthHandler(w, r)
 	}
 }
