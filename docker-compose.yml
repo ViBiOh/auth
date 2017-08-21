@@ -4,6 +4,8 @@ services:
   auth:
     image: vibioh/auth
     command:
+    - -corsHeaders
+    - Content-Type, Authorization
     - -githubState
     - ${GITHUB_OAUTH_STATE}
     - -githubClientId
