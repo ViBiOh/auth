@@ -17,8 +17,12 @@ import (
 	"github.com/ViBiOh/httputils/prometheus"
 )
 
+const maxConcurrentAuth = 32
+
 const basicPrefix = `Basic `
 const githubPrefix = `GitHub `
+
+var tokenPool = make(chan int, maxConcurrentAuth)
 
 // Init configures Auth providers
 func Init() {
@@ -72,6 +76,11 @@ func authHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
+
+	tokenPool <- 1
+	defer func() {
+		<-tokenPool
+	}()
 
 	if r.URL.Path == `/user` {
 		userHandler(w, r)
