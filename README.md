@@ -62,6 +62,10 @@ Usage of auth:
       Prometheus - Metrics endpoint path (default "/metrics")
   -prometheusMetricsRemoteHost string
       Prometheus - Regex of allowed hosts to call metrics endpoint (default ".*")
+  -tlsCert string
+      TLS PEM Certificate file
+  -tlsKey string
+      TLS PEM Key file
 ```
 
 Password encrypter accepts one argument, the password, and output the bcrypted one.

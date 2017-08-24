@@ -52,7 +52,7 @@ func GetAccessToken(requestState string, requestCode string) (string, error) {
 
 // GetUsername returns username of given token
 func GetUsername(token string) (string, error) {
-	userResponse, err := httputils.GetBody(userURL, `token `+token)
+	userResponse, err := httputils.GetBody(userURL, `token `+token, false)
 	if err != nil {
 		return ``, fmt.Errorf(`Error while fetching user informations: %v`, err)
 	}
