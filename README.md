@@ -58,6 +58,10 @@ Usage of auth:
       Indicate Strict Transport Security (default true)
   -port string
       Listen port (default "1080")
+  -prometheusMetricsPath string
+      Prometheus - Metrics endpoint path (default "/metrics")
+  -prometheusMetricsRemoteHost string
+      Prometheus - Regex of allowed hosts to call metrics endpoint (default ".*")
 ```
 
 Password encrypter accepts one argument, the password, and output the bcrypted one.

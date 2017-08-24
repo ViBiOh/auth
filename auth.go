@@ -12,6 +12,7 @@ import (
 	"github.com/ViBiOh/auth/basic"
 	"github.com/ViBiOh/auth/github"
 	"github.com/ViBiOh/httputils"
+	"github.com/ViBiOh/httputils/cert"
 	"github.com/ViBiOh/httputils/cors"
 	"github.com/ViBiOh/httputils/owasp"
 	"github.com/ViBiOh/httputils/prometheus"
@@ -114,6 +115,11 @@ func main() {
 		Handler: prometheus.NewPrometheusHandler(`http`, owasp.Handler{Handler: cors.Handler{Handler: http.HandlerFunc(authHandler)}}),
 	}
 
-	go log.Print(server.ListenAndServe())
+	certPEMBlock, keyPEMBlock, err := cert.GenerateCert(`ViBiOh`, []string{`localhost`})
+	if err != nil {
+		log.Panicf(`Error while generating certificate: %v`, err)
+	}
+
+	go log.Panic(cert.ListenAndServeTLS(server, certPEMBlock, keyPEMBlock))
 	httputils.ServerGracefulClose(server, nil)
 }
