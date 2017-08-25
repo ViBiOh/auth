@@ -36,8 +36,23 @@ func Init() error {
 	return nil
 }
 
+const maxConcurrentAuth = 32
+
+var tokenPool = make(chan int, maxConcurrentAuth)
+
+func getToken() {
+	tokenPool <- 1
+}
+
+func releaseToken() {
+	<-tokenPool
+}
+
 // GetAccessToken returns access token for given state and code
 func GetAccessToken(requestState string, requestCode string) (string, error) {
+	getToken()
+	defer releaseToken()
+
 	if *state != requestState {
 		return ``, fmt.Errorf(`Invalid state provided for oauth`)
 	}
@@ -52,6 +67,9 @@ func GetAccessToken(requestState string, requestCode string) (string, error) {
 
 // GetUsername returns username of given token
 func GetUsername(token string) (string, error) {
+	getToken()
+	defer releaseToken()
+
 	userResponse, err := httputils.GetBody(userURL, `token `+token, false)
 	if err != nil {
 		return ``, fmt.Errorf(`Error while fetching user informations: %v`, err)
