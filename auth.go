@@ -97,8 +97,6 @@ func authHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	url := flag.String(`c`, ``, `URL to healthcheck (check and exit)`)
 	port := flag.String(`port`, `1080`, `Listen port`)
-	tlsCert := flag.String(`tlsCert`, ``, `TLS PEM Certificate file`)
-	tlsKey := flag.String(`tlsKey`, ``, `TLS PEM Key file`)
 	flag.Parse()
 
 	if *url != `` {
@@ -117,16 +115,6 @@ func main() {
 		Handler: prometheus.NewPrometheusHandler(`http`, owasp.Handler{Handler: cors.Handler{Handler: http.HandlerFunc(authHandler)}}),
 	}
 
-	if *tlsCert != `` {
-		go log.Panic(server.ListenAndServeTLS(*tlsCert, *tlsKey))
-	} else {
-		certPEMBlock, keyPEMBlock, err := cert.GenerateCert(`ViBiOh`, []string{`localhost`})
-		if err != nil {
-			log.Panicf(`Error while generating certificate: %v`, err)
-		}
-
-		go log.Panic(cert.ListenAndServeTLS(server, certPEMBlock, keyPEMBlock))
-	}
-
+	go log.Panic(cert.ListenAndServeTLS(server))
 	httputils.ServerGracefulClose(server, nil)
 }
