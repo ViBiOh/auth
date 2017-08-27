@@ -6,8 +6,8 @@ services:
     command:
     - -corsHeaders
     - Authorization
-    - -prometheusMetricsRemoteHost
-    - ^auth:1080$$
+    - -prometheusMetricsHost
+    - auth:1080
     - -githubState
     - ${GITHUB_OAUTH_STATE}
     - -githubClientId
