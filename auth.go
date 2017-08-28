@@ -11,6 +11,7 @@ import (
 	"github.com/ViBiOh/alcotest/alcotest"
 	"github.com/ViBiOh/auth/basic"
 	"github.com/ViBiOh/auth/github"
+	"github.com/ViBiOh/auth/rate"
 	"github.com/ViBiOh/httputils"
 	"github.com/ViBiOh/httputils/cert"
 	"github.com/ViBiOh/httputils/cors"
@@ -71,6 +72,11 @@ func authHandler(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	if rate.CheckRate(r) {
+		w.WriteHeader(http.StatusTooManyRequests)
 		return
 	}
 
