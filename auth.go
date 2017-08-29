@@ -11,12 +11,12 @@ import (
 	"github.com/ViBiOh/alcotest/alcotest"
 	"github.com/ViBiOh/auth/basic"
 	"github.com/ViBiOh/auth/github"
-	"github.com/ViBiOh/auth/rate"
 	"github.com/ViBiOh/httputils"
 	"github.com/ViBiOh/httputils/cert"
 	"github.com/ViBiOh/httputils/cors"
 	"github.com/ViBiOh/httputils/owasp"
 	"github.com/ViBiOh/httputils/prometheus"
+	"github.com/ViBiOh/httputils/rate"
 )
 
 const basicPrefix = `Basic `
@@ -75,11 +75,6 @@ func authHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !rate.CheckRate(r) {
-		w.WriteHeader(http.StatusTooManyRequests)
-		return
-	}
-
 	if r.URL.Path == `/user` {
 		userHandler(w, r)
 	} else if r.URL.Path == `/token/github` {
@@ -109,7 +104,7 @@ func main() {
 
 	server := &http.Server{
 		Addr:    `:` + *port,
-		Handler: prometheus.NewPrometheusHandler(`http`, owasp.Handler{Handler: cors.Handler{Handler: http.HandlerFunc(authHandler)}}),
+		Handler: prometheus.NewPrometheusHandler(`http`, owasp.Handler{Handler: cors.Handler{Handler: rate.Handler{Handler: http.HandlerFunc(authHandler)}}}),
 	}
 
 	go log.Panic(cert.ListenAndServeTLS(server))
