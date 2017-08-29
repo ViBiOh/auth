@@ -1,12 +1,15 @@
 package rate
 
 import (
+	"flag"
 	"net/http"
 	"time"
 )
 
-const ipRateDelay = time.Second * -60
-const ipRateCount = 60
+var (
+	ipRateDelay = flag.Duration(`rateDelay`, time.Second*60, `Rate IP delay`)
+	ipRateCount = flag.Int(`rateCount`, 60, `Rate IP count`)
+)
 
 type rateLimit struct {
 	ip    string
@@ -28,10 +31,10 @@ func CheckRate(r *http.Request) bool {
 	now := time.Now()
 	rate.calls = append(rate.calls, now)
 
-	nowMinusDelay := now.Add(ipRateDelay)
+	nowMinusDelay := now.Add(*ipRateDelay * -1)
 	for len(rate.calls) > 0 && rate.calls[0].Before(nowMinusDelay) {
 		rate.calls = rate.calls[1:]
 	}
 
-	return len(rate.calls) < ipRateCount
+	return len(rate.calls) < *ipRateCount
 }
