@@ -25,12 +25,13 @@ func CheckRate(r *http.Request) bool {
 		userRate[ip] = rate
 	}
 
-	rate.calls = append(rate.calls, time.Now())
+	now := time.Now()
+	rate.calls = append(rate.calls, now)
 
-	nowMinusDelay := time.Now().Add(ipRateDelay)
+	nowMinusDelay := now.Add(ipRateDelay)
 	for len(rate.calls) > 0 && rate.calls[0].Before(nowMinusDelay) {
 		rate.calls = rate.calls[1:]
 	}
 
-	return len(rate.calls) >= ipRateCount
+	return len(rate.calls) < ipRateCount
 }

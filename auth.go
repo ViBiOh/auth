@@ -75,7 +75,7 @@ func authHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if rate.CheckRate(r) {
+	if !rate.CheckRate(r) {
 		w.WriteHeader(http.StatusTooManyRequests)
 		return
 	}
