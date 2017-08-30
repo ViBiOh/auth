@@ -9,7 +9,7 @@ import (
 )
 
 func TestLoadUsers(t *testing.T) {
-	var tests = []struct {
+	var cases = []struct {
 		input   string
 		want    int
 		wantErr error
@@ -33,24 +33,24 @@ func TestLoadUsers(t *testing.T) {
 
 	var failed bool
 
-	for _, test := range tests {
-		err := LoadUsers(test.input)
+	for _, testCase := range cases {
+		err := LoadUsers(testCase.input)
 		result := len(users)
 
 		failed = false
 
-		if err == nil && test.wantErr != nil {
+		if err == nil && testCase.wantErr != nil {
 			failed = true
-		} else if err != nil && test.wantErr == nil {
+		} else if err != nil && testCase.wantErr == nil {
 			failed = true
-		} else if err != nil && err.Error() != test.wantErr.Error() {
+		} else if err != nil && err.Error() != testCase.wantErr.Error() {
 			failed = true
-		} else if result != test.want {
+		} else if result != testCase.want {
 			failed = true
 		}
 
 		if failed {
-			t.Errorf(`LoadUsers(%v) = (%v, %v), want (%v, %v)`, test.input, result, err, test.want, test.wantErr)
+			t.Errorf(`LoadUsers(%v) = (%v, %v), want (%v, %v)`, testCase.input, result, err, testCase.want, testCase.wantErr)
 		}
 	}
 }
@@ -65,7 +65,7 @@ func TestGetUsername(t *testing.T) {
 	guest, _ := bcrypt.GenerateFromPassword([]byte(`guest`), 12)
 	users[`guest`] = &User{`guest`, guest}
 
-	var tests = []struct {
+	var cases = []struct {
 		auth    string
 		want    string
 		wantErr error
@@ -89,23 +89,23 @@ func TestGetUsername(t *testing.T) {
 
 	var failed bool
 
-	for _, test := range tests {
-		result, err := GetUsername(test.auth)
+	for _, testCase := range cases {
+		result, err := GetUsername(testCase.auth)
 
 		failed = false
 
-		if err == nil && test.wantErr != nil {
+		if err == nil && testCase.wantErr != nil {
 			failed = true
-		} else if err != nil && test.wantErr == nil {
+		} else if err != nil && testCase.wantErr == nil {
 			failed = true
-		} else if err != nil && err.Error() != test.wantErr.Error() {
+		} else if err != nil && err.Error() != testCase.wantErr.Error() {
 			failed = true
-		} else if result != test.want {
+		} else if result != testCase.want {
 			failed = true
 		}
 
 		if failed {
-			t.Errorf(`getUsername(%v) = (%v, %v) want (%v, %v)`, test.auth, result, err, test.want, test.wantErr)
+			t.Errorf(`getUsername(%v) = (%v, %v) want (%v, %v)`, testCase.auth, result, err, testCase.want, testCase.wantErr)
 		}
 	}
 }
