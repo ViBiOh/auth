@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"runtime"
 	"strings"
 
 	"github.com/ViBiOh/alcotest/alcotest"
@@ -95,8 +94,6 @@ func main() {
 		alcotest.Do(url)
 		return
 	}
-
-	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	log.Printf(`Starting server on port %s`, *port)
 
