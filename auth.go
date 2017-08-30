@@ -107,6 +107,11 @@ func main() {
 		Handler: prometheus.NewPrometheusHandler(`http`, owasp.Handler{Handler: cors.Handler{Handler: rate.Handler{Handler: http.HandlerFunc(authHandler)}}}),
 	}
 
-	go log.Panic(cert.ListenAndServeTLS(server))
-	httputils.ServerGracefulClose(server, nil)
+	var serveError = make(chan error)
+	go func() {
+		defer close(serveError)
+		serveError <- cert.ListenAndServeTLS(server)
+	}()
+
+	httputils.ServerGracefulClose(server, serveError, nil)
 }
