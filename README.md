@@ -12,7 +12,7 @@ You can use GitHub OAuth Provider or a simple username/password file for authent
 
 ## GitHub OAuth Provider
 
-Create your OAuth app on [GitHub interface](https://github.com/settings/developers). The authorization callback URL must be set for pointing your app.
+Create your OAuth app on [GitHub interface](https://github.com/settings/developers). The authorization callback URL must be set for pointing your app. The OAuth State is a random string use for verification by OAuth Provider, [see manual](https://developer.github.com/apps/building-integrations/setting-up-and-registering-oauth-apps/about-authorization-options-for-oauth-apps/).
 
 ### Basic Username/Password
 
@@ -62,6 +62,10 @@ Usage of auth:
     	Prometheus - Allowed hostname to call metrics endpoint (default "localhost")
   -prometheusMetricsPath string
     	Prometheus - Metrics endpoint path (default "/metrics")
+  -rateCount int
+    	Rate IP count (default 60)
+  -rateDelay duration
+    	Rate IP delay (default 1m0s)
   -tlscert string
     	TLS PEM Certificate file
   -tlshosts string
