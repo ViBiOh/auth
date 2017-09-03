@@ -1,4 +1,4 @@
-default: deps fmt lint tst build
+default: deps format lint tst build
 
 deps:
 	go get -u golang.org/x/tools/cmd/goimports
@@ -13,7 +13,7 @@ deps:
 	go get -u golang.org/x/oauth2
 	go get -u golang.org/x/oauth2/github
 
-fmt:
+format:
 	goimports -w **/*.go *.go
 	gofmt -s -w **/*.go *.go
 

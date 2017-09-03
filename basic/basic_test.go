@@ -62,9 +62,6 @@ func TestGetUsername(t *testing.T) {
 	admin := User{`admin`, password}
 	users[`admin`] = &admin
 
-	guest, _ := bcrypt.GenerateFromPassword([]byte(`guest`), 12)
-	users[`guest`] = &User{`guest`, guest}
-
 	var cases = []struct {
 		auth    string
 		want    string
@@ -81,8 +78,13 @@ func TestGetUsername(t *testing.T) {
 			fmt.Errorf(`Error while reading basic authentication`),
 		},
 		{
+			base64.StdEncoding.EncodeToString([]byte(`guest:password`)),
+			``,
+			fmt.Errorf(`Invalid credentials for guest`),
+		},
+		{
 			base64.StdEncoding.EncodeToString([]byte(`AdMiN:password`)),
-			`AdMiN`,
+			`admin`,
 			nil,
 		},
 	}

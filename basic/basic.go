@@ -65,13 +65,18 @@ func GetUsername(header string) (string, error) {
 		return ``, fmt.Errorf(`Error while reading basic authentication`)
 	}
 
-	username := dataStr[:sepIndex]
+	username := strings.ToLower(dataStr[:sepIndex])
 	password := dataStr[sepIndex+1:]
 
-	if user, ok := users[strings.ToLower(username)]; ok {
+	user, ok := users[username]
+	if ok {
 		if err := bcrypt.CompareHashAndPassword(user.password, []byte(password)); err != nil {
-			return ``, fmt.Errorf(`Invalid credentials for %s`, username)
+			ok = false
 		}
+	}
+
+	if !ok {
+		return ``, fmt.Errorf(`Invalid credentials for %s`, username)
 	}
 
 	return username, nil
