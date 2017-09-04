@@ -69,6 +69,10 @@ func authHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	for key, value := range r.Header {
+		log.Printf(`%s : %s`, key, value)
+	}
+
 	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
