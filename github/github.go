@@ -70,7 +70,7 @@ func GetUsername(token string) (string, error) {
 	getToken()
 	defer releaseToken()
 
-	userResponse, err := httputils.GetBody(userURL, `token `+token, false)
+	userResponse, err := httputils.GetBody(userURL, map[string]string{`Authorization`: `token ` + token}, false)
 	if err != nil {
 		return ``, fmt.Errorf(`Error while fetching user informations: %v`, err)
 	}
