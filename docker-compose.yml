@@ -8,7 +8,6 @@ services:
     - Authorization
     - -prometheusMetricsHost
     - auth:1080
-    - -rateReverseProxy
     - -githubState
     - ${GITHUB_OAUTH_STATE}
     - -githubClientId
