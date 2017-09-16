@@ -88,6 +88,7 @@ func authHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	url := flag.String(`c`, ``, `URL to healthcheck (check and exit)`)
 	port := flag.String(`port`, `1080`, `Listen port`)
+	tls := flag.Bool(`tls`, true, `Serve TLS content`)
 	flag.Parse()
 
 	if *url != `` {
@@ -107,7 +108,13 @@ func main() {
 	var serveError = make(chan error)
 	go func() {
 		defer close(serveError)
-		serveError <- cert.ListenAndServeTLS(server)
+		if *tls {
+			log.Print(`Listening with TLS enabled`)
+			serveError <- cert.ListenAndServeTLS(server)
+		} else {
+			log.Print(`⚠ auth is running without secure connection ⚠`)
+			serveError <- server.ListenAndServe()
+		}
 	}()
 
 	httputils.ServerGracefulClose(server, serveError, nil)
