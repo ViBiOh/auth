@@ -24,6 +24,12 @@ lint:
 tst:
 	script/coverage
 
+bench:
+	go test ./... -bench . -benchmem -run Benchmark.*
+
 build:
 	CGO_ENABLED=0 go build -ldflags="-s -w" -installsuffix nocgo -o bin/bcrypt bcrypt/bcrypt.go
 	CGO_ENABLED=0 go build -ldflags="-s -w" -installsuffix nocgo -o bin/auth auth.go
+
+start:
+	go run auth.go -tls=false -basicUsers "admin:`bcrypt admin`" -corsHeaders Content-Type,Authorization
