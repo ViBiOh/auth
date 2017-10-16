@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/NYTimes/gziphandler"
 	"github.com/ViBiOh/alcotest/alcotest"
 	"github.com/ViBiOh/auth/basic"
 	"github.com/ViBiOh/auth/github"
@@ -102,7 +103,7 @@ func main() {
 
 	server := &http.Server{
 		Addr:    `:` + *port,
-		Handler: prometheus.NewPrometheusHandler(`http`, owasp.Handler{Handler: cors.Handler{Handler: rate.Handler{Handler: http.HandlerFunc(authHandler)}}}),
+		Handler: prometheus.NewPrometheusHandler(`http`, gziphandler.GzipHandler(owasp.Handler{Handler: cors.Handler{Handler: rate.Handler{Handler: http.HandlerFunc(authHandler)}}})),
 	}
 
 	var serveError = make(chan error)
