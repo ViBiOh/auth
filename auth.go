@@ -22,6 +22,8 @@ import (
 const basicPrefix = `Basic `
 const githubPrefix = `GitHub `
 
+var apiHandler = prometheus.Handler(`http`, rate.Handler(gziphandler.GzipHandler(owasp.Handler(cors.Handler(handler())))))
+
 // Init configures Auth providers
 func Init() {
 	if err := basic.Init(); err != nil {
@@ -64,26 +66,28 @@ func githubTokenHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func authHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		w.Write(nil)
-		return
-	}
+func handler() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodOptions {
+			w.Write(nil)
+			return
+		}
 
-	if r.Method != http.MethodGet {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
+		if r.Method != http.MethodGet {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
 
-	if r.URL.Path == `/user` {
-		userHandler(w, r)
-	} else if r.URL.Path == `/token/github` {
-		githubTokenHandler(w, r)
-	} else if r.URL.Path == `/health` {
-		healthHandler(w, r)
-	} else {
-		w.WriteHeader(http.StatusNotFound)
-	}
+		if r.URL.Path == `/user` {
+			userHandler(w, r)
+		} else if r.URL.Path == `/token/github` {
+			githubTokenHandler(w, r)
+		} else if r.URL.Path == `/health` {
+			healthHandler(w, r)
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+		}
+	})
 }
 
 func main() {
@@ -103,7 +107,7 @@ func main() {
 
 	server := &http.Server{
 		Addr:    `:` + *port,
-		Handler: prometheus.NewPrometheusHandler(`http`, gziphandler.GzipHandler(owasp.Handler{Handler: cors.Handler{Handler: rate.Handler{Handler: http.HandlerFunc(authHandler)}}})),
+		Handler: apiHandler,
 	}
 
 	var serveError = make(chan error)

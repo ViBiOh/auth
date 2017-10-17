@@ -37,41 +37,41 @@ It will compile both auth API server and password encrypter.
 ```
 Usage of auth:
   -basicUsers string
-    	Basic users in the form "username:password,username2:password"
+        Basic users in the form "username:password,username2:password"
   -c string
-    	URL to healthcheck (check and exit)
+        URL to healthcheck (check and exit)
   -corsHeaders string
-    	Access-Control-Allow-Headers (default "Content-Type")
+        Access-Control-Allow-Headers (default "Content-Type")
   -corsMethods string
-    	Access-Control-Allow-Methods (default "GET")
+        Access-Control-Allow-Methods (default "GET")
   -corsOrigin string
-    	Access-Control-Allow-Origin (default "*")
+        Access-Control-Allow-Origin (default "*")
   -csp string
-    	Content-Security-Policy (default "default-src 'self'")
+        Content-Security-Policy (default "default-src 'self'")
   -githubClientId string
-    	GitHub OAuth Client ID
+        GitHub OAuth Client ID
   -githubClientSecret string
-    	GitHub OAuth Client Secret
+        GitHub OAuth Client Secret
   -githubState string
-    	GitHub OAuth State
+        GitHub OAuth State
   -hsts
-    	Indicate Strict Transport Security (default true)
+        Indicate Strict Transport Security (default true)
   -port string
-    	Listen port (default "1080")
+        Listen port (default "1080")
   -prometheusMetricsHost string
-    	Prometheus - Allowed hostname to call metrics endpoint (default "localhost")
+        Prometheus - Allowed hostname to call metrics endpoint (default "localhost")
   -prometheusMetricsPath string
-    	Prometheus - Metrics endpoint path (default "/metrics")
+        Prometheus - Metrics endpoint path (default "/metrics")
   -rateCount int
-    	Rate IP count (default 60)
-  -rateDelay duration
-    	Rate IP delay (default 1m0s)
+        Rate IP limit (default 5000)
+  -tls
+        Serve TLS content (default true)
   -tlscert string
-    	TLS PEM Certificate file
+        TLS PEM Certificate file
   -tlshosts string
-    	TLS Self-signed certificate hosts, comma separated (default "localhost")
+        TLS Self-signed certificate hosts, comma separated (default "localhost")
   -tlskey string
-    	TLS PEM Key file
+        TLS PEM Key file
 ```
 
 Password encrypter accepts one argument, the password, and output the bcrypted one.
