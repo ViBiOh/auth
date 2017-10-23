@@ -22,7 +22,7 @@ import (
 const basicPrefix = `Basic `
 const githubPrefix = `GitHub `
 
-var apiHandler = prometheus.Handler(`http`, rate.Handler(gziphandler.GzipHandler(owasp.Handler(cors.Handler(handler())))))
+var apiHandler = prometheus.Handler(`http`, rate.Handler(gziphandler.GzipHandler(owasp.Handler(cors.Handler(cors.Flags(``), handler())))))
 
 // Init configures Auth providers
 func Init() {
