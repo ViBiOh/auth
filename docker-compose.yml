@@ -6,6 +6,7 @@ services:
     command:
     - -corsHeaders
     - Authorization
+    - -corsCredentials
     - -prometheusMetricsHost
     - auth:1080
     - -githubState

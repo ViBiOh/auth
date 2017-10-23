@@ -22,7 +22,7 @@ import (
 const basicPrefix = `Basic `
 const githubPrefix = `GitHub `
 
-var apiHandler = prometheus.Handler(`http`, rate.Handler(gziphandler.GzipHandler(owasp.Handler(cors.Handler(cors.Flags(``), handler())))))
+var apiHandler http.Handler
 
 // Init configures Auth providers
 func Init() {
@@ -94,6 +94,7 @@ func main() {
 	url := flag.String(`c`, ``, `URL to healthcheck (check and exit)`)
 	port := flag.String(`port`, `1080`, `Listen port`)
 	tls := flag.Bool(`tls`, true, `Serve TLS content`)
+	corsConfig := cors.Flags(``)
 	flag.Parse()
 
 	if *url != `` {
@@ -105,6 +106,7 @@ func main() {
 
 	Init()
 
+	apiHandler = prometheus.Handler(`http`, rate.Handler(gziphandler.GzipHandler(owasp.Handler(cors.Handler(corsConfig, handler())))))
 	server := &http.Server{
 		Addr:    `:` + *port,
 		Handler: apiHandler,
