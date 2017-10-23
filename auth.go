@@ -94,7 +94,10 @@ func main() {
 	url := flag.String(`c`, ``, `URL to healthcheck (check and exit)`)
 	port := flag.String(`port`, `1080`, `Listen port`)
 	tls := flag.Bool(`tls`, true, `Serve TLS content`)
-	corsConfig := cors.Flags(``)
+	prometheusConfig := prometheus.Flags(`prometheus`)
+	rateConfig := rate.Flags(`rate`)
+	owaspConfig := owasp.Flags(``)
+	corsConfig := cors.Flags(`cors`)
 	flag.Parse()
 
 	if *url != `` {
@@ -106,7 +109,7 @@ func main() {
 
 	Init()
 
-	apiHandler = prometheus.Handler(`http`, rate.Handler(gziphandler.GzipHandler(owasp.Handler(cors.Handler(corsConfig, handler())))))
+	apiHandler = prometheus.Handler(prometheusConfig, rate.Handler(rateConfig, gziphandler.GzipHandler(owasp.Handler(owaspConfig, cors.Handler(corsConfig, handler())))))
 	server := &http.Server{
 		Addr:    `:` + *port,
 		Handler: apiHandler,
