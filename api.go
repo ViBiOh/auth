@@ -22,8 +22,6 @@ import (
 const basicPrefix = `Basic `
 const githubPrefix = `GitHub `
 
-var apiHandler http.Handler
-
 // Init configures Auth providers
 func Init() {
 	if err := basic.Init(); err != nil {
@@ -109,10 +107,9 @@ func main() {
 
 	Init()
 
-	apiHandler = prometheus.Handler(prometheusConfig, rate.Handler(rateConfig, gziphandler.GzipHandler(owasp.Handler(owaspConfig, cors.Handler(corsConfig, handler())))))
 	server := &http.Server{
 		Addr:    `:` + *port,
-		Handler: apiHandler,
+		Handler: prometheus.Handler(prometheusConfig, rate.Handler(rateConfig, gziphandler.GzipHandler(owasp.Handler(owaspConfig, cors.Handler(corsConfig, handler()))))),
 	}
 
 	var serveError = make(chan error)

@@ -9,6 +9,7 @@ deps:
 	go get -u github.com/ViBiOh/httputils/cors
 	go get -u github.com/ViBiOh/httputils/owasp
 	go get -u github.com/ViBiOh/httputils/prometheus
+	go get -u github.com/ViBiOh/httputils/rate
 	go get -u golang.org/x/crypto/bcrypt
 	go get -u golang.org/x/oauth2
 	go get -u golang.org/x/oauth2/github
@@ -30,7 +31,8 @@ bench:
 
 build:
 	CGO_ENABLED=0 go build -ldflags="-s -w" -installsuffix nocgo -o bin/bcrypt bcrypt/bcrypt.go
-	CGO_ENABLED=0 go build -ldflags="-s -w" -installsuffix nocgo -o bin/auth auth.go
+	CGO_ENABLED=0 go build -ldflags="-s -w" -installsuffix nocgo -o bin/auth api.go
+	CGO_ENABLED=0 go build -ldflags="-s -w" -installsuffix nocgo auth/auth.go
 
 start:
 	go run auth.go -tls=false -basicUsers "admin:`bcrypt admin`" -corsHeaders Content-Type,Authorization
