@@ -78,7 +78,7 @@ func TestIsAuthenticated(t *testing.T) {
 	}))
 	defer testServer.Close()
 
-	admin := NewUser(`admin`, `admin`)
+	admin := NewUser(0, `admin`, `admin`)
 
 	var cases = []struct {
 		authorization string
@@ -136,7 +136,7 @@ func TestIsAuthenticatedByAuth(t *testing.T) {
 	}))
 	defer testServer.Close()
 
-	admin := NewUser(`admin`, `admin`)
+	admin := NewUser(0, `admin`, `admin`)
 
 	var cases = []struct {
 		authorization string

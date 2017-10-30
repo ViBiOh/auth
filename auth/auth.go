@@ -16,7 +16,8 @@ const forwardedForHeader = `X-Forwarded-For`
 
 // User of the app
 type User struct {
-	Username string
+	ID       int64  `json:"id"`
+	Username string `json:"username"`
 	profiles string
 }
 
@@ -34,8 +35,8 @@ func Flags(prefix string) map[string]*string {
 }
 
 // NewUser creates new user with username and profiles
-func NewUser(username string, profiles string) *User {
-	return &User{username, profiles}
+func NewUser(id int64, username string, profiles string) *User {
+	return &User{ID: id, Username: username, profiles: profiles}
 }
 
 // LoadUsersProfiles parses users ands profiles from given string
@@ -56,7 +57,7 @@ func LoadUsersProfiles(usersAndProfiles string) map[string]*User {
 			profiles = user[sepIndex+1:]
 		}
 
-		users[strings.ToLower(username)] = NewUser(username, profiles)
+		users[strings.ToLower(username)] = NewUser(0, username, profiles)
 	}
 
 	return users
