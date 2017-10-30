@@ -71,6 +71,11 @@ func handler() http.Handler {
 			return
 		}
 
+		if r.Method == http.MethodGet && r.URL.Path == `/health` {
+			healthHandler(w, r)
+			return
+		}
+
 		if r.Method != http.MethodGet {
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			return
@@ -80,8 +85,6 @@ func handler() http.Handler {
 			userHandler(w, r)
 		} else if r.URL.Path == `/token/github` {
 			githubTokenHandler(w, r)
-		} else if r.URL.Path == `/health` {
-			healthHandler(w, r)
 		} else {
 			w.WriteHeader(http.StatusNotFound)
 		}
