@@ -23,11 +23,7 @@ var (
 
 // Init auth
 func Init() error {
-	if err := LoadUsers(*authUsers); err != nil {
-		return err
-	}
-
-	return nil
+	return LoadUsers(*authUsers)
 }
 
 // LoadUsers loads given users into users map
