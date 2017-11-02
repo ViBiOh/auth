@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/ViBiOh/auth/auth"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -47,18 +48,18 @@ func LoadUsers(authUsers string) error {
 	return nil
 }
 
-// GetUsername returns username of given auth
-func GetUsername(header string) (string, error) {
+// GetUser returns username of given auth
+func GetUser(header string) (*auth.User, error) {
 	data, err := base64.StdEncoding.DecodeString(header)
 	if err != nil {
-		return ``, fmt.Errorf(`Error while decoding basic authentication: %v`, err)
+		return nil, fmt.Errorf(`Error while decoding basic authentication: %v`, err)
 	}
 
 	dataStr := string(data)
 
 	sepIndex := strings.Index(dataStr, `:`)
 	if sepIndex < 0 {
-		return ``, fmt.Errorf(`Error while reading basic authentication`)
+		return nil, fmt.Errorf(`Error while reading basic authentication`)
 	}
 
 	username := strings.ToLower(dataStr[:sepIndex])
@@ -72,8 +73,8 @@ func GetUsername(header string) (string, error) {
 	}
 
 	if !ok {
-		return ``, fmt.Errorf(`Invalid credentials for %s`, username)
+		return nil, fmt.Errorf(`Invalid credentials for %s`, username)
 	}
 
-	return username, nil
+	return &auth.User{Username: username}, nil
 }

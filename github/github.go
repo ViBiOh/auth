@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 
+	"github.com/ViBiOh/auth/auth"
 	"github.com/ViBiOh/httputils"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
@@ -13,7 +14,8 @@ import (
 const userURL = `https://api.github.com/user`
 
 type user struct {
-	Login string `json:"login"`
+	ID    int64
+	Login string
 }
 
 var (
@@ -65,20 +67,20 @@ func GetAccessToken(requestState string, requestCode string) (string, error) {
 	return token.AccessToken, nil
 }
 
-// GetUsername returns username of given token
-func GetUsername(token string) (string, error) {
+// GetUser returns username of given token
+func GetUser(token string) (*auth.User, error) {
 	getToken()
 	defer releaseToken()
 
 	userResponse, err := httputils.GetBody(userURL, map[string]string{`Authorization`: `token ` + token}, false)
 	if err != nil {
-		return ``, fmt.Errorf(`Error while fetching user informations: %v`, err)
+		return nil, fmt.Errorf(`Error while fetching user informations: %v`, err)
 	}
 
 	user := user{}
 	if err := json.Unmarshal(userResponse, &user); err != nil {
-		return ``, fmt.Errorf(`Error while unmarshalling user informations: %v`, err)
+		return nil, fmt.Errorf(`Error while unmarshalling user informations: %v`, err)
 	}
 
-	return user.Login, nil
+	return &auth.User{ID: user.ID, Username: user.Login}, nil
 }

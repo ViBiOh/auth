@@ -3,8 +3,10 @@ package basic
 import (
 	"encoding/base64"
 	"fmt"
+	"reflect"
 	"testing"
 
+	"github.com/ViBiOh/auth/auth"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -50,12 +52,12 @@ func TestLoadUsers(t *testing.T) {
 		}
 
 		if failed {
-			t.Errorf(`LoadUsers(%v) = (%v, %v), want (%v, %v)`, testCase.input, result, err, testCase.want, testCase.wantErr)
+			t.Errorf(`LoadUsers(%+v) = (%+v, %+v), want (%+v, %+v)`, testCase.input, result, err, testCase.want, testCase.wantErr)
 		}
 	}
 }
 
-func TestGetUsername(t *testing.T) {
+func Test_GetUser(t *testing.T) {
 	users = make(map[string]*User)
 
 	password, _ := bcrypt.GenerateFromPassword([]byte(`password`), 12)
@@ -64,27 +66,27 @@ func TestGetUsername(t *testing.T) {
 
 	var cases = []struct {
 		auth    string
-		want    string
+		want    *auth.User
 		wantErr error
 	}{
 		{
 			`admin`,
-			``,
+			nil,
 			fmt.Errorf(`Error while decoding basic authentication: illegal base64 data at input byte 4`),
 		},
 		{
 			base64.StdEncoding.EncodeToString([]byte(`AdMiN`)),
-			``,
+			nil,
 			fmt.Errorf(`Error while reading basic authentication`),
 		},
 		{
 			base64.StdEncoding.EncodeToString([]byte(`guest:password`)),
-			``,
+			nil,
 			fmt.Errorf(`Invalid credentials for guest`),
 		},
 		{
 			base64.StdEncoding.EncodeToString([]byte(`AdMiN:password`)),
-			`admin`,
+			&auth.User{Username: `admin`},
 			nil,
 		},
 	}
@@ -92,7 +94,7 @@ func TestGetUsername(t *testing.T) {
 	var failed bool
 
 	for _, testCase := range cases {
-		result, err := GetUsername(testCase.auth)
+		result, err := GetUser(testCase.auth)
 
 		failed = false
 
@@ -102,12 +104,12 @@ func TestGetUsername(t *testing.T) {
 			failed = true
 		} else if err != nil && err.Error() != testCase.wantErr.Error() {
 			failed = true
-		} else if result != testCase.want {
+		} else if !reflect.DeepEqual(result, testCase.want) {
 			failed = true
 		}
 
 		if failed {
-			t.Errorf(`getUsername(%v) = (%v, %v) want (%v, %v)`, testCase.auth, result, err, testCase.want, testCase.wantErr)
+			t.Errorf(`GetUser(%+v) = (%+v, %+v) want (%+v, %+v)`, testCase.auth, result, err, testCase.want, testCase.wantErr)
 		}
 	}
 }

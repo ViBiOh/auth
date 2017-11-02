@@ -40,16 +40,16 @@ func userHandler(w http.ResponseWriter, r *http.Request) {
 	authHeader := r.Header.Get(`Authorization`)
 
 	if strings.HasPrefix(authHeader, basicPrefix) {
-		if username, err := basic.GetUsername(strings.TrimPrefix(authHeader, basicPrefix)); err != nil {
+		if user, err := basic.GetUser(strings.TrimPrefix(authHeader, basicPrefix)); err != nil {
 			httputils.Unauthorized(w, err)
 		} else {
-			w.Write([]byte(username))
+			httputils.ResponseJSON(w, http.StatusOK, user, httputils.IsPretty(r.URL.RawQuery))
 		}
 	} else if strings.HasPrefix(authHeader, githubPrefix) {
-		if username, err := github.GetUsername(strings.TrimPrefix(authHeader, githubPrefix)); err != nil {
+		if user, err := github.GetUser(strings.TrimPrefix(authHeader, githubPrefix)); err != nil {
 			httputils.Unauthorized(w, err)
 		} else {
-			w.Write([]byte(username))
+			httputils.ResponseJSON(w, http.StatusOK, user, httputils.IsPretty(r.URL.RawQuery))
 		}
 	} else {
 		httputils.BadRequest(w, fmt.Errorf(`Unable to read authentication type`))
