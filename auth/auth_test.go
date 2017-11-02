@@ -37,7 +37,7 @@ func TestHasProfile(t *testing.T) {
 
 	for _, testCase := range cases {
 		if result := testCase.instance.HasProfile(testCase.profile); result != testCase.want {
-			t.Errorf(`%v.HasProfile(%v) = %v, want %v`, testCase.profile, testCase.instance, result, testCase.want)
+			t.Errorf(`%+v.HasProfile(%+v) = %+v, want %+v`, testCase.profile, testCase.instance, result, testCase.want)
 		}
 	}
 }
@@ -63,7 +63,7 @@ func TestLoadUsersProfiles(t *testing.T) {
 
 	for _, testCase := range cases {
 		if result := len(LoadUsersProfiles(testCase.usersAndProfiles)); result != testCase.want {
-			t.Errorf(`LoadUsersProfiles(%v) = %v, want %v`, testCase.usersAndProfiles, result, testCase.want)
+			t.Errorf(`LoadUsersProfiles(%+v) = %+v, want %+v`, testCase.usersAndProfiles, result, testCase.want)
 		}
 	}
 }
@@ -88,15 +88,15 @@ func TestIsAuthenticated(t *testing.T) {
 		{
 			`unauthorized`,
 			nil,
-			fmt.Errorf(`Error while getting username: Error status 401: `),
+			fmt.Errorf(`Error while getting user: Error status 401: `),
 		},
 		{
-			`guest`,
+			`{"id":8000,"username":"guest"}`,
 			nil,
 			fmt.Errorf(`[guest] Not allowed to use app`),
 		},
 		{
-			`admin`,
+			`{"id":8000,"username":"admin"}`,
 			admin,
 			nil,
 		},
@@ -122,7 +122,7 @@ func TestIsAuthenticated(t *testing.T) {
 		}
 
 		if failed {
-			t.Errorf(`IsAuthenticated(%v) = (%v, %v), want (%v, %v)`, req, result, err, testCase.want, testCase.wantErr)
+			t.Errorf(`IsAuthenticated(%+v) = (%+v, %+v), want (%+v, %+v)`, req, result, err, testCase.want, testCase.wantErr)
 		}
 	}
 }
@@ -146,15 +146,15 @@ func TestIsAuthenticatedByAuth(t *testing.T) {
 		{
 			`unauthorized`,
 			nil,
-			fmt.Errorf(`Error while getting username: Error status 401: `),
+			fmt.Errorf(`Error while getting user: Error status 401: `),
 		},
 		{
-			`guest`,
+			`{"id":8000,"username":"guest"}`,
 			nil,
 			fmt.Errorf(`[guest] Not allowed to use app`),
 		},
 		{
-			`admin`,
+			`{"id":100,"username":"admin"}`,
 			admin,
 			nil,
 		},
@@ -178,7 +178,7 @@ func TestIsAuthenticatedByAuth(t *testing.T) {
 		}
 
 		if failed {
-			t.Errorf(`IsAuthenticatedByAuth(%v) = (%v, %v), want (%v, %v)`, testCase.authorization, result, err, testCase.want, testCase.wantErr)
+			t.Errorf(`IsAuthenticatedByAuth(%+v) = (%+v, %+v), want (%+v, %+v)`, testCase.authorization, result, err, testCase.want, testCase.wantErr)
 		}
 	}
 }

@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"net/http"
@@ -75,14 +76,20 @@ func IsAuthenticatedByAuth(url string, users map[string]*User, authContent, remo
 		forwardedForHeader:  remoteIP,
 	}
 
-	username, err := httputils.GetBody(url+`/user`, headers, true)
+	userBytes, err := httputils.GetBody(url+`/user`, headers, true)
 	if err != nil {
-		return nil, fmt.Errorf(`Error while getting username: %v`, err)
+		return nil, fmt.Errorf(`Error while getting user: %v`, err)
 	}
 
-	if user, ok := users[strings.ToLower(string(username))]; ok {
-		return user, nil
+	user := User{}
+	if err := json.Unmarshal(userBytes, &user); err != nil {
+		return nil, fmt.Errorf(`Error while unmarshalling user: %v`, err)
 	}
 
-	return nil, fmt.Errorf(`[%s] Not allowed to use app`, username)
+	if appUser, ok := users[strings.ToLower(string(user.Username))]; ok {
+		appUser.ID = user.ID
+		return appUser, nil
+	}
+
+	return nil, fmt.Errorf(`[%s] Not allowed to use app`, user.Username)
 }
