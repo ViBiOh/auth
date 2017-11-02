@@ -35,4 +35,4 @@ build:
 	CGO_ENABLED=0 go build -ldflags="-s -w" -installsuffix nocgo auth/auth.go
 
 start:
-	go run auth.go -tls=false -basicUsers "admin:`bcrypt admin`" -corsHeaders Content-Type,Authorization
+	go run auth.go -tls=false -basicUsers "admin:`go run bcrypt/bcrypt.go admin`" -corsHeaders Content-Type,Authorization

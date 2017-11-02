@@ -11,20 +11,8 @@ script: |
   docker build -t ${DOCKER_USER}/auth .
 after_success: |
   if [ "${TRAVIS_BRANCH}" == "master" ]; then
-    docker login -u ${DOCKER_USER} -p ${DOCKER_PASS} \
-      && docker push ${DOCKER_USER}/auth
-
-    sed \
-      -e "s|\${GITHUB_OAUTH_STATE}|${GITHUB_OAUTH_STATE}|g" \
-      -e "s|\${GITHUB_OAUTH_CLIENT_ID}|${GITHUB_OAUTH_CLIENT_ID}|g" \
-      -e "s|\${GITHUB_OAUTH_CLIENT_SECRET}|${GITHUB_OAUTH_CLIENT_SECRET}|g" \
-      docker-compose.yml > docker-compose-env.yml
+    docker login -u ${DOCKER_USER} -p ${DOCKER_PASS} && \
+    docker push ${DOCKER_USER}/auth
   fi
 notifications:
   email: false
-deploy:
-  provider: script
-  skip_cleanup: true
-  script: "curl -H 'Authorization: GitHub ${GITHUB_OAUTH_TOKEN}' -X POST https://dashboard-api.vibioh.fr/containers/auth/ --data-binary @docker-compose-env.yml"
-  on:
-    branch: master
