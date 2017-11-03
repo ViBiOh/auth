@@ -4,22 +4,22 @@ import (
 	"encoding/base64"
 	"flag"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/ViBiOh/auth/auth"
 	"golang.org/x/crypto/bcrypt"
 )
 
-// User of the app
-type User struct {
-	Username string
+type basicUser struct {
+	*auth.User
 	password []byte
 }
 
-var users map[string]*User
+var users map[string]*basicUser
 
 var (
-	authUsers = flag.String(`basicUsers`, ``, `Basic users in the form "username:password,username2:password"`)
+	authUsers = flag.String(`basicUsers`, ``, `Basic users in the form "id:username:password,id2:username2:password2"`)
 )
 
 // Init auth
@@ -29,7 +29,7 @@ func Init() error {
 
 // LoadUsers loads given users into users map
 func LoadUsers(authUsers string) error {
-	users = make(map[string]*User)
+	users = make(map[string]*basicUser)
 
 	if authUsers == `` {
 		return nil
@@ -37,11 +37,16 @@ func LoadUsers(authUsers string) error {
 
 	for _, authUser := range strings.Split(authUsers, `,`) {
 		parts := strings.Split(authUser, `:`)
-		if len(parts) != 2 {
+		if len(parts) != 3 {
 			return fmt.Errorf(`Invalid format of user for %s`, authUser)
 		}
 
-		user := User{strings.ToLower(parts[0]), []byte(parts[1])}
+		id, err := strconv.ParseInt(parts[0], 10, 64)
+		if err != nil {
+			return fmt.Errorf(`Invalid id format for user %s`, authUser)
+		}
+
+		user := basicUser{&auth.User{ID: id, Username: strings.ToLower(parts[1])}, []byte(parts[2])}
 		users[strings.ToLower(user.Username)] = &user
 	}
 
@@ -76,5 +81,5 @@ func GetUser(header string) (*auth.User, error) {
 		return nil, fmt.Errorf(`Invalid credentials for %s`, username)
 	}
 
-	return &auth.User{Username: username}, nil
+	return user.User, nil
 }

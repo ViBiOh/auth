@@ -10,7 +10,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func TestLoadUsers(t *testing.T) {
+func Test_LoadUsers(t *testing.T) {
 	var cases = []struct {
 		input   string
 		want    int
@@ -27,7 +27,7 @@ func TestLoadUsers(t *testing.T) {
 			fmt.Errorf(`Invalid format of user for invalid_username`),
 		},
 		{
-			`admin:admin,guest:guest`,
+			`0:admin:admin,1:guest:guest`,
 			2,
 			nil,
 		},
@@ -58,10 +58,11 @@ func TestLoadUsers(t *testing.T) {
 }
 
 func Test_GetUser(t *testing.T) {
-	users = make(map[string]*User)
+	users = make(map[string]*basicUser)
 
 	password, _ := bcrypt.GenerateFromPassword([]byte(`password`), 12)
-	admin := User{`admin`, password}
+	user := auth.NewUser(0, `admin`, ``)
+	admin := basicUser{user, password}
 	users[`admin`] = &admin
 
 	var cases = []struct {
@@ -86,7 +87,7 @@ func Test_GetUser(t *testing.T) {
 		},
 		{
 			base64.StdEncoding.EncodeToString([]byte(`AdMiN:password`)),
-			&auth.User{Username: `admin`},
+			&auth.User{ID: 0, Username: `admin`},
 			nil,
 		},
 	}
