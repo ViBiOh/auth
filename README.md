@@ -14,15 +14,25 @@ You can use GitHub OAuth Provider or a simple username/password file for authent
 
 Create your OAuth app on [GitHub interface](https://github.com/settings/developers). The authorization callback URL must be set for pointing your app. The OAuth State is a random string use for verification by OAuth Provider, [see manual](https://developer.github.com/apps/building-integrations/setting-up-and-registering-oauth-apps/about-authorization-options-for-oauth-apps/).
 
-### Basic Username/Password
+## Basic Username/Password
 
 Write user's credentials with the following format :
 
 ```
-[username]:[bcrypt password],[username2]:[bcrypt password]
+[id]:[username]:[bcrypt password],[id2]:[username2]:[bcrypt password2]
 ```
 
 You can generate bcrypted password using `bin/bcrypt_pass`.
+
+## Roles
+
+You can configure roles by setting `-users` from CLI with the following format:
+
+```
+[user1]:[role1]|[role2],[user2]:[role1]
+```
+
+Username must match with the authentification providers (see previous sections).
 
 ## Build
 

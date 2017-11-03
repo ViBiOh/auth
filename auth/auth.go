@@ -31,7 +31,7 @@ func (user *User) HasProfile(profile string) bool {
 func Flags(prefix string) map[string]*string {
 	return map[string]*string{
 		`url`:   flag.String(tools.ToCamel(prefix+`Url`), ``, `[auth] Auth URL`),
-		`users`: flag.String(tools.ToCamel(prefix+`Users`), ``, `[auth] List of allowed users and profiles (e.g. user:profile1,profile2|user2:profile3)`),
+		`users`: flag.String(tools.ToCamel(prefix+`Users`), ``, `[auth] List of allowed users and profiles (e.g. user:profile1|profile2,user2:profile3)`),
 	}
 }
 
@@ -48,7 +48,7 @@ func LoadUsersProfiles(usersAndProfiles string) map[string]*User {
 
 	users := make(map[string]*User, 0)
 
-	for _, user := range strings.Split(usersAndProfiles, `|`) {
+	for _, user := range strings.Split(usersAndProfiles, `,`) {
 		username := user
 		profiles := ``
 

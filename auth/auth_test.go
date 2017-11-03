@@ -24,7 +24,7 @@ func TestHasProfile(t *testing.T) {
 			true,
 		},
 		{
-			User{profiles: `admin,multi`},
+			User{profiles: `admin|multi`},
 			`multi`,
 			true,
 		},
@@ -56,7 +56,7 @@ func TestLoadUsersProfiles(t *testing.T) {
 			1,
 		},
 		{
-			`admin:admin,multi|guest:|visitor:visitor`,
+			`admin:admin|multi,guest:,visitor:visitor`,
 			3,
 		},
 	}
