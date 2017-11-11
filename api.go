@@ -95,6 +95,7 @@ func main() {
 	url := flag.String(`c`, ``, `URL to healthcheck (check and exit)`)
 	port := flag.String(`port`, `1080`, `Listen port`)
 	tls := flag.Bool(`tls`, true, `Serve TLS content`)
+	certConfig := cert.Flags(`tls`)
 	prometheusConfig := prometheus.Flags(`prometheus`)
 	rateConfig := rate.Flags(`rate`)
 	owaspConfig := owasp.Flags(``)
@@ -120,7 +121,7 @@ func main() {
 		defer close(serveError)
 		if *tls {
 			log.Print(`Listening with TLS enabled`)
-			serveError <- cert.ListenAndServeTLS(server)
+			serveError <- cert.ListenAndServeTLS(certConfig, server)
 		} else {
 			log.Print(`⚠ auth is running without secure connection ⚠`)
 			serveError <- server.ListenAndServe()
