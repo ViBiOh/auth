@@ -49,7 +49,7 @@ Usage of auth:
   -basicUsers string
     	Basic users in the form "id:username:password,id2:username2:password2"
   -c string
-    	URL to healthcheck (check and exit)
+    	[health] URL to check
   -corsCredentials
     	[cors] Access-Control-Allow-Credentials
   -corsExpose string
