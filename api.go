@@ -1,8 +1,8 @@
 package main
 
 import (
+	"errors"
 	"flag"
-	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -21,6 +21,8 @@ import (
 
 const basicPrefix = `Basic `
 const githubPrefix = `GitHub `
+
+var errUnknownAuthType = errors.New(`Unable to read authentication type`)
 
 // Init configures Auth providers
 func Init() {
@@ -52,7 +54,7 @@ func userHandler(w http.ResponseWriter, r *http.Request) {
 			httputils.ResponseJSON(w, http.StatusOK, user, httputils.IsPretty(r.URL.RawQuery))
 		}
 	} else {
-		httputils.BadRequest(w, fmt.Errorf(`Unable to read authentication type`))
+		httputils.BadRequest(w, errUnknownAuthType)
 	}
 }
 

@@ -12,6 +12,7 @@ import (
 	"github.com/ViBiOh/httputils/tools"
 )
 
+const forbiddenMessage = `Not allowed to use app`
 const authorizationHeader = `Authorization`
 const forwardedForHeader = `X-Forwarded-For`
 
@@ -64,6 +65,11 @@ func LoadUsersProfiles(usersAndProfiles string) map[string]*User {
 	return users
 }
 
+// IsForbiddenErr check if given error refer to a forbidden
+func IsForbiddenErr(err error) bool {
+	return strings.HasSuffix(err.Error(), forbiddenMessage)
+}
+
 // IsAuthenticated check if request has correct headers for authentification
 func IsAuthenticated(url string, users map[string]*User, r *http.Request) (*User, error) {
 	return IsAuthenticatedByAuth(url, users, r.Header.Get(authorizationHeader), rate.GetIP(r))
@@ -91,5 +97,5 @@ func IsAuthenticatedByAuth(url string, users map[string]*User, authContent, remo
 		return appUser, nil
 	}
 
-	return nil, fmt.Errorf(`[%s] Not allowed to use app`, user.Username)
+	return nil, fmt.Errorf(`[%s] %s`, user.Username, forbiddenMessage)
 }
