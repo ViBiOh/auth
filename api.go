@@ -9,6 +9,7 @@ import (
 
 	"github.com/NYTimes/gziphandler"
 	"github.com/ViBiOh/alcotest/alcotest"
+	"github.com/ViBiOh/auth/auth"
 	"github.com/ViBiOh/auth/basic"
 	"github.com/ViBiOh/auth/github"
 	"github.com/ViBiOh/httputils"
@@ -41,7 +42,9 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 func userHandler(w http.ResponseWriter, r *http.Request) {
 	authHeader := r.Header.Get(`Authorization`)
 
-	if strings.HasPrefix(authHeader, basicPrefix) {
+	if authHeader == `` {
+		httputils.Unauthorized(w, auth.ErrEmptyAuthorization)
+	} else if strings.HasPrefix(authHeader, basicPrefix) {
 		if user, err := basic.GetUser(strings.TrimPrefix(authHeader, basicPrefix)); err != nil {
 			httputils.Unauthorized(w, err)
 		} else {

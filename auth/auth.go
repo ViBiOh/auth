@@ -2,6 +2,7 @@ package auth
 
 import (
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"net/http"
@@ -15,6 +16,9 @@ import (
 const forbiddenMessage = `Not allowed to use app`
 const authorizationHeader = `Authorization`
 const forwardedForHeader = `X-Forwarded-For`
+
+// ErrEmptyAuthorization error when authorization header is not found
+var ErrEmptyAuthorization = errors.New(`Empty authorization header`)
 
 // User of the app
 type User struct {
@@ -84,6 +88,9 @@ func IsAuthenticatedByAuth(url string, users map[string]*User, authContent, remo
 
 	userBytes, err := httputils.GetBody(url+`/user`, headers, true)
 	if err != nil {
+		if string(userBytes) == ErrEmptyAuthorization.Error() {
+			return nil, ErrEmptyAuthorization
+		}
 		return nil, fmt.Errorf(`Error while getting user: %v`, err)
 	}
 

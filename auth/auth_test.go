@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestHasProfile(t *testing.T) {
+func Test_HasProfile(t *testing.T) {
 	var cases = []struct {
 		instance User
 		profile  string
@@ -42,7 +42,7 @@ func TestHasProfile(t *testing.T) {
 	}
 }
 
-func TestLoadUsersProfiles(t *testing.T) {
+func Test_LoadUsersProfiles(t *testing.T) {
 	var cases = []struct {
 		usersAndProfiles string
 		want             int
@@ -68,7 +68,7 @@ func TestLoadUsersProfiles(t *testing.T) {
 	}
 }
 
-func TestIsAuthenticated(t *testing.T) {
+func Test_IsAuthenticated(t *testing.T) {
 	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get(`Authorization`) == `unauthorized` {
 			w.WriteHeader(http.StatusUnauthorized)
@@ -88,7 +88,7 @@ func TestIsAuthenticated(t *testing.T) {
 		{
 			`unauthorized`,
 			nil,
-			fmt.Errorf(`Error while getting user: Error status 401: `),
+			fmt.Errorf(`Error while getting user: Error status 401`),
 		},
 		{
 			`{"id":8000,"username":"guest"}`,
@@ -126,7 +126,7 @@ func TestIsAuthenticated(t *testing.T) {
 		}
 	}
 }
-func TestIsAuthenticatedByAuth(t *testing.T) {
+func Test_IsAuthenticatedByAuth(t *testing.T) {
 	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get(`Authorization`) == `unauthorized` {
 			w.WriteHeader(http.StatusUnauthorized)
@@ -146,7 +146,7 @@ func TestIsAuthenticatedByAuth(t *testing.T) {
 		{
 			`unauthorized`,
 			nil,
-			fmt.Errorf(`Error while getting user: Error status 401: `),
+			fmt.Errorf(`Error while getting user: Error status 401`),
 		},
 		{
 			`{"id":8000,"username":"guest"}`,
