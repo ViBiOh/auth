@@ -25,19 +25,6 @@ var (
 	oauthConf    *oauth2.Config
 )
 
-// Init configuration
-func Init() error {
-	if *clientID != `` {
-		oauthConf = &oauth2.Config{
-			ClientID:     *clientID,
-			ClientSecret: *clientSecret,
-			Endpoint:     github.Endpoint,
-		}
-	}
-
-	return nil
-}
-
 const maxConcurrentAuth = 32
 
 var tokenPool = make(chan int, maxConcurrentAuth)
@@ -50,8 +37,47 @@ func releaseToken() {
 	<-tokenPool
 }
 
+// Auth auth with login/pass
+type Auth struct{}
+
+// Init configuration
+func (Auth) Init() error {
+	if *clientID != `` {
+		oauthConf = &oauth2.Config{
+			ClientID:     *clientID,
+			ClientSecret: *clientSecret,
+			Endpoint:     github.Endpoint,
+		}
+	}
+
+	return nil
+}
+
+// GetName returns Authorization header prefix
+func (Auth) GetName() string {
+	return `GitHub`
+}
+
+// GetUser returns User associated to token
+func (Auth) GetUser(header string) (*auth.User, error) {
+	getToken()
+	defer releaseToken()
+
+	userResponse, err := httputils.GetBody(userURL, map[string]string{`Authorization`: `token ` + header}, false)
+	if err != nil {
+		return nil, fmt.Errorf(`Error while fetching user informations: %v`, err)
+	}
+
+	user := user{}
+	if err := json.Unmarshal(userResponse, &user); err != nil {
+		return nil, fmt.Errorf(`Error while unmarshalling user informations: %v`, err)
+	}
+
+	return &auth.User{ID: user.ID, Username: user.Login}, nil
+}
+
 // GetAccessToken returns access token for given state and code
-func GetAccessToken(requestState string, requestCode string) (string, error) {
+func (Auth) GetAccessToken(requestState string, requestCode string) (string, error) {
 	getToken()
 	defer releaseToken()
 
@@ -65,22 +91,4 @@ func GetAccessToken(requestState string, requestCode string) (string, error) {
 	}
 
 	return token.AccessToken, nil
-}
-
-// GetUser returns username of given token
-func GetUser(token string) (*auth.User, error) {
-	getToken()
-	defer releaseToken()
-
-	userResponse, err := httputils.GetBody(userURL, map[string]string{`Authorization`: `token ` + token}, false)
-	if err != nil {
-		return nil, fmt.Errorf(`Error while fetching user informations: %v`, err)
-	}
-
-	user := user{}
-	if err := json.Unmarshal(userResponse, &user); err != nil {
-		return nil, fmt.Errorf(`Error while unmarshalling user informations: %v`, err)
-	}
-
-	return &auth.User{ID: user.ID, Username: user.Login}, nil
 }

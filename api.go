@@ -20,18 +20,27 @@ import (
 	"github.com/ViBiOh/httputils/rate"
 )
 
-const basicPrefix = `Basic `
-const githubPrefix = `GitHub `
+const tokenPrefix = `/token`
 
-var errUnknownAuthType = errors.New(`Unable to read authentication type`)
+// AuthProvider is a provider of Authentification methods
+type AuthProvider interface {
+	Init() error
+	GetName() string
+	GetUser(string) (*auth.User, error)
+	GetAccessToken(requestState string, requestCode string) (string, error)
+}
+
+var providers = []AuthProvider{basic.Auth{}, github.Auth{}}
+
+var errUnknownAuthType = errors.New(`Unknown authentication type`)
+var errUnknownTokenType = errors.New(`Unknown token type`)
 
 // Init configures Auth providers
 func Init() {
-	if err := basic.Init(); err != nil {
-		log.Fatalf(`Error while initializing Basic auth: %v`, err)
-	}
-	if err := github.Init(); err != nil {
-		log.Fatalf(`Error while initializing GitHub auth: %v`, err)
+	for _, provider := range providers {
+		if err := provider.Init(); err != nil {
+			log.Fatalf(`Error while initializing %s auth: %v`, provider.GetName(), err)
+		}
 	}
 }
 
@@ -44,29 +53,40 @@ func userHandler(w http.ResponseWriter, r *http.Request) {
 
 	if authHeader == `` {
 		httputils.Unauthorized(w, auth.ErrEmptyAuthorization)
-	} else if strings.HasPrefix(authHeader, basicPrefix) {
-		if user, err := basic.GetUser(strings.TrimPrefix(authHeader, basicPrefix)); err != nil {
-			httputils.Unauthorized(w, err)
-		} else {
-			httputils.ResponseJSON(w, http.StatusOK, user, httputils.IsPretty(r.URL.RawQuery))
-		}
-	} else if strings.HasPrefix(authHeader, githubPrefix) {
-		if user, err := github.GetUser(strings.TrimPrefix(authHeader, githubPrefix)); err != nil {
-			httputils.Unauthorized(w, err)
-		} else {
-			httputils.ResponseJSON(w, http.StatusOK, user, httputils.IsPretty(r.URL.RawQuery))
-		}
-	} else {
-		httputils.BadRequest(w, errUnknownAuthType)
+		return
 	}
+
+	for _, provider := range providers {
+		if strings.HasPrefix(authHeader, provider.GetName()) {
+			if user, err := provider.GetUser(strings.TrimPrefix(authHeader, provider.GetName()+` `)); err != nil {
+				httputils.Unauthorized(w, err)
+			} else {
+				httputils.ResponseJSON(w, http.StatusOK, user, httputils.IsPretty(r.URL.RawQuery))
+			}
+
+			return
+		}
+	}
+
+	httputils.BadRequest(w, errUnknownAuthType)
 }
 
-func githubTokenHandler(w http.ResponseWriter, r *http.Request) {
-	if token, err := github.GetAccessToken(r.FormValue(`state`), r.FormValue(`code`)); err != nil {
-		httputils.Unauthorized(w, err)
-	} else {
-		w.Write([]byte(token))
+func tokenHandler(w http.ResponseWriter, r *http.Request) {
+	path := strings.TrimPrefix(r.URL.Path, tokenPrefix+`/`)
+
+	for _, provider := range providers {
+		if strings.HasPrefix(path, strings.ToLower(provider.GetName())) {
+			if token, err := provider.GetAccessToken(r.FormValue(`state`), r.FormValue(`code`)); err != nil {
+				httputils.Unauthorized(w, err)
+			} else {
+				w.Write([]byte(token))
+			}
+
+			return
+		}
 	}
+
+	httputils.BadRequest(w, errUnknownTokenType)
 }
 
 func handler() http.Handler {
@@ -88,8 +108,8 @@ func handler() http.Handler {
 
 		if r.URL.Path == `/user` {
 			userHandler(w, r)
-		} else if r.URL.Path == `/token/github` {
-			githubTokenHandler(w, r)
+		} else if strings.HasPrefix(r.URL.Path, tokenPrefix) {
+			tokenHandler(w, r)
 		} else {
 			w.WriteHeader(http.StatusNotFound)
 		}

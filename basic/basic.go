@@ -2,6 +2,7 @@ package basic
 
 import (
 	"encoding/base64"
+	"errors"
 	"flag"
 	"fmt"
 	"strconv"
@@ -16,16 +17,14 @@ type basicUser struct {
 	password []byte
 }
 
+// ErrNoToken error comparison for Basic
+var ErrNoToken = errors.New(`No access token for Basic auth`)
+
 var users map[string]*basicUser
 
 var (
 	authUsers = flag.String(`basicUsers`, ``, `Basic users in the form "id:username:password,id2:username2:password2"`)
 )
-
-// Init auth
-func Init() error {
-	return LoadUsers(*authUsers)
-}
 
 // LoadUsers loads given users into users map
 func LoadUsers(authUsers string) error {
@@ -53,8 +52,21 @@ func LoadUsers(authUsers string) error {
 	return nil
 }
 
-// GetUser returns username of given auth
-func GetUser(header string) (*auth.User, error) {
+// Auth auth with login/pass
+type Auth struct{}
+
+// Init provider
+func (Auth) Init() error {
+	return LoadUsers(*authUsers)
+}
+
+// GetName returns Authorization header prefix
+func (Auth) GetName() string {
+	return `Basic`
+}
+
+// GetUser returns User associated to token
+func (Auth) GetUser(header string) (*auth.User, error) {
 	data, err := base64.StdEncoding.DecodeString(header)
 	if err != nil {
 		return nil, fmt.Errorf(`Error while decoding basic authentication: %v`, err)
@@ -82,4 +94,9 @@ func GetUser(header string) (*auth.User, error) {
 	}
 
 	return user.User, nil
+}
+
+// GetAccessToken returns User associated to token
+func (Auth) GetAccessToken(string, string) (string, error) {
+	return ``, errors.New(`No access token for Basic auth`)
 }
