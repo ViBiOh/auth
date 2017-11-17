@@ -52,7 +52,7 @@ func LoadUsers(authUsers string) error {
 	return nil
 }
 
-// Auth auth with login/pass
+// Auth with login/pass
 type Auth struct{}
 
 // Init provider
@@ -65,7 +65,7 @@ func (Auth) GetName() string {
 	return `Basic`
 }
 
-// GetUser returns User associated to token
+// GetUser returns User associated to header
 func (Auth) GetUser(header string) (*auth.User, error) {
 	data, err := base64.StdEncoding.DecodeString(header)
 	if err != nil {
@@ -96,7 +96,7 @@ func (Auth) GetUser(header string) (*auth.User, error) {
 	return user.User, nil
 }
 
-// GetAccessToken returns User associated to token
+// GetAccessToken exchange state to token
 func (Auth) GetAccessToken(string, string) (string, error) {
 	return ``, errors.New(`No access token for Basic auth`)
 }

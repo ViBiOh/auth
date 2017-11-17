@@ -25,22 +25,10 @@ var (
 	oauthConf    *oauth2.Config
 )
 
-const maxConcurrentAuth = 32
-
-var tokenPool = make(chan int, maxConcurrentAuth)
-
-func getToken() {
-	tokenPool <- 1
-}
-
-func releaseToken() {
-	<-tokenPool
-}
-
-// Auth auth with login/pass
+// Auth auth with GitHub OAuth
 type Auth struct{}
 
-// Init configuration
+// Init provider
 func (Auth) Init() error {
 	if *clientID != `` {
 		oauthConf = &oauth2.Config{
@@ -58,11 +46,8 @@ func (Auth) GetName() string {
 	return `GitHub`
 }
 
-// GetUser returns User associated to token
+// GetUser returns User associated to header
 func (Auth) GetUser(header string) (*auth.User, error) {
-	getToken()
-	defer releaseToken()
-
 	userResponse, err := httputils.GetBody(userURL, map[string]string{`Authorization`: `token ` + header}, false)
 	if err != nil {
 		return nil, fmt.Errorf(`Error while fetching user informations: %v`, err)
@@ -76,11 +61,8 @@ func (Auth) GetUser(header string) (*auth.User, error) {
 	return &auth.User{ID: user.ID, Username: user.Login}, nil
 }
 
-// GetAccessToken returns access token for given state and code
+// GetAccessToken exchange state to token
 func (Auth) GetAccessToken(requestState string, requestCode string) (string, error) {
-	getToken()
-	defer releaseToken()
-
 	if *state != requestState {
 		return ``, fmt.Errorf(`Invalid state provided for oauth`)
 	}

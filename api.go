@@ -33,6 +33,7 @@ type AuthProvider interface {
 var providers = []AuthProvider{basic.Auth{}, github.Auth{}}
 
 var errUnknownAuthType = errors.New(`Unknown authentication type`)
+var errMalformedAuth = errors.New(`Malformed Authorization header`)
 var errUnknownTokenType = errors.New(`Unknown token type`)
 
 // Init configures Auth providers
@@ -56,9 +57,15 @@ func userHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	parts := strings.SplitN(authHeader, ` `, 2)
+	if len(parts) != 2 {
+		httputils.BadRequest(w, errMalformedAuth)
+		return
+	}
+
 	for _, provider := range providers {
-		if strings.HasPrefix(authHeader, provider.GetName()) {
-			if user, err := provider.GetUser(strings.TrimPrefix(authHeader, provider.GetName()+` `)); err != nil {
+		if parts[0] == provider.GetName() {
+			if user, err := provider.GetUser(parts[1]); err != nil {
 				httputils.Unauthorized(w, err)
 			} else {
 				httputils.ResponseJSON(w, http.StatusOK, user, httputils.IsPretty(r.URL.RawQuery))
@@ -72,10 +79,8 @@ func userHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func tokenHandler(w http.ResponseWriter, r *http.Request) {
-	path := strings.TrimPrefix(r.URL.Path, tokenPrefix+`/`)
-
 	for _, provider := range providers {
-		if strings.HasPrefix(path, strings.ToLower(provider.GetName())) {
+		if strings.HasSuffix(r.URL.Path, strings.ToLower(provider.GetName())) {
 			if token, err := provider.GetAccessToken(r.FormValue(`state`), r.FormValue(`code`)); err != nil {
 				httputils.Unauthorized(w, err)
 			} else {

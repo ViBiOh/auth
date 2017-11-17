@@ -9,6 +9,8 @@ services:
     - -corsCredentials
     - -prometheusMetricsHost
     - auth:1080
+    - -rateCount
+    - '60'
     - -githubState
     - ${GITHUB_OAUTH_STATE}
     - -githubClientId
