@@ -88,7 +88,7 @@ func IsAuthenticatedByAuth(url string, users map[string]*User, authContent, remo
 
 	userBytes, err := httputils.GetBody(url+`/user`, headers, true)
 	if err != nil {
-		if string(userBytes) == ErrEmptyAuthorization.Error() {
+		if strings.HasPrefix(string(userBytes), ErrEmptyAuthorization.Error()) {
 			return nil, ErrEmptyAuthorization
 		}
 		return nil, fmt.Errorf(`Error while getting user: %v`, err)
