@@ -19,9 +19,9 @@ type user struct {
 }
 
 var (
-	state        = flag.String(`githubState`, ``, `GitHub OAuth State`)
-	clientID     = flag.String(`githubClientId`, ``, `GitHub OAuth Client ID`)
-	clientSecret = flag.String(`githubClientSecret`, ``, `GitHub OAuth Client Secret`)
+	state        = flag.String(`githubState`, ``, `[GitHub] OAuth State`)
+	clientID     = flag.String(`githubClientId`, ``, `[GitHub] OAuth Client ID`)
+	clientSecret = flag.String(`githubClientSecret`, ``, `[GitHub] OAuth Client Secret`)
 	oauthConf    *oauth2.Config
 )
 
@@ -48,7 +48,7 @@ func (Auth) GetName() string {
 
 // GetUser returns User associated to header
 func (Auth) GetUser(header string) (*auth.User, error) {
-	userResponse, err := httputils.GetBody(userURL, map[string]string{`Authorization`: `token ` + header}, false)
+	userResponse, err := httputils.GetBody(userURL, map[string]string{`Authorization`: `token ` + header})
 	if err != nil {
 		return nil, fmt.Errorf(`Error while fetching user informations: %v`, err)
 	}
