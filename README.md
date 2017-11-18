@@ -63,11 +63,11 @@ Usage of auth:
   -csp string
     	[owasp] Content-Security-Policy (default "default-src 'self'")
   -githubClientId string
-    	GitHub OAuth Client ID
+    	[GitHub] OAuth Client ID
   -githubClientSecret string
-    	GitHub OAuth Client Secret
+    	[GitHub] OAuth Client Secret
   -githubState string
-    	GitHub OAuth State
+    	[GitHub] OAuth State
   -hsts
     	[owasp] Indicate Strict Transport Security (default true)
   -port string

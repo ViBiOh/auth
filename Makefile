@@ -1,6 +1,10 @@
-default: deps dev
+default: go docker
+
+go: deps dev
 
 dev: format lint tst bench build
+
+docker: docker-deps docker-build
 
 deps:
 	go get -u github.com/golang/lint/golint
@@ -38,3 +42,13 @@ build:
 
 start:
 	go run auth.go -tls=false -basicUsers "admin:`go run bcrypt/bcrypt.go admin`" -corsHeaders Content-Type,Authorization
+
+docker-deps:
+	curl -s -o cacert.pem https://curl.haxx.se/ca/cacert.pem
+
+docker-build:
+	docker build -t ${DOCKER_USER}/auth .
+
+docker-push:
+	docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}
+	docker push ${DOCKER_USER}/auth
