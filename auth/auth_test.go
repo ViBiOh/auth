@@ -1,12 +1,27 @@
 package auth
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"testing"
+
+	"github.com/ViBiOh/httputils"
 )
+
+func authTestServer() *httptest.Server {
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get(`Authorization`) == `` {
+			http.Error(w, ErrEmptyAuthorization.Error(), http.StatusUnauthorized)
+		} else if r.Header.Get(`Authorization`) == `unauthorized` {
+			w.WriteHeader(http.StatusUnauthorized)
+		} else {
+			w.Write([]byte(r.Header.Get(`Authorization`)))
+		}
+	}))
+}
 
 func Test_HasProfile(t *testing.T) {
 	var cases = []struct {
@@ -122,35 +137,46 @@ func Test_LoadUsersProfiles(t *testing.T) {
 	}
 }
 
-func Test_IsAuthenticated(t *testing.T) {
-	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get(`Authorization`) == `unauthorized` {
-			w.WriteHeader(http.StatusUnauthorized)
-		} else {
-			w.Write([]byte(r.Header.Get(`Authorization`)))
+func Test_IsForbiddenErr(t *testing.T) {
+	var cases = []struct {
+		intention string
+		err       error
+		want      bool
+	}{
+		{
+			`should identify error with pattern`,
+			fmt.Errorf(`An error occured %s`, forbiddenMessage),
+			true,
+		},
+		{
+			`should identify error without pattern`,
+			errors.New(`Not allowed`),
+			false,
+		},
+	}
+
+	for _, testCase := range cases {
+		if result := IsForbiddenErr(testCase.err); result != testCase.want {
+			t.Errorf("%s\nIsForbiddenErr(%+v) = %+v, want %+v", testCase.intention, testCase.err, result, testCase.want)
 		}
-	}))
+	}
+}
+
+func Test_IsAuthenticated(t *testing.T) {
+	testServer := authTestServer()
 	defer testServer.Close()
 
-	admin := NewUser(0, `admin`, `admin`)
+	admin := NewUser(1, `admin`, `admin`)
 
 	var cases = []struct {
+		intention     string
 		authorization string
 		want          *User
 		wantErr       error
 	}{
 		{
-			`unauthorized`,
-			nil,
-			fmt.Errorf(`Error while getting user: Error status 401`),
-		},
-		{
-			`{"id":8000,"username":"guest"}`,
-			nil,
-			fmt.Errorf(`[guest] Not allowed to use app`),
-		},
-		{
-			`{"id":8000,"username":"admin"}`,
+			`should forward header`,
+			`{"id":1,"username":"admin"}`,
 			admin,
 			nil,
 		},
@@ -176,39 +202,50 @@ func Test_IsAuthenticated(t *testing.T) {
 		}
 
 		if failed {
-			t.Errorf(`IsAuthenticated(%+v) = (%+v, %+v), want (%+v, %+v)`, req, result, err, testCase.want, testCase.wantErr)
+			t.Errorf("%s\nIsAuthenticated(%+v) = (%+v, %+v), want (%+v, %+v)", testCase.intention, testCase.authorization, result, err, testCase.want, testCase.wantErr)
 		}
 	}
 }
+
 func Test_IsAuthenticatedByAuth(t *testing.T) {
-	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get(`Authorization`) == `unauthorized` {
-			w.WriteHeader(http.StatusUnauthorized)
-		} else {
-			w.Write([]byte(r.Header.Get(`Authorization`)))
-		}
-	}))
+	testServer := authTestServer()
 	defer testServer.Close()
 
-	admin := NewUser(0, `admin`, `admin`)
+	admin := NewUser(1, `admin`, `admin`)
 
 	var cases = []struct {
+		intention     string
 		authorization string
 		want          *User
 		wantErr       error
 	}{
 		{
+			`should handle unauthorized user`,
 			`unauthorized`,
 			nil,
-			fmt.Errorf(`Error while getting user: Error status 401`),
+			errors.New(`Error while getting user: Error status 401`),
 		},
 		{
+			`should handle empty header`,
+			``,
+			nil,
+			ErrEmptyAuthorization,
+		},
+		{
+			`should handle forbidden user`,
 			`{"id":8000,"username":"guest"}`,
 			nil,
-			fmt.Errorf(`[guest] Not allowed to use app`),
+			errors.New(`[guest] Not allowed to use app`),
 		},
 		{
-			`{"id":100,"username":"admin"}`,
+			`should handle invalid user format`,
+			`{"id":1,"username":"admin"`,
+			nil,
+			errors.New(`Error while unmarshalling user: unexpected end of JSON input`),
+		},
+		{
+			`should handle valid user`,
+			`{"id":1,"username":"admin"}`,
 			admin,
 			nil,
 		},
@@ -232,7 +269,70 @@ func Test_IsAuthenticatedByAuth(t *testing.T) {
 		}
 
 		if failed {
-			t.Errorf(`IsAuthenticatedByAuth(%+v) = (%+v, %+v), want (%+v, %+v)`, testCase.authorization, result, err, testCase.want, testCase.wantErr)
+			t.Errorf("%s\nIsAuthenticatedByAuth(%+v) = (%+v, %+v), want (%+v, %+v)", testCase.intention, testCase.authorization, result, err, testCase.want, testCase.wantErr)
+		}
+	}
+}
+
+func Test_Handler(t *testing.T) {
+	testServer := authTestServer()
+	defer testServer.Close()
+
+	admin := NewUser(1, `admin`, `admin`)
+	next := func(w http.ResponseWriter, _ *http.Request, user *User) {
+		httputils.ResponseJSON(w, http.StatusOK, user, false)
+	}
+
+	handler := Handler(testServer.URL, map[string]*User{`admin`: admin}, next)
+
+	var cases = []struct {
+		intention     string
+		authorization string
+		want          string
+		wantStatus    int
+	}{
+		{
+			`should handle empty authorization header`,
+			``,
+			`Empty authorization header
+`,
+			http.StatusUnauthorized,
+		},
+		{
+			`should handle unauthorized user`,
+			`unauthorized`,
+			`Error while getting user: Error status 401
+`,
+			http.StatusUnauthorized,
+		},
+		{
+			`should handle forbidden user`,
+			`{"id":8000,"username":"guest"}`,
+			`⛔️
+`,
+			http.StatusForbidden,
+		},
+		{
+			`should call next handler`,
+			`{"id":1,"username":"admin"}`,
+			`{"id":1,"username":"admin"}`,
+			http.StatusOK,
+		},
+	}
+
+	for _, testCase := range cases {
+		req := httptest.NewRequest(http.MethodGet, testServer.URL, nil)
+		req.Header.Set(authorizationHeader, testCase.authorization)
+		writer := httptest.NewRecorder()
+
+		handler.ServeHTTP(writer, req)
+
+		if result := writer.Code; result != testCase.wantStatus {
+			t.Errorf("%v\nHandler(%+v) = %+v, want status %+v", testCase.intention, testCase.authorization, result, testCase.wantStatus)
+		}
+
+		if result, _ := httputils.ReadBody(writer.Result().Body); string(result) != testCase.want {
+			t.Errorf("%s\nHandler(%+v) = %+v, want %+v", testCase.intention, testCase.authorization, string(result), testCase.want)
 		}
 	}
 }
