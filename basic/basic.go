@@ -40,12 +40,12 @@ func LoadUsers(authUsers string) error {
 			return fmt.Errorf(`Invalid format of user for %s`, authUser)
 		}
 
-		id, err := strconv.ParseInt(parts[0], 10, 64)
+		id, err := strconv.ParseUint(parts[0], 10, 32)
 		if err != nil {
 			return fmt.Errorf(`Invalid id format for user %s`, authUser)
 		}
 
-		user := basicUser{&auth.User{ID: id, Username: strings.ToLower(parts[1])}, []byte(parts[2])}
+		user := basicUser{&auth.User{ID: uint(id), Username: strings.ToLower(parts[1])}, []byte(parts[2])}
 		users[strings.ToLower(user.Username)] = &user
 	}
 

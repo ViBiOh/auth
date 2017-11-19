@@ -14,7 +14,7 @@ import (
 const userURL = `https://api.github.com/user`
 
 type user struct {
-	ID    int64
+	ID    uint
 	Login string
 }
 

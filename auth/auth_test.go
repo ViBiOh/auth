@@ -4,31 +4,37 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 )
 
 func Test_HasProfile(t *testing.T) {
 	var cases = []struct {
-		instance User
-		profile  string
-		want     bool
+		intention string
+		instance  User
+		profile   string
+		want      bool
 	}{
 		{
+			`should handle nil profiles`,
 			User{},
 			`admin`,
 			false,
 		},
 		{
+			`should find simple match`,
 			User{profiles: `admin`},
 			`admin`,
 			true,
 		},
 		{
+			`should find match when multiples values`,
 			User{profiles: `admin|multi`},
 			`multi`,
 			true,
 		},
 		{
+			`should find no match`,
 			User{profiles: `multi`},
 			`admin`,
 			false,
@@ -37,25 +43,73 @@ func Test_HasProfile(t *testing.T) {
 
 	for _, testCase := range cases {
 		if result := testCase.instance.HasProfile(testCase.profile); result != testCase.want {
-			t.Errorf(`%+v.HasProfile(%+v) = %+v, want %+v`, testCase.profile, testCase.instance, result, testCase.want)
+			t.Errorf("%s\n%+v.HasProfile(%+v) = %+v, want %+v", testCase.intention, testCase.instance, testCase.profile, result, testCase.want)
+		}
+	}
+}
+
+func Test_Flags(t *testing.T) {
+	var cases = []struct {
+		intention string
+		prefix    string
+		want      int
+	}{
+		{
+			`should return map with two entries`,
+			``,
+			2,
+		},
+	}
+
+	for _, testCase := range cases {
+		if result := Flags(testCase.prefix); len(result) != testCase.want {
+			t.Errorf("%s\nFlags(%+v) = %+v, want %+v", testCase.intention, testCase.prefix, result, testCase.want)
+		}
+	}
+}
+
+func Test_NewUser(t *testing.T) {
+	var cases = []struct {
+		intention string
+		id        uint
+		username  string
+		profiles  string
+		want      *User
+	}{
+		{
+			`should work with given params`,
+			1,
+			`vibioh`,
+			`admin|multi`,
+			&User{1, `vibioh`, `admin|multi`},
+		},
+	}
+
+	for _, testCase := range cases {
+		if result := NewUser(testCase.id, testCase.username, testCase.profiles); !reflect.DeepEqual(result, testCase.want) {
+			t.Errorf("%s\nNewUser(%+v, %+v, %+v) = %+v, want %+v", testCase.intention, testCase.id, testCase.username, testCase.profiles, result, testCase.want)
 		}
 	}
 }
 
 func Test_LoadUsersProfiles(t *testing.T) {
 	var cases = []struct {
+		intention        string
 		usersAndProfiles string
 		want             int
 	}{
 		{
+			`should handle empty string`,
 			``,
 			0,
 		},
 		{
+			`should handle one user`,
 			`admin:admin`,
 			1,
 		},
 		{
+			`should handle multiples users`,
 			`admin:admin|multi,guest:,visitor:visitor`,
 			3,
 		},
@@ -63,7 +117,7 @@ func Test_LoadUsersProfiles(t *testing.T) {
 
 	for _, testCase := range cases {
 		if result := len(LoadUsersProfiles(testCase.usersAndProfiles)); result != testCase.want {
-			t.Errorf(`LoadUsersProfiles(%+v) = %+v, want %+v`, testCase.usersAndProfiles, result, testCase.want)
+			t.Errorf("%s\nLoadUsersProfiles(%+v) = %+v, want %+v", testCase.intention, testCase.usersAndProfiles, result, testCase.want)
 		}
 	}
 }

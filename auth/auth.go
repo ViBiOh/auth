@@ -17,17 +17,17 @@ const forbiddenMessage = `Not allowed to use app`
 const authorizationHeader = `Authorization`
 const forwardedForHeader = `X-Forwarded-For`
 
-// ErrEmptyAuthorization error when authorization header is not found
+// ErrEmptyAuthorization occurs when authorization header is not found
 var ErrEmptyAuthorization = errors.New(`Empty authorization header`)
 
 // User of the app
 type User struct {
-	ID       int64  `json:"id"`
+	ID       uint   `json:"id"`
 	Username string `json:"username"`
 	profiles string
 }
 
-// HasProfile check if given User has given profile
+// HasProfile check if User has given profile
 func (user *User) HasProfile(profile string) bool {
 	return strings.Contains(user.profiles, profile)
 }
@@ -40,8 +40,8 @@ func Flags(prefix string) map[string]*string {
 	}
 }
 
-// NewUser creates new user with username and profiles
-func NewUser(id int64, username string, profiles string) *User {
+// NewUser creates new user with given id, username and profiles
+func NewUser(id uint, username string, profiles string) *User {
 	return &User{ID: id, Username: username, profiles: profiles}
 }
 
