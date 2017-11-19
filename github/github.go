@@ -2,6 +2,7 @@ package github
 
 import (
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 
@@ -11,18 +12,24 @@ import (
 	"golang.org/x/oauth2/github"
 )
 
-const userURL = `https://api.github.com/user`
-
 type githubUser struct {
 	ID    uint
 	Login string
 }
 
+var errInvalidState = errors.New(`Invalid state provided for oauth`)
+var errCodeState = errors.New(`Invalid code provided for oauth`)
+
+var (
+	userURL   = `https://api.github.com/user`
+	endpoint  = github.Endpoint
+	oauthConf *oauth2.Config
+)
+
 var (
 	state        = flag.String(`githubState`, ``, `[GitHub] OAuth State`)
 	clientID     = flag.String(`githubClientId`, ``, `[GitHub] OAuth Client ID`)
 	clientSecret = flag.String(`githubClientSecret`, ``, `[GitHub] OAuth Client Secret`)
-	oauthConf    *oauth2.Config
 )
 
 // Auth auth with GitHub OAuth
@@ -34,7 +41,7 @@ func (Auth) Init() error {
 		oauthConf = &oauth2.Config{
 			ClientID:     *clientID,
 			ClientSecret: *clientSecret,
-			Endpoint:     github.Endpoint,
+			Endpoint:     endpoint,
 		}
 	}
 
@@ -64,12 +71,12 @@ func (Auth) GetUser(header string) (*auth.User, error) {
 // GetAccessToken exchange state to token
 func (Auth) GetAccessToken(requestState string, requestCode string) (string, error) {
 	if *state != requestState {
-		return ``, fmt.Errorf(`Invalid state provided for oauth`)
+		return ``, errInvalidState
 	}
 
 	token, err := oauthConf.Exchange(oauth2.NoContext, requestCode)
 	if err != nil {
-		return ``, fmt.Errorf(`Invalid code provided for oauth`)
+		return ``, errCodeState
 	}
 
 	return token.AccessToken, nil
