@@ -13,7 +13,7 @@ import (
 
 const userURL = `https://api.github.com/user`
 
-type user struct {
+type githubUser struct {
 	ID    uint
 	Login string
 }
@@ -53,7 +53,7 @@ func (Auth) GetUser(header string) (*auth.User, error) {
 		return nil, fmt.Errorf(`Error while fetching user informations: %v`, err)
 	}
 
-	user := user{}
+	user := githubUser{}
 	if err := json.Unmarshal(userResponse, &user); err != nil {
 		return nil, fmt.Errorf(`Error while unmarshalling user informations: %v`, err)
 	}
