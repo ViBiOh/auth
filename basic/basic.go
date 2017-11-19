@@ -98,5 +98,5 @@ func (Auth) GetUser(header string) (*auth.User, error) {
 
 // GetAccessToken exchange state to token
 func (Auth) GetAccessToken(string, string) (string, error) {
-	return ``, errors.New(`No access token for Basic auth`)
+	return ``, ErrNoToken
 }
