@@ -5,6 +5,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"log"
 
 	"github.com/ViBiOh/auth/auth"
 	"github.com/ViBiOh/httputils"
@@ -70,6 +71,7 @@ func (Auth) GetUser(header string) (*auth.User, error) {
 
 // GetAccessToken exchange code for token
 func (Auth) GetAccessToken(requestState string, requestCode string) (string, error) {
+	log.Printf(`requestState=%s, state=%s`, requestState, *state)
 	if *state != requestState {
 		return ``, errInvalidState
 	}
