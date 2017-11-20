@@ -68,7 +68,7 @@ func (Auth) GetUser(header string) (*auth.User, error) {
 	return &auth.User{ID: user.ID, Username: user.Login}, nil
 }
 
-// GetAccessToken exchange state to token
+// GetAccessToken exchange code for token
 func (Auth) GetAccessToken(requestState string, requestCode string) (string, error) {
 	if *state != requestState {
 		return ``, errInvalidState
