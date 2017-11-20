@@ -9,35 +9,55 @@ import (
 	"testing"
 
 	"github.com/ViBiOh/auth/auth"
+	"github.com/ViBiOh/auth/provider"
 	"github.com/ViBiOh/httputils"
 	"golang.org/x/oauth2"
 )
 
-func Test_Init(t *testing.T) {
+func Test_Flags(t *testing.T) {
 	var cases = []struct {
 		intention string
-		clientID  string
+		want      int
+	}{
+		{
+			`should return map with three entries`,
+			3,
+		},
+	}
+
+	for _, testCase := range cases {
+		if result := Flags(``); len(result) != testCase.want {
+			t.Errorf("%s\nFlags() = %+v, want %+v", testCase.intention, result, testCase.want)
+		}
+	}
+}
+
+func Test_Init(t *testing.T) {
+	name := `GitHub`
+
+	var cases = []struct {
+		intention string
+		config    map[string]interface{}
 		want      bool
 	}{
 		{
 			`should not initialize config if not client ID`,
-			``,
+			nil,
 			false,
 		},
 		{
 			`should init oauth config`,
-			`GitHub`,
+			map[string]interface{}{`state`: &name, `clientID`: &name, `clientSecret`: &name},
 			true,
 		},
 	}
 
 	for _, testCase := range cases {
-		oauthConf = nil
-		clientID = &testCase.clientID
-		(Auth{}).Init()
+		authClient := Auth{}
+		authClient.Init(testCase.config)
 
-		if result := oauthConf != nil; result != testCase.want {
-			t.Errorf("%s\nInit() = %+v, want %+v", testCase.intention, oauthConf, testCase.want)
+		if result := authClient.oauthConf != nil; result != testCase.want {
+			t.Errorf("%s\nInit(%+v) = %+v, want %+v", testCase.intention, testCase.config, authClient.oauthConf, testCase.want)
 		}
 	}
 }
@@ -54,7 +74,7 @@ func Test_GetName(t *testing.T) {
 	}
 
 	for _, testCase := range cases {
-		if result := (Auth{}).GetName(); result != testCase.want {
+		if result := (&Auth{}).GetName(); result != testCase.want {
 			t.Errorf("%s\nGetName() = %+v, want %+v", testCase.intention, result, testCase.want)
 		}
 	}
@@ -100,7 +120,7 @@ func Test_GetUser(t *testing.T) {
 
 	for _, testCase := range cases {
 		userURL = testServer.URL
-		result, err := (Auth{}).GetUser(testCase.header)
+		result, err := (&Auth{}).GetUser(testCase.header)
 
 		failed = false
 
@@ -136,11 +156,13 @@ func Test_GetAccessToken(t *testing.T) {
 		TokenURL: testServer.URL,
 	}
 
-	clientIDValue := `clientID`
-	stateValue := `test_state`
-	state = &stateValue
-	clientID = &clientIDValue
-	Auth{}.Init()
+	configValue := `test`
+	authClient := Auth{}
+	authClient.Init(map[string]interface{}{
+		`state`:        &configValue,
+		`clientID`:     &configValue,
+		`clientSecret`: &configValue,
+	})
 
 	var cases = []struct {
 		intention string
@@ -154,18 +176,18 @@ func Test_GetAccessToken(t *testing.T) {
 			`state`,
 			``,
 			``,
-			errInvalidState,
+			provider.ErrInvalidState,
 		},
 		{
 			`should identify invalid code`,
-			`test_state`,
+			`test`,
 			`invalidcode`,
 			``,
-			errCodeState,
+			provider.ErrInvalidCode,
 		},
 		{
 			`should return given token`,
-			`test_state`,
+			`test`,
 			`validcode`,
 			`github_token`,
 			nil,
@@ -175,7 +197,7 @@ func Test_GetAccessToken(t *testing.T) {
 	var failed bool
 
 	for _, testCase := range cases {
-		result, err := (Auth{}).GetAccessToken(testCase.state, testCase.code)
+		result, err := authClient.GetAccessToken(testCase.state, testCase.code)
 
 		failed = false
 

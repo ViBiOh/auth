@@ -47,7 +47,7 @@ It will compile both auth API server and password encrypter.
 ```
 Usage of auth:
   -basicUsers string
-    	Basic users in the form "id:username:password,id2:username2:password2"
+    	[Basic] Users in the form "id:username:password,id2:username2:password2"
   -c string
     	[health] URL to check
   -corsCredentials

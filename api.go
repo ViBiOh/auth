@@ -10,8 +10,9 @@ import (
 	"github.com/NYTimes/gziphandler"
 	"github.com/ViBiOh/alcotest/alcotest"
 	"github.com/ViBiOh/auth/auth"
-	"github.com/ViBiOh/auth/basic"
-	"github.com/ViBiOh/auth/github"
+	"github.com/ViBiOh/auth/provider"
+	"github.com/ViBiOh/auth/provider/basic"
+	"github.com/ViBiOh/auth/provider/github"
 	"github.com/ViBiOh/httputils"
 	"github.com/ViBiOh/httputils/cert"
 	"github.com/ViBiOh/httputils/cors"
@@ -22,27 +23,23 @@ import (
 
 const tokenPrefix = `/token`
 
-// AuthProvider is a provider of Authentification methods
-type AuthProvider interface {
-	Init() error
-	GetName() string
-	GetUser(string) (*auth.User, error)
-	GetAccessToken(requestState string, requestCode string) (string, error)
+var providers []provider.Auth
+var errMalformedAuth = errors.New(`Malformed Authorization header`)
+
+func initProvider(authProvider provider.Auth, config map[string]interface{}) provider.Auth {
+	if err := authProvider.Init(config); err != nil {
+		log.Fatalf(`Error while initializing %s auth: %v`, authProvider.GetName(), err)
+	}
+
+	return authProvider
 }
 
-var providers = []AuthProvider{basic.Auth{}, github.Auth{}}
-
-var errUnknownAuthType = errors.New(`Unknown authentication type`)
-var errMalformedAuth = errors.New(`Malformed Authorization header`)
-var errUnknownTokenType = errors.New(`Unknown token type`)
-
 // Init configures Auth providers
-func Init() {
-	for _, provider := range providers {
-		if err := provider.Init(); err != nil {
-			log.Fatalf(`Error while initializing %s auth: %v`, provider.GetName(), err)
-		}
-	}
+func Init(basicConfig map[string]interface{}, githubConfig map[string]interface{}) {
+	providers = make([]provider.Auth, 2)
+
+	providers[0] = initProvider(&basic.Auth{}, basicConfig)
+	providers[1] = initProvider(&github.Auth{}, githubConfig)
 }
 
 func healthHandler(w http.ResponseWriter, r *http.Request) {
@@ -75,7 +72,7 @@ func userHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	httputils.BadRequest(w, errUnknownAuthType)
+	httputils.BadRequest(w, provider.ErrUnknownAuthType)
 }
 
 func tokenHandler(w http.ResponseWriter, r *http.Request) {
@@ -91,7 +88,7 @@ func tokenHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	httputils.BadRequest(w, errUnknownTokenType)
+	httputils.BadRequest(w, provider.ErrUnknownTokenType)
 }
 
 func handler() http.Handler {
@@ -130,13 +127,17 @@ func main() {
 	rateConfig := rate.Flags(`rate`)
 	owaspConfig := owasp.Flags(``)
 	corsConfig := cors.Flags(`cors`)
+
+	basicConfig := basic.Flags(`basic`)
+	githubConfig := github.Flags(`github`)
+
 	flag.Parse()
 
 	alcotest.DoAndExit(alcotestConfig)
 
 	log.Printf(`Starting server on port %s`, *port)
 
-	Init()
+	Init(basicConfig, githubConfig)
 
 	server := &http.Server{
 		Addr:    `:` + *port,

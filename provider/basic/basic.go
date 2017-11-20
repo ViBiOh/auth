@@ -2,13 +2,14 @@ package basic
 
 import (
 	"encoding/base64"
-	"errors"
 	"flag"
 	"fmt"
 	"strconv"
 	"strings"
 
 	"github.com/ViBiOh/auth/auth"
+	"github.com/ViBiOh/auth/provider"
+	"github.com/ViBiOh/httputils/tools"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -17,56 +18,62 @@ type basicUser struct {
 	password []byte
 }
 
-// ErrNoToken error comparison for Basic
-var ErrNoToken = errors.New(`No access token for Basic auth`)
+// Flags add flags for given prefix
+func Flags(prefix string) map[string]interface{} {
+	return map[string]interface{}{
+		`users`: flag.String(tools.ToCamel(prefix+`Users`), ``, `[Basic] Users in the form "id:username:password,id2:username2:password2"`),
+	}
+}
 
-var users map[string]*basicUser
-
-var (
-	authUsers = flag.String(`basicUsers`, ``, `Basic users in the form "id:username:password,id2:username2:password2"`)
-)
-
-// LoadUsers loads given users into users map
-func LoadUsers(authUsers string) error {
-	users = make(map[string]*basicUser)
+func loadUsers(authUsers string) (map[string]*basicUser, error) {
+	users := make(map[string]*basicUser)
 
 	if authUsers == `` {
-		return nil
+		return nil, nil
 	}
 
 	for _, authUser := range strings.Split(authUsers, `,`) {
 		parts := strings.Split(authUser, `:`)
 		if len(parts) != 3 {
-			return fmt.Errorf(`Invalid format of user for %s`, authUser)
+			return nil, fmt.Errorf(`Invalid format of user for %s`, authUser)
 		}
 
 		id, err := strconv.ParseUint(parts[0], 10, 32)
 		if err != nil {
-			return fmt.Errorf(`Invalid id format for user %s`, authUser)
+			return nil, fmt.Errorf(`Invalid id format for user %s`, authUser)
 		}
 
 		user := basicUser{&auth.User{ID: uint(id), Username: strings.ToLower(parts[1])}, []byte(parts[2])}
 		users[strings.ToLower(user.Username)] = &user
 	}
 
-	return nil
+	return users, nil
 }
 
 // Auth with login/pass
-type Auth struct{}
+type Auth struct {
+	users map[string]*basicUser
+}
 
 // Init provider
-func (Auth) Init() error {
-	return LoadUsers(*authUsers)
+func (o *Auth) Init(config map[string]interface{}) error {
+	users, err := loadUsers(*(config[`users`].(*string)))
+	if err != nil {
+		return err
+	}
+
+	o.users = users
+
+	return nil
 }
 
 // GetName returns Authorization header prefix
-func (Auth) GetName() string {
+func (*Auth) GetName() string {
 	return `Basic`
 }
 
 // GetUser returns User associated to header
-func (Auth) GetUser(header string) (*auth.User, error) {
+func (o *Auth) GetUser(header string) (*auth.User, error) {
 	data, err := base64.StdEncoding.DecodeString(header)
 	if err != nil {
 		return nil, fmt.Errorf(`Error while decoding basic authentication: %v`, err)
@@ -82,7 +89,7 @@ func (Auth) GetUser(header string) (*auth.User, error) {
 	username := strings.ToLower(dataStr[:sepIndex])
 	password := dataStr[sepIndex+1:]
 
-	user, ok := users[username]
+	user, ok := o.users[username]
 	if ok {
 		if err := bcrypt.CompareHashAndPassword(user.password, []byte(password)); err != nil {
 			ok = false
@@ -97,6 +104,6 @@ func (Auth) GetUser(header string) (*auth.User, error) {
 }
 
 // GetAccessToken exchange state to token
-func (Auth) GetAccessToken(string, string) (string, error) {
-	return ``, ErrNoToken
+func (*Auth) GetAccessToken(string, string) (string, error) {
+	return ``, provider.ErrNoToken
 }

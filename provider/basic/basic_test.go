@@ -3,14 +3,34 @@ package basic
 import (
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"reflect"
 	"testing"
 
 	"github.com/ViBiOh/auth/auth"
+	"github.com/ViBiOh/auth/provider"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func Test_LoadUsers(t *testing.T) {
+func Test_Flags(t *testing.T) {
+	var cases = []struct {
+		intention string
+		want      int
+	}{
+		{
+			`should return map with one entries`,
+			1,
+		},
+	}
+
+	for _, testCase := range cases {
+		if result := Flags(``); len(result) != testCase.want {
+			t.Errorf("%s\nFlags() = %+v, want %+v", testCase.intention, result, testCase.want)
+		}
+	}
+}
+
+func Test_loadUsers(t *testing.T) {
 	var cases = []struct {
 		intention string
 		input     string
@@ -46,7 +66,7 @@ func Test_LoadUsers(t *testing.T) {
 	var failed bool
 
 	for _, testCase := range cases {
-		err := LoadUsers(testCase.input)
+		users, err := loadUsers(testCase.input)
 		result := len(users)
 
 		failed = false
@@ -70,21 +90,44 @@ func Test_LoadUsers(t *testing.T) {
 func Test_Init(t *testing.T) {
 	var cases = []struct {
 		intention string
+		users     string
 		want      int
+		wantErr   error
 	}{
 		{
-			`should load users from flag args`,
+			`should handle load error`,
+			`invalid format`,
+			0,
+			fmt.Errorf(`Invalid format of user for invalid format`),
+		},
+		{
+			`should load users from given args`,
+			`1:admin:admin`,
 			1,
+			nil,
 		},
 	}
 
-	for _, testCase := range cases {
-		authUsersInput := `1:admin:admin`
-		authUsers = &authUsersInput
+	var failed bool
 
-		Auth{}.Init()
-		if result := len(users); result != testCase.want {
-			t.Errorf("%s\nInit() = %+v, want %+v", testCase.intention, result, testCase.want)
+	for _, testCase := range cases {
+		authClient := Auth{}
+		err := authClient.Init(map[string]interface{}{`users`: &testCase.users})
+
+		failed = false
+
+		if err == nil && testCase.wantErr != nil {
+			failed = true
+		} else if err != nil && testCase.wantErr == nil {
+			failed = true
+		} else if err != nil && err.Error() != testCase.wantErr.Error() {
+			failed = true
+		} else if len(authClient.users) != testCase.want {
+			failed = true
+		}
+
+		if failed {
+			t.Errorf("%s\nInit(%+v) = (%+v, %+v), want (%+v, %+v)", testCase.intention, testCase.users, authClient.users, err, testCase.want, testCase.wantErr)
 		}
 	}
 }
@@ -101,19 +144,16 @@ func Test_GetName(t *testing.T) {
 	}
 
 	for _, testCase := range cases {
-		if result := (Auth{}).GetName(); result != testCase.want {
+		if result := (&Auth{}).GetName(); result != testCase.want {
 			t.Errorf("%s\nGetName() = %+v, want %+v", testCase.intention, result, testCase.want)
 		}
 	}
 }
 
 func Test_GetUser(t *testing.T) {
-	users = make(map[string]*basicUser)
-
 	password, _ := bcrypt.GenerateFromPassword([]byte(`password`), 12)
-	user := auth.NewUser(0, `admin`, ``)
-	admin := basicUser{user, password}
-	users[`admin`] = &admin
+	authClient := Auth{}
+	authClient.users = map[string]*basicUser{`admin`: &basicUser{auth.NewUser(0, `admin`, ``), password}}
 
 	var cases = []struct {
 		intention string
@@ -156,7 +196,7 @@ func Test_GetUser(t *testing.T) {
 	var failed bool
 
 	for _, testCase := range cases {
-		result, err := Auth{}.GetUser(testCase.auth)
+		result, err := authClient.GetUser(testCase.auth)
 
 		failed = false
 
@@ -183,12 +223,12 @@ func Test_GetAccessToken(t *testing.T) {
 	}{
 		{
 			`should return no implementation`,
-			ErrNoToken,
+			provider.ErrNoToken,
 		},
 	}
 
 	for _, testCase := range cases {
-		if _, result := (Auth{}).GetAccessToken(``, ``); result != testCase.want {
+		if _, result := (&Auth{}).GetAccessToken(``, ``); result != testCase.want {
 			t.Errorf("%s\nGetAccessToken() = %+v, want %+v", testCase.intention, result, testCase.want)
 		}
 	}
