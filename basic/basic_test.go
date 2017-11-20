@@ -182,7 +182,7 @@ func Test_GetAccessToken(t *testing.T) {
 		want      error
 	}{
 		{
-			`should return no implentation`,
+			`should return no implementation`,
 			ErrNoToken,
 		},
 	}
