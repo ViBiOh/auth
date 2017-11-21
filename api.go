@@ -87,6 +87,7 @@ func tokenHandler(w http.ResponseWriter, r *http.Request, oauthRedirect string) 
 				httputils.Unauthorized(w, err)
 			} else if oauthRedirect != `` {
 				http.SetCookie(w, &http.Cookie{
+					Domain:   `vibioh.fr`,
 					Name:     `auth`,
 					MaxAge:   3600 * 24 * 7,
 					Value:    `GitHub ` + token,

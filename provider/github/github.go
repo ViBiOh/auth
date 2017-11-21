@@ -76,6 +76,7 @@ func (o *Auth) Authorize() (string, map[string]string, error) {
 	state, err := uuid.New()
 
 	return o.oauthConf.AuthCodeURL(state), map[string]string{`Set-Cookie`: (&http.Cookie{
+		Domain:   `vibioh.fr`,
 		Name:     `state`,
 		MaxAge:   60,
 		Value:    state,
