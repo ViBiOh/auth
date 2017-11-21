@@ -8,11 +8,16 @@ Authentification for apps in microservices.
 
 # Getting Started
 
-You can use GitHub OAuth Provider or a simple username/password file for authentication.
+You can use GitHub OAuth Provider or a simple username/password file for
+authentication.
 
 ## GitHub OAuth Provider
 
-Create your OAuth app on [GitHub interface](https://github.com/settings/developers). The authorization callback URL must be set for pointing your app. The OAuth State is a random string use for verification by OAuth Provider, [see manual](https://developer.github.com/apps/building-integrations/setting-up-and-registering-oauth-apps/about-authorization-options-for-oauth-apps/).
+Create your OAuth app on
+[GitHub interface](https://github.com/settings/developers). The authorization
+callback URL must be set for pointing your app. The OAuth State is a random
+string use for verification by OAuth Provider,
+[see manual](https://developer.github.com/apps/building-integrations/setting-up-and-registering-oauth-apps/about-authorization-options-for-oauth-apps/).
 
 ## Basic Username/Password
 
@@ -66,8 +71,6 @@ Usage of auth:
     	[GitHub] OAuth Client ID
   -githubClientSecret string
     	[GitHub] OAuth Client Secret
-  -githubState string
-    	[GitHub] OAuth State
   -hsts
     	[owasp] Indicate Strict Transport Security (default true)
   -port string
@@ -80,6 +83,8 @@ Usage of auth:
     	[prometheus] Prefix (default "http")
   -rateCount uint
     	[rate] IP limit (default 5000)
+  -redirect string
+    	Redirect URI on OAuth Success
   -tls
     	Serve TLS content (default true)
   -tlsCert string
@@ -90,4 +95,5 @@ Usage of auth:
     	[tls] PEM Key file
 ```
 
-Password encrypter accepts one argument, the password, and output the bcrypted one.
+Password encrypter accepts one argument, the password, and output the bcrypted
+one.

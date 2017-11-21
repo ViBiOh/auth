@@ -11,8 +11,6 @@ services:
     - auth:1080
     - -rateCount
     - '60'
-    - -githubState
-    - ${GITHUB_OAUTH_STATE}
     - -githubClientId
     - ${GITHUB_OAUTH_CLIENT_ID}
     - -githubClientSecret
