@@ -117,7 +117,7 @@ func authorizeHandler(w http.ResponseWriter, r *http.Request, oauthRedirect stri
 				}
 
 				if url != `` {
-					http.Redirect(w, r, oauthRedirect, http.StatusFound)
+					http.Redirect(w, r, url, http.StatusFound)
 				} else {
 					w.WriteHeader(http.StatusUnauthorized)
 				}
