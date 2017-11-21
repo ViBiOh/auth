@@ -81,13 +81,15 @@ func tokenHandler(w http.ResponseWriter, r *http.Request, oauthRedirect string) 
 			if token, err := provider.GetAccessToken(r.FormValue(`state`), r.FormValue(`code`)); err != nil {
 				httputils.Unauthorized(w, err)
 			} else if oauthRedirect != `` {
-				http.SetCookie(w, &http.Cookie{
+				cookie := http.Cookie{
 					Name:     `auth`,
 					MaxAge:   3600 * 24 * 7,
 					Value:    `GitHub` + token,
 					Secure:   true,
 					HttpOnly: true,
-				})
+				}
+				http.SetCookie(w, &cookie)
+				log.Printf(`Setting cookie: %s`, cookie.String())
 				http.Redirect(w, r, oauthRedirect, http.StatusFound)
 			} else {
 				w.Write([]byte(token))
