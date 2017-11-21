@@ -81,6 +81,8 @@ func IsAuthenticated(url string, users map[string]*User, r *http.Request) (*User
 
 	log.Printf(`Header: %s`, authorization)
 	if authorization == `` {
+		log.Println(`Checking cookie`)
+
 		cookie, err := r.Cookie(`auth`)
 		if err != nil {
 			if err != http.ErrNoCookie {
@@ -92,7 +94,7 @@ func IsAuthenticated(url string, users map[string]*User, r *http.Request) (*User
 		}
 	}
 
-	return IsAuthenticatedByAuth(url, users, r.Header.Get(authorizationHeader), rate.GetIP(r))
+	return IsAuthenticatedByAuth(url, users, authorization, rate.GetIP(r))
 }
 
 // IsAuthenticatedByAuth check if authorization is correct

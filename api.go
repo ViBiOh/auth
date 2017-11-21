@@ -84,7 +84,7 @@ func tokenHandler(w http.ResponseWriter, r *http.Request, oauthRedirect string) 
 				cookie := http.Cookie{
 					Name:     `auth`,
 					MaxAge:   3600 * 24 * 7,
-					Value:    `GitHub` + token,
+					Value:    `GitHub ` + token,
 					Secure:   true,
 					HttpOnly: true,
 				}
