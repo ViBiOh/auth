@@ -75,11 +75,20 @@ func userHandler(w http.ResponseWriter, r *http.Request) {
 	httputils.BadRequest(w, provider.ErrUnknownAuthType)
 }
 
-func tokenHandler(w http.ResponseWriter, r *http.Request) {
+func tokenHandler(w http.ResponseWriter, r *http.Request, oauthRedirect string) {
 	for _, provider := range providers {
 		if strings.HasSuffix(r.URL.Path, strings.ToLower(provider.GetName())) {
 			if token, err := provider.GetAccessToken(r.FormValue(`state`), r.FormValue(`code`)); err != nil {
 				httputils.Unauthorized(w, err)
+			} else if oauthRedirect != `` {
+				http.SetCookie(w, &http.Cookie{
+					Name:     `GitHub`,
+					MaxAge:   3600 * 24 * 7,
+					Value:    token,
+					Secure:   true,
+					HttpOnly: true,
+				})
+				http.Redirect(w, r, oauthRedirect, http.StatusFound)
 			} else {
 				w.Write([]byte(token))
 			}
@@ -91,7 +100,7 @@ func tokenHandler(w http.ResponseWriter, r *http.Request) {
 	httputils.BadRequest(w, provider.ErrUnknownTokenType)
 }
 
-func handler() http.Handler {
+func handler(oauthRedirect string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodOptions {
 			w.Write(nil)
@@ -111,7 +120,7 @@ func handler() http.Handler {
 		if r.URL.Path == `/user` {
 			userHandler(w, r)
 		} else if strings.HasPrefix(r.URL.Path, tokenPrefix) {
-			tokenHandler(w, r)
+			tokenHandler(w, r, oauthRedirect)
 		} else {
 			w.WriteHeader(http.StatusNotFound)
 		}
@@ -121,6 +130,7 @@ func handler() http.Handler {
 func main() {
 	port := flag.String(`port`, `1080`, `Listen port`)
 	tls := flag.Bool(`tls`, true, `Serve TLS content`)
+	oauthRedirect := flag.String(`redirect`, ``, `Redirect URI on OAuth Success`)
 	alcotestConfig := alcotest.Flags(``)
 	certConfig := cert.Flags(`tls`)
 	prometheusConfig := prometheus.Flags(`prometheus`)
@@ -141,7 +151,7 @@ func main() {
 
 	server := &http.Server{
 		Addr:    `:` + *port,
-		Handler: prometheus.Handler(prometheusConfig, rate.Handler(rateConfig, gziphandler.GzipHandler(owasp.Handler(owaspConfig, cors.Handler(corsConfig, handler()))))),
+		Handler: prometheus.Handler(prometheusConfig, rate.Handler(rateConfig, gziphandler.GzipHandler(owasp.Handler(owaspConfig, cors.Handler(corsConfig, handler(*oauthRedirect)))))),
 	}
 
 	var serveError = make(chan error)
