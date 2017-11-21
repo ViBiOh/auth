@@ -76,6 +76,18 @@ func IsForbiddenErr(err error) bool {
 
 // IsAuthenticated check if request has correct headers for authentification
 func IsAuthenticated(url string, users map[string]*User, r *http.Request) (*User, error) {
+	authorization := r.Header.Get(authorizationHeader)
+	if authorization == `` {
+		cookie, err := r.Cookie(`auth`)
+		if err != nil {
+			if err != http.ErrNoCookie {
+				return nil, fmt.Errorf(`Error while reading auth cookie: %v`, err)
+			}
+		} else {
+			authorization = cookie.Value
+		}
+	}
+
 	return IsAuthenticatedByAuth(url, users, r.Header.Get(authorizationHeader), rate.GetIP(r))
 }
 
