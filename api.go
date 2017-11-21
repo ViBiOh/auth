@@ -5,7 +5,6 @@ import (
 	"flag"
 	"log"
 	"net/http"
-	"net/url"
 	"strings"
 
 	"github.com/ViBiOh/auth/cookie"
@@ -91,11 +90,10 @@ func tokenHandler(w http.ResponseWriter, r *http.Request, oauthRedirect string) 
 					Name:     `auth`,
 					MaxAge:   3600 * 24 * 7,
 					Value:    `GitHub ` + token,
-					Path:     `vibioh.fr`,
 					Secure:   true,
 					HttpOnly: true,
 				})
-				http.Redirect(w, r, url.PathEscape(oauthRedirect), http.StatusFound)
+				http.Redirect(w, r, oauthRedirect, http.StatusFound)
 			} else {
 				w.Write([]byte(token))
 			}
@@ -118,7 +116,7 @@ func authorizeHandler(w http.ResponseWriter, r *http.Request, oauthRedirect stri
 				}
 
 				if redirect != `` {
-					http.Redirect(w, r, url.PathEscape(redirect), http.StatusFound)
+					http.Redirect(w, r, redirect, http.StatusFound)
 				} else {
 					w.WriteHeader(http.StatusUnauthorized)
 				}
