@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"net/http"
 
 	"github.com/ViBiOh/auth/auth"
 	"github.com/ViBiOh/auth/provider"
+	"github.com/ViBiOh/auth/uuid"
 	"github.com/ViBiOh/httputils"
 	"github.com/ViBiOh/httputils/tools"
 	"golang.org/x/oauth2"
@@ -26,7 +28,6 @@ var (
 // Flags add flags for given prefix
 func Flags(prefix string) map[string]interface{} {
 	return map[string]interface{}{
-		`state`:        flag.String(tools.ToCamel(prefix+`State`), ``, `[GitHub] OAuth State`),
 		`clientID`:     flag.String(tools.ToCamel(prefix+`ClientId`), ``, `[GitHub] OAuth Client ID`),
 		`clientSecret`: flag.String(tools.ToCamel(prefix+`ClientSecret`), ``, `[GitHub] OAuth Client Secret`),
 	}
@@ -35,13 +36,11 @@ func Flags(prefix string) map[string]interface{} {
 // Auth auth with GitHub OAuth
 type Auth struct {
 	oauthConf *oauth2.Config
-	state     string
 }
 
 // Init provider
 func (o *Auth) Init(config map[string]interface{}) error {
 	if clientID, ok := config[`clientID`]; ok && *(clientID.(*string)) != `` {
-		o.state = *(config[`state`].(*string))
 		o.oauthConf = &oauth2.Config{
 			ClientID:     *(clientID.(*string)),
 			ClientSecret: *(config[`clientSecret`].(*string)),
@@ -72,9 +71,23 @@ func (*Auth) GetUser(header string) (*auth.User, error) {
 	return &auth.User{ID: user.ID, Username: user.Login}, nil
 }
 
+// Authorize redirect user to authorize endpoint
+func (o *Auth) Authorize() (string, map[string]string, error) {
+	state, err := uuid.New()
+
+	return o.oauthConf.AuthCodeURL(state), map[string]string{`Set-Cookie`: (&http.Cookie{
+		Name:     `state`,
+		Path:     `.vibioh.fr`,
+		MaxAge:   60,
+		Value:    state,
+		Secure:   true,
+		HttpOnly: true,
+	}).String()}, err
+}
+
 // GetAccessToken exchange code for token
-func (o *Auth) GetAccessToken(state string, code string) (string, error) {
-	if o.state != state {
+func (o *Auth) GetAccessToken(initialState string, state string, code string) (string, error) {
+	if initialState != state {
 		return ``, provider.ErrInvalidState
 	}
 

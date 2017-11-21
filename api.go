@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/ViBiOh/auth/cookie"
+
 	"github.com/NYTimes/gziphandler"
 	"github.com/ViBiOh/alcotest/alcotest"
 	"github.com/ViBiOh/auth/auth"
@@ -22,6 +24,7 @@ import (
 )
 
 const tokenPrefix = `/token`
+const authorizePrefix = `/authorize`
 
 var providers []provider.Auth
 var errMalformedAuth = errors.New(`Malformed Authorization header`)
@@ -78,21 +81,46 @@ func userHandler(w http.ResponseWriter, r *http.Request) {
 func tokenHandler(w http.ResponseWriter, r *http.Request, oauthRedirect string) {
 	for _, provider := range providers {
 		if strings.HasSuffix(r.URL.Path, strings.ToLower(provider.GetName())) {
-			if token, err := provider.GetAccessToken(r.FormValue(`state`), r.FormValue(`code`)); err != nil {
+			cookieState, _ := cookie.GetCookieValue(r, `state`)
+
+			if token, err := provider.GetAccessToken(cookieState, r.FormValue(`state`), r.FormValue(`code`)); err != nil {
 				httputils.Unauthorized(w, err)
 			} else if oauthRedirect != `` {
-				cookie := http.Cookie{
+				http.SetCookie(w, &http.Cookie{
 					Name:     `auth`,
 					MaxAge:   3600 * 24 * 7,
 					Value:    `GitHub ` + token,
+					Path:     `.vibioh.fr`,
 					Secure:   true,
 					HttpOnly: true,
-				}
-				http.SetCookie(w, &cookie)
-				log.Printf(`Setting cookie: %s`, cookie.String())
+				})
 				http.Redirect(w, r, oauthRedirect, http.StatusFound)
 			} else {
 				w.Write([]byte(token))
+			}
+
+			return
+		}
+	}
+
+	httputils.BadRequest(w, provider.ErrUnknownTokenType)
+}
+
+func authorizeHandler(w http.ResponseWriter, r *http.Request, oauthRedirect string) {
+	for _, provider := range providers {
+		if strings.HasSuffix(r.URL.Path, strings.ToLower(provider.GetName())) {
+			if url, headers, err := provider.Authorize(); err != nil {
+				httputils.InternalServerError(w, err)
+			} else {
+				for key, value := range headers {
+					w.Header().Add(key, value)
+				}
+
+				if url != `` {
+					http.Redirect(w, r, oauthRedirect, http.StatusFound)
+				} else {
+					w.WriteHeader(http.StatusUnauthorized)
+				}
 			}
 
 			return
@@ -123,6 +151,8 @@ func handler(oauthRedirect string) http.Handler {
 			userHandler(w, r)
 		} else if strings.HasPrefix(r.URL.Path, tokenPrefix) {
 			tokenHandler(w, r, oauthRedirect)
+		} else if strings.HasPrefix(r.URL.Path, authorizePrefix) {
+			authorizeHandler(w, r, oauthRedirect)
 		} else {
 			w.WriteHeader(http.StatusNotFound)
 		}

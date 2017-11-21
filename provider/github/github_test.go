@@ -20,8 +20,8 @@ func Test_Flags(t *testing.T) {
 		want      int
 	}{
 		{
-			`should return map with three entries`,
-			3,
+			`should return map with two entries`,
+			2,
 		},
 	}
 
@@ -47,7 +47,7 @@ func Test_Init(t *testing.T) {
 		},
 		{
 			`should init oauth config`,
-			map[string]interface{}{`state`: &name, `clientID`: &name, `clientSecret`: &name},
+			map[string]interface{}{`clientID`: &name, `clientSecret`: &name},
 			true,
 		},
 	}
@@ -159,7 +159,6 @@ func Test_GetAccessToken(t *testing.T) {
 	configValue := `test`
 	authClient := Auth{}
 	authClient.Init(map[string]interface{}{
-		`state`:        &configValue,
 		`clientID`:     &configValue,
 		`clientSecret`: &configValue,
 	})
@@ -197,7 +196,7 @@ func Test_GetAccessToken(t *testing.T) {
 	var failed bool
 
 	for _, testCase := range cases {
-		result, err := authClient.GetAccessToken(testCase.state, testCase.code)
+		result, err := authClient.GetAccessToken(configValue, testCase.state, testCase.code)
 
 		failed = false
 

@@ -5,9 +5,10 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
+
+	"github.com/ViBiOh/auth/cookie"
 
 	"github.com/ViBiOh/httputils"
 	"github.com/ViBiOh/httputils/rate"
@@ -18,8 +19,8 @@ const forbiddenMessage = `Not allowed to use app`
 const authorizationHeader = `Authorization`
 const forwardedForHeader = `X-Forwarded-For`
 
-// ErrEmptyAuthorization occurs when authorization header is not found
-var ErrEmptyAuthorization = errors.New(`Empty authorization header`)
+// ErrEmptyAuthorization occurs when authorization content is not found
+var ErrEmptyAuthorization = errors.New(`Empty authorization content`)
 
 // User of the app
 type User struct {
@@ -79,19 +80,8 @@ func IsForbiddenErr(err error) bool {
 func IsAuthenticated(url string, users map[string]*User, r *http.Request) (*User, error) {
 	authorization := r.Header.Get(authorizationHeader)
 
-	log.Printf(`Header: %s`, authorization)
 	if authorization == `` {
-		log.Println(`Checking cookie`)
-
-		cookie, err := r.Cookie(`auth`)
-		if err != nil {
-			if err != http.ErrNoCookie {
-				return nil, fmt.Errorf(`Error while reading auth cookie: %v`, err)
-			}
-		} else {
-			log.Printf(`Cookie: %s`, cookie.String())
-			authorization = cookie.Value
-		}
+		authorization, _ = cookie.GetCookieValue(r, `auth`)
 	}
 
 	return IsAuthenticatedByAuth(url, users, authorization, rate.GetIP(r))
@@ -132,9 +122,6 @@ func Handler(url string, users map[string]*User, next func(http.ResponseWriter, 
 			if IsForbiddenErr(err) {
 				httputils.Forbidden(w)
 			} else {
-				if err == ErrEmptyAuthorization {
-					w.Header().Add(`WWW-Authenticate`, `Basic`)
-				}
 				httputils.Unauthorized(w, err)
 			}
 		} else {

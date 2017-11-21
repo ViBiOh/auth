@@ -294,7 +294,7 @@ func Test_Handler(t *testing.T) {
 		{
 			`should handle empty authorization header`,
 			``,
-			`Empty authorization header
+			`Empty authorization content
 `,
 			http.StatusUnauthorized,
 		},
