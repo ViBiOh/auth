@@ -26,7 +26,7 @@ const tokenPrefix = `/token`
 const authorizePrefix = `/authorize`
 
 var providers []provider.Auth
-var errMalformedAuth = errors.New(`Malformed Authorization header`)
+var errMalformedAuth = errors.New(`Malformed Authorization content`)
 
 func initProvider(authProvider provider.Auth, config map[string]interface{}) provider.Auth {
 	if err := authProvider.Init(config); err != nil {
@@ -49,14 +49,14 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func userHandler(w http.ResponseWriter, r *http.Request) {
-	authHeader := r.Header.Get(`Authorization`)
+	authContent := r.Header.Get(`Authorization`)
 
-	if authHeader == `` {
+	if authContent == `` {
 		httputils.Unauthorized(w, auth.ErrEmptyAuthorization)
 		return
 	}
 
-	parts := strings.SplitN(authHeader, ` `, 2)
+	parts := strings.SplitN(authContent, ` `, 2)
 	if len(parts) != 2 {
 		httputils.BadRequest(w, errMalformedAuth)
 		return

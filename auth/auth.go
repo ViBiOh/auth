@@ -5,7 +5,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 
@@ -76,17 +75,25 @@ func IsForbiddenErr(err error) bool {
 	return strings.HasSuffix(err.Error(), forbiddenMessage)
 }
 
+func readAuthContent(r *http.Request) (string, error) {
+	authContent := r.Header.Get(authorizationHeader)
+	if authContent != `` {
+		return authContent, nil
+	}
+
+	cookieAuth, err := cookie.GetCookieValue(r, `auth`)
+	if err != nil {
+		return ``, err
+	}
+
+	return cookieAuth, nil
+}
+
 // IsAuthenticated check if request has correct headers for authentification
 func IsAuthenticated(url string, users map[string]*User, r *http.Request) (*User, error) {
-	authContent := r.Header.Get(authorizationHeader)
-	if authContent == `` {
-		cookieAuth, err := cookie.GetCookieValue(r, `auth`)
-		if err != nil {
-			return nil, err
-		}
-
-		authContent = cookieAuth
-		log.Printf("Read cookie: %s", cookieAuth)
+	authContent, err := readAuthContent(r)
+	if err != nil {
+		return nil, err
 	}
 
 	return IsAuthenticatedByAuth(url, users, authContent, rate.GetIP(r))
