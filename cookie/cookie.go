@@ -1,19 +1,15 @@
 package cookie
 
 import (
-	"fmt"
 	"net/http"
 )
 
 // GetCookieValue retrieve cookie value
-func GetCookieValue(r *http.Request, name string) (string, error) {
+func GetCookieValue(r *http.Request, name string) string {
 	rawCookie, err := r.Cookie(name)
-	if err != nil {
-		if err != http.ErrNoCookie {
-			return ``, fmt.Errorf(`Error while getting %s cookie: %v`, name, err)
-		}
-		return ``, nil
+	if err == http.ErrNoCookie {
+		return ``
 	}
 
-	return rawCookie.Value, nil
+	return rawCookie.Value
 }

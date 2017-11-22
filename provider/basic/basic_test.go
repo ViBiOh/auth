@@ -216,6 +216,26 @@ func Test_GetUser(t *testing.T) {
 	}
 }
 
+func Test_Authorize(t *testing.T) {
+	var cases = []struct {
+		intention   string
+		want        string
+		wantHeaders map[string]string
+	}{
+		{
+			`should return Basic Authenticate header`,
+			``,
+			map[string]string{`WWW-Authenticate`: `Basic`},
+		},
+	}
+
+	for _, testCase := range cases {
+		if result, headers, _ := (&Auth{}).Authorize(); result != testCase.want && !reflect.DeepEqual(headers, testCase.wantHeaders) {
+			t.Errorf("%s\nAuthorize() = (%+v, %+v), want (%+v, %+v)", testCase.intention, result, headers, testCase.want, testCase.wantHeaders)
+		}
+	}
+}
+
 func Test_GetAccessToken(t *testing.T) {
 	var cases = []struct {
 		intention string

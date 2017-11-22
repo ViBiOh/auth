@@ -75,28 +75,18 @@ func IsForbiddenErr(err error) bool {
 	return strings.HasSuffix(err.Error(), forbiddenMessage)
 }
 
-func readAuthContent(r *http.Request) (string, error) {
+func readAuthContent(r *http.Request) string {
 	authContent := r.Header.Get(authorizationHeader)
 	if authContent != `` {
-		return authContent, nil
+		return authContent
 	}
 
-	cookieAuth, err := cookie.GetCookieValue(r, `auth`)
-	if err != nil {
-		return ``, err
-	}
-
-	return cookieAuth, nil
+	return cookie.GetCookieValue(r, `auth`)
 }
 
 // IsAuthenticated check if request has correct headers for authentification
 func IsAuthenticated(url string, users map[string]*User, r *http.Request) (*User, error) {
-	authContent, err := readAuthContent(r)
-	if err != nil {
-		return nil, err
-	}
-
-	return IsAuthenticatedByAuth(url, users, authContent, rate.GetIP(r))
+	return IsAuthenticatedByAuth(url, users, readAuthContent(r), rate.GetIP(r))
 }
 
 // IsAuthenticatedByAuth check if authorization is correct
