@@ -5,6 +5,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 
@@ -79,7 +80,13 @@ func IsForbiddenErr(err error) bool {
 func IsAuthenticated(url string, users map[string]*User, r *http.Request) (*User, error) {
 	authContent := r.Header.Get(authorizationHeader)
 	if authContent == `` {
-		authContent, _ = cookie.GetCookieValue(r, `auth`)
+		cookieAuth, err := cookie.GetCookieValue(r, `auth`)
+		if err != nil {
+			return nil, err
+		}
+
+		authContent = cookieAuth
+		log.Printf("Read cookie: %s", cookieAuth)
 	}
 
 	return IsAuthenticatedByAuth(url, users, authContent, rate.GetIP(r))
