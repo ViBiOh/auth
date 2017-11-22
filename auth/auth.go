@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/ViBiOh/auth/cookie"
 	"github.com/ViBiOh/httputils"
 	"github.com/ViBiOh/httputils/rate"
 	"github.com/ViBiOh/httputils/tools"
@@ -76,7 +77,12 @@ func IsForbiddenErr(err error) bool {
 
 // IsAuthenticated check if request has correct headers for authentification
 func IsAuthenticated(url string, users map[string]*User, r *http.Request) (*User, error) {
-	return IsAuthenticatedByAuth(url, users, r.Header.Get(authorizationHeader), rate.GetIP(r))
+	authContent := r.Header.Get(authorizationHeader)
+	if authContent == `` {
+		authContent, _ = cookie.GetCookieValue(r, `auth`)
+	}
+
+	return IsAuthenticatedByAuth(url, users, authContent, rate.GetIP(r))
 }
 
 // IsAuthenticatedByAuth check if authorization is correct

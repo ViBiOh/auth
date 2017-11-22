@@ -55,6 +55,8 @@ Usage of auth:
     	[Basic] Users in the form "id:username:password,id2:username2:password2"
   -c string
     	[health] URL to check
+  -cookieDomain string
+    	Cookie Domain to Store Authentification
   -corsCredentials
     	[cors] Access-Control-Allow-Credentials
   -corsExpose string
