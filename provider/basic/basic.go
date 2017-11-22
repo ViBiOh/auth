@@ -109,6 +109,6 @@ func (*Auth) Authorize() (string, map[string]string, error) {
 }
 
 // GetAccessToken exchange state to token
-func (*Auth) GetAccessToken(string, string, string) (string, error) {
+func (*Auth) GetAccessToken(string, string) (string, error) {
 	return ``, provider.ErrNoToken
 }

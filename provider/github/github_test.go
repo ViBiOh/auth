@@ -196,7 +196,8 @@ func Test_GetAccessToken(t *testing.T) {
 	var failed bool
 
 	for _, testCase := range cases {
-		result, err := authClient.GetAccessToken(configValue, testCase.state, testCase.code)
+		authClient.states.Store(configValue, true)
+		result, err := authClient.GetAccessToken(testCase.state, testCase.code)
 
 		failed = false
 

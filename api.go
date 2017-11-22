@@ -7,8 +7,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/ViBiOh/auth/cookie"
-
 	"github.com/NYTimes/gziphandler"
 	"github.com/ViBiOh/alcotest/alcotest"
 	"github.com/ViBiOh/auth/auth"
@@ -81,9 +79,7 @@ func userHandler(w http.ResponseWriter, r *http.Request) {
 func tokenHandler(w http.ResponseWriter, r *http.Request, oauthRedirect string) {
 	for _, provider := range providers {
 		if strings.HasSuffix(r.URL.Path, strings.ToLower(provider.GetName())) {
-			cookieState, _ := cookie.GetCookieValue(r, `state`)
-
-			if token, err := provider.GetAccessToken(cookieState, r.FormValue(`state`), r.FormValue(`code`)); err != nil {
+			if token, err := provider.GetAccessToken(r.FormValue(`state`), r.FormValue(`code`)); err != nil {
 				httputils.Unauthorized(w, err)
 			} else if oauthRedirect != `` {
 				http.SetCookie(w, &http.Cookie{

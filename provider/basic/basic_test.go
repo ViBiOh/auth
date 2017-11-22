@@ -228,7 +228,7 @@ func Test_GetAccessToken(t *testing.T) {
 	}
 
 	for _, testCase := range cases {
-		if _, result := (&Auth{}).GetAccessToken(``, ``, ``); result != testCase.want {
+		if _, result := (&Auth{}).GetAccessToken(``, ``); result != testCase.want {
 			t.Errorf("%s\nGetAccessToken() = %+v, want %+v", testCase.intention, result, testCase.want)
 		}
 	}

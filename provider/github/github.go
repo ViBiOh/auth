@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"net/http"
+	"sync"
 
 	"github.com/ViBiOh/auth/auth"
 	"github.com/ViBiOh/auth/provider"
@@ -36,6 +36,7 @@ func Flags(prefix string) map[string]interface{} {
 // Auth auth with GitHub OAuth
 type Auth struct {
 	oauthConf *oauth2.Config
+	states    sync.Map
 }
 
 // Init provider
@@ -46,6 +47,7 @@ func (o *Auth) Init(config map[string]interface{}) error {
 			ClientSecret: *(config[`clientSecret`].(*string)),
 			Endpoint:     endpoint,
 		}
+		o.states = sync.Map{}
 	}
 
 	return nil
@@ -74,20 +76,17 @@ func (*Auth) GetUser(header string) (*auth.User, error) {
 // Authorize redirect user to authorize endpoint
 func (o *Auth) Authorize() (string, map[string]string, error) {
 	state, err := uuid.New()
+	o.states.Store(state, true)
 
-	return o.oauthConf.AuthCodeURL(state), map[string]string{`Set-Cookie`: (&http.Cookie{
-		Name:     `state`,
-		Value:    state,
-		Secure:   true,
-		HttpOnly: true,
-	}).String()}, err
+	return o.oauthConf.AuthCodeURL(state), nil, err
 }
 
 // GetAccessToken exchange code for token
-func (o *Auth) GetAccessToken(initialState string, state string, code string) (string, error) {
-	if initialState != state {
+func (o *Auth) GetAccessToken(state string, code string) (string, error) {
+	if _, ok := o.states.Load(state); !ok {
 		return ``, provider.ErrInvalidState
 	}
+	o.states.Delete(state)
 
 	token, err := o.oauthConf.Exchange(oauth2.NoContext, code)
 	if err != nil {

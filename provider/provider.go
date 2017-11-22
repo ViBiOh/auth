@@ -27,5 +27,5 @@ type Auth interface {
 	GetName() string
 	GetUser(string) (*auth.User, error)
 	Authorize() (string, map[string]string, error)
-	GetAccessToken(initialState string, state string, code string) (string, error)
+	GetAccessToken(state string, code string) (string, error)
 }
