@@ -83,8 +83,6 @@ Usage of auth:
     	[prometheus] Prefix (default "http")
   -rateCount uint
     	[rate] IP limit (default 5000)
-  -redirect string
-    	Redirect URI on OAuth Success
   -tls
     	Serve TLS content (default true)
   -tlsCert string
