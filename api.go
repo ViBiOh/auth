@@ -48,33 +48,67 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func userHandler(w http.ResponseWriter, r *http.Request) {
+func getUser(r *http.Request) (*auth.User, error) {
 	authContent := r.Header.Get(`Authorization`)
 
 	if authContent == `` {
-		httputils.Unauthorized(w, auth.ErrEmptyAuthorization)
-		return
+		return nil, auth.ErrEmptyAuthorization
 	}
 
 	parts := strings.SplitN(authContent, ` `, 2)
 	if len(parts) != 2 {
-		httputils.BadRequest(w, errMalformedAuth)
-		return
+		return nil, errMalformedAuth
 	}
 
 	for _, provider := range providers {
 		if parts[0] == provider.GetName() {
-			if user, err := provider.GetUser(parts[1]); err != nil {
-				httputils.Unauthorized(w, err)
+			user, err := provider.GetUser(parts[1])
+			if err != nil {
+				return nil, err
+			}
+			return user, nil
+		}
+	}
+
+	return nil, provider.ErrUnknownAuthType
+}
+
+func userHandler(w http.ResponseWriter, r *http.Request) {
+	user, err := getUser(r)
+	if err != nil {
+		if err == errMalformedAuth || err == provider.ErrUnknownAuthType {
+			httputils.BadRequest(w, err)
+		} else {
+			httputils.Unauthorized(w, err)
+		}
+	}
+
+	httputils.ResponseJSON(w, http.StatusOK, user, httputils.IsPretty(r.URL.RawQuery))
+
+}
+
+func authorizeHandler(w http.ResponseWriter, r *http.Request) {
+	for _, provider := range providers {
+		if strings.HasSuffix(r.URL.Path, strings.ToLower(provider.GetName())) {
+			if redirect, headers, err := provider.Authorize(); err != nil {
+				httputils.InternalServerError(w, err)
 			} else {
-				httputils.ResponseJSON(w, http.StatusOK, user, httputils.IsPretty(r.URL.RawQuery))
+				for key, value := range headers {
+					w.Header().Add(key, value)
+				}
+
+				if redirect != `` {
+					http.Redirect(w, r, redirect, http.StatusFound)
+				} else {
+					w.WriteHeader(http.StatusUnauthorized)
+				}
 			}
 
 			return
 		}
 	}
 
-	httputils.BadRequest(w, provider.ErrUnknownAuthType)
+	httputils.BadRequest(w, provider.ErrUnknownTokenType)
 }
 
 func tokenHandler(w http.ResponseWriter, r *http.Request, cookieDomain string, oauthRedirect string) {
@@ -98,30 +132,6 @@ func tokenHandler(w http.ResponseWriter, r *http.Request, cookieDomain string, o
 					http.Redirect(w, r, oauthRedirect, http.StatusFound)
 				} else {
 					w.Write([]byte(token))
-				}
-			}
-
-			return
-		}
-	}
-
-	httputils.BadRequest(w, provider.ErrUnknownTokenType)
-}
-
-func authorizeHandler(w http.ResponseWriter, r *http.Request) {
-	for _, provider := range providers {
-		if strings.HasSuffix(r.URL.Path, strings.ToLower(provider.GetName())) {
-			if redirect, headers, err := provider.Authorize(); err != nil {
-				httputils.InternalServerError(w, err)
-			} else {
-				for key, value := range headers {
-					w.Header().Add(key, value)
-				}
-
-				if redirect != `` {
-					http.Redirect(w, r, redirect, http.StatusFound)
-				} else {
-					w.WriteHeader(http.StatusUnauthorized)
 				}
 			}
 
