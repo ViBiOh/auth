@@ -51,6 +51,8 @@ It will compile both auth API server and password encrypter.
 
 ```
 Usage of auth:
+  -authRedirect string
+      Redirect URL on Auth Success
   -basicUsers string
       [Basic] Users in the form "id:username:password,id2:username2:password2"
   -c string
@@ -75,8 +77,6 @@ Usage of auth:
       [GitHub] OAuth Client Secret
   -hsts
       [owasp] Indicate Strict Transport Security (default true)
-  -oauthRedirect string
-      Redirect URL on OAuth Success
   -port string
       Listen port (default "1080")
   -prometheusMetricsHost string

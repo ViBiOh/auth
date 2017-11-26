@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/ViBiOh/auth/auth"
-	"github.com/ViBiOh/auth/provider"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -216,7 +215,7 @@ func Test_GetUser(t *testing.T) {
 	}
 }
 
-func Test_Authorize(t *testing.T) {
+func Test_Redirect(t *testing.T) {
 	var cases = []struct {
 		intention   string
 		want        string
@@ -224,32 +223,14 @@ func Test_Authorize(t *testing.T) {
 	}{
 		{
 			`should return Basic Authenticate header`,
-			``,
+			`/login/basic`,
 			map[string]string{`WWW-Authenticate`: `Basic`},
 		},
 	}
 
 	for _, testCase := range cases {
-		if result, headers, _ := (&Auth{}).Authorize(); result != testCase.want && !reflect.DeepEqual(headers, testCase.wantHeaders) {
-			t.Errorf("%s\nAuthorize() = (%+v, %+v), want (%+v, %+v)", testCase.intention, result, headers, testCase.want, testCase.wantHeaders)
-		}
-	}
-}
-
-func Test_GetAccessToken(t *testing.T) {
-	var cases = []struct {
-		intention string
-		want      error
-	}{
-		{
-			`should return no implementation`,
-			provider.ErrNoToken,
-		},
-	}
-
-	for _, testCase := range cases {
-		if _, result := (&Auth{}).GetAccessToken(``, ``); result != testCase.want {
-			t.Errorf("%s\nGetAccessToken() = %+v, want %+v", testCase.intention, result, testCase.want)
+		if result, headers, _ := (&Auth{}).Redirect(); result != testCase.want && !reflect.DeepEqual(headers, testCase.wantHeaders) {
+			t.Errorf("%s\nRedirect() = (%+v, %+v), want (%+v, %+v)", testCase.intention, result, headers, testCase.want, testCase.wantHeaders)
 		}
 	}
 }

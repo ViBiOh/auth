@@ -140,7 +140,7 @@ func Test_GetUser(t *testing.T) {
 	}
 }
 
-func Test_GetAccessToken(t *testing.T) {
+func Test_Login(t *testing.T) {
 	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, _ := httputils.ReadBody(r.Body)
 		if strings.HasPrefix(string(body), `code=invalid`) {
@@ -165,29 +165,25 @@ func Test_GetAccessToken(t *testing.T) {
 
 	var cases = []struct {
 		intention string
-		state     string
-		code      string
+		request   *http.Request
 		want      string
 		wantErr   error
 	}{
 		{
 			`should identify invalid state`,
-			`state`,
-			``,
+			httptest.NewRequest(http.MethodGet, `/?state=state`, nil),
 			``,
 			provider.ErrInvalidState,
 		},
 		{
 			`should identify invalid code`,
-			`test`,
-			`invalidcode`,
+			httptest.NewRequest(http.MethodGet, `/?state=test&code=invalidcode`, nil),
 			``,
 			provider.ErrInvalidCode,
 		},
 		{
 			`should return given token`,
-			`test`,
-			`validcode`,
+			httptest.NewRequest(http.MethodGet, `/?state=test&code=validcode`, nil),
 			`github_token`,
 			nil,
 		},
@@ -197,7 +193,7 @@ func Test_GetAccessToken(t *testing.T) {
 
 	for _, testCase := range cases {
 		authClient.states.Store(configValue, true)
-		result, err := authClient.GetAccessToken(testCase.state, testCase.code)
+		result, err := authClient.Login(testCase.request)
 
 		failed = false
 
@@ -212,7 +208,7 @@ func Test_GetAccessToken(t *testing.T) {
 		}
 
 		if failed {
-			t.Errorf("%s\nGetAccessToken(%+v, %+v) = (%+v, %+v), want (%+v, %+v)", testCase.intention, testCase.state, testCase.code, result, err, testCase.want, testCase.wantErr)
+			t.Errorf("%s\nLogin(%+v) = (%+v, %+v), want (%+v, %+v)", testCase.intention, testCase.request, result, err, testCase.want, testCase.wantErr)
 		}
 	}
 }

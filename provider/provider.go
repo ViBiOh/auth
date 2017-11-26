@@ -2,6 +2,7 @@ package provider
 
 import (
 	"errors"
+	"net/http"
 
 	"github.com/ViBiOh/auth/auth"
 )
@@ -26,6 +27,6 @@ type Auth interface {
 	Init(map[string]interface{}) error
 	GetName() string
 	GetUser(string) (*auth.User, error)
-	Authorize() (string, map[string]string, error)
-	GetAccessToken(state string, code string) (string, error)
+	Redirect() (string, map[string]string, error)
+	Login(*http.Request) (string, error)
 }

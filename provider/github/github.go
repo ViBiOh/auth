@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"net/http"
 	"sync"
 
 	"github.com/ViBiOh/auth/auth"
@@ -73,16 +74,19 @@ func (*Auth) GetUser(header string) (*auth.User, error) {
 	return &auth.User{ID: user.ID, Username: user.Login}, nil
 }
 
-// Authorize redirect user to authorize endpoint
-func (o *Auth) Authorize() (string, map[string]string, error) {
+// Redirect redirects user to GitHub endpoint
+func (o *Auth) Redirect() (string, map[string]string, error) {
 	state, err := uuid.New()
 	o.states.Store(state, true)
 
 	return o.oauthConf.AuthCodeURL(state), nil, err
 }
 
-// GetAccessToken exchange code for token
-func (o *Auth) GetAccessToken(state string, code string) (string, error) {
+// Login exchanges code for token
+func (o *Auth) Login(r *http.Request) (string, error) {
+	state := r.FormValue(`state`)
+	code := r.FormValue(`code`)
+
 	if _, ok := o.states.Load(state); !ok {
 		return ``, provider.ErrInvalidState
 	}

@@ -11,6 +11,7 @@ import (
 	"github.com/NYTimes/gziphandler"
 	"github.com/ViBiOh/alcotest/alcotest"
 	"github.com/ViBiOh/auth/auth"
+	"github.com/ViBiOh/auth/cookie"
 	"github.com/ViBiOh/auth/provider"
 	"github.com/ViBiOh/auth/provider/basic"
 	"github.com/ViBiOh/auth/provider/github"
@@ -22,11 +23,16 @@ import (
 	"github.com/ViBiOh/httputils/rate"
 )
 
-const tokenPrefix = `/token`
-const authorizePrefix = `/authorize`
+const loginPrefix = `/login`
+const redirectPrefix = `/redirect`
 
 var providers []provider.Auth
 var errMalformedAuth = errors.New(`Malformed Authorization content`)
+
+var (
+	authRedirect = flag.String(`authRedirect`, ``, `Redirect URL on Auth Success`)
+	cookieDomain = flag.String(`cookieDomain`, ``, `Cookie Domain to Store Authentification`)
+)
 
 func initProvider(authProvider provider.Auth, config map[string]interface{}) provider.Auth {
 	if err := authProvider.Init(config); err != nil {
@@ -87,21 +93,17 @@ func userHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func authorizeHandler(w http.ResponseWriter, r *http.Request) {
+func redirectHandler(w http.ResponseWriter, r *http.Request) {
 	for _, provider := range providers {
 		if strings.HasSuffix(r.URL.Path, strings.ToLower(provider.GetName())) {
-			if redirect, headers, err := provider.Authorize(); err != nil {
+			if redirect, headers, err := provider.Redirect(); err != nil {
 				httputils.InternalServerError(w, err)
 			} else {
 				for key, value := range headers {
 					w.Header().Add(key, value)
 				}
 
-				if redirect != `` {
-					http.Redirect(w, r, redirect, http.StatusFound)
-				} else {
-					w.WriteHeader(http.StatusUnauthorized)
-				}
+				http.Redirect(w, r, redirect, http.StatusFound)
 			}
 
 			return
@@ -111,28 +113,15 @@ func authorizeHandler(w http.ResponseWriter, r *http.Request) {
 	httputils.BadRequest(w, provider.ErrUnknownTokenType)
 }
 
-func tokenHandler(w http.ResponseWriter, r *http.Request, cookieDomain string, oauthRedirect string) {
+func loginRedirect(w http.ResponseWriter, r *http.Request) {
 	for _, provider := range providers {
 		if strings.HasSuffix(r.URL.Path, strings.ToLower(provider.GetName())) {
-			if token, err := provider.GetAccessToken(r.FormValue(`state`), r.FormValue(`code`)); err != nil {
+			if token, err := provider.Login(r); err != nil {
 				httputils.Unauthorized(w, err)
+			} else if *authRedirect != `` {
+				cookie.SetCookieAndRedirect(w, r, *authRedirect, *cookieDomain, fmt.Sprintf(`%s %s`, provider.GetName(), token))
 			} else {
-				if cookieDomain != `` {
-					http.SetCookie(w, &http.Cookie{
-						Name:     `auth`,
-						Path:     `/`,
-						Value:    fmt.Sprintf(`%s %s`, provider.GetName(), token),
-						Domain:   cookieDomain,
-						Secure:   true,
-						HttpOnly: true,
-					})
-				}
-
-				if oauthRedirect != `` {
-					http.Redirect(w, r, oauthRedirect, http.StatusFound)
-				} else {
-					w.Write([]byte(token))
-				}
+				w.Write([]byte(token))
 			}
 
 			return
@@ -142,7 +131,7 @@ func tokenHandler(w http.ResponseWriter, r *http.Request, cookieDomain string, o
 	httputils.BadRequest(w, provider.ErrUnknownTokenType)
 }
 
-func handler(cookieDomain string, oauthRedirect string) http.Handler {
+func handler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodOptions {
 			w.Write(nil)
@@ -161,10 +150,10 @@ func handler(cookieDomain string, oauthRedirect string) http.Handler {
 
 		if r.URL.Path == `/user` {
 			userHandler(w, r)
-		} else if strings.HasPrefix(r.URL.Path, tokenPrefix) {
-			tokenHandler(w, r, cookieDomain, oauthRedirect)
-		} else if strings.HasPrefix(r.URL.Path, authorizePrefix) {
-			authorizeHandler(w, r)
+		} else if strings.HasPrefix(r.URL.Path, loginPrefix) {
+			loginRedirect(w, r)
+		} else if strings.HasPrefix(r.URL.Path, redirectPrefix) {
+			redirectHandler(w, r)
 		} else {
 			w.WriteHeader(http.StatusNotFound)
 		}
@@ -174,8 +163,6 @@ func handler(cookieDomain string, oauthRedirect string) http.Handler {
 func main() {
 	port := flag.String(`port`, `1080`, `Listen port`)
 	tls := flag.Bool(`tls`, true, `Serve TLS content`)
-	oauthRedirect := flag.String(`oauthRedirect`, ``, `Redirect URL on OAuth Success`)
-	cookieDomain := flag.String(`cookieDomain`, ``, `Cookie Domain to Store Authentification`)
 	alcotestConfig := alcotest.Flags(``)
 	certConfig := cert.Flags(`tls`)
 	prometheusConfig := prometheus.Flags(`prometheus`)
@@ -196,7 +183,7 @@ func main() {
 
 	server := &http.Server{
 		Addr:    `:` + *port,
-		Handler: prometheus.Handler(prometheusConfig, rate.Handler(rateConfig, gziphandler.GzipHandler(owasp.Handler(owaspConfig, cors.Handler(corsConfig, handler(*cookieDomain, *oauthRedirect)))))),
+		Handler: prometheus.Handler(prometheusConfig, rate.Handler(rateConfig, gziphandler.GzipHandler(owasp.Handler(owaspConfig, cors.Handler(corsConfig, handler()))))),
 	}
 
 	var serveError = make(chan error)

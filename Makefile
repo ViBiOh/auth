@@ -7,18 +7,8 @@ dev: format lint tst bench build
 docker: docker-deps docker-build
 
 deps:
+	go get -t ./...
 	go get -u github.com/golang/lint/golint
-	go get -u github.com/NYTimes/gziphandler
-	go get -u github.com/ViBiOh/alcotest/alcotest
-	go get -u github.com/ViBiOh/httputils
-	go get -u github.com/ViBiOh/httputils/cert
-	go get -u github.com/ViBiOh/httputils/cors
-	go get -u github.com/ViBiOh/httputils/owasp
-	go get -u github.com/ViBiOh/httputils/prometheus
-	go get -u github.com/ViBiOh/httputils/rate
-	go get -u golang.org/x/crypto/bcrypt
-	go get -u golang.org/x/oauth2
-	go get -u golang.org/x/oauth2/github
 	go get -u golang.org/x/tools/cmd/goimports
 
 format:

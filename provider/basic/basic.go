@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"flag"
 	"fmt"
+	"net/http"
 	"strconv"
 	"strings"
 
@@ -103,12 +104,12 @@ func (o *Auth) GetUser(header string) (*auth.User, error) {
 	return user.User, nil
 }
 
-// Authorize redirect user to authorize endpoint
-func (*Auth) Authorize() (string, map[string]string, error) {
-	return ``, map[string]string{`WWW-Authenticate`: `Basic`}, nil
+// Redirect redirects user to login endpoint
+func (*Auth) Redirect() (string, map[string]string, error) {
+	return `/login/basic`, map[string]string{`WWW-Authenticate`: `Basic`}, nil
 }
 
-// GetAccessToken exchange state to token
-func (*Auth) GetAccessToken(string, string) (string, error) {
+// Login exchange state to token
+func (*Auth) Login(*http.Request) (string, error) {
 	return ``, provider.ErrNoToken
 }
