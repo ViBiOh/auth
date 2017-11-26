@@ -87,10 +87,11 @@ func userHandler(w http.ResponseWriter, r *http.Request) {
 		} else {
 			httputils.Unauthorized(w, err)
 		}
+
+		return
 	}
 
 	httputils.ResponseJSON(w, http.StatusOK, user, httputils.IsPretty(r.URL.RawQuery))
-
 }
 
 func redirectHandler(w http.ResponseWriter, r *http.Request) {
