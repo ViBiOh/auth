@@ -97,13 +97,9 @@ func userHandler(w http.ResponseWriter, r *http.Request) {
 func redirectHandler(w http.ResponseWriter, r *http.Request) {
 	for _, provider := range providers {
 		if strings.HasSuffix(r.URL.Path, strings.ToLower(provider.GetName())) {
-			if redirect, headers, err := provider.Redirect(); err != nil {
+			if redirect, err := provider.Redirect(); err != nil {
 				httputils.InternalServerError(w, err)
 			} else {
-				for key, value := range headers {
-					w.Header().Add(key, value)
-				}
-
 				http.Redirect(w, r, redirect, http.StatusFound)
 			}
 
@@ -111,13 +107,14 @@ func redirectHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	httputils.BadRequest(w, provider.ErrUnknownTokenType)
+	httputils.BadRequest(w, provider.ErrUnknownAuthType)
 }
 
-func loginRedirect(w http.ResponseWriter, r *http.Request) {
+func loginHandler(w http.ResponseWriter, r *http.Request) {
 	for _, provider := range providers {
 		if strings.HasSuffix(r.URL.Path, strings.ToLower(provider.GetName())) {
 			if token, err := provider.Login(r); err != nil {
+				w.Header().Add(`WWW-Authenticate`, provider.GetName())
 				httputils.Unauthorized(w, err)
 			} else if *authRedirect != `` {
 				cookie.SetCookieAndRedirect(w, r, *authRedirect, *cookieDomain, fmt.Sprintf(`%s %s`, provider.GetName(), token))
@@ -129,7 +126,7 @@ func loginRedirect(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	httputils.BadRequest(w, provider.ErrUnknownTokenType)
+	httputils.BadRequest(w, provider.ErrUnknownAuthType)
 }
 
 func handler() http.Handler {
@@ -152,7 +149,7 @@ func handler() http.Handler {
 		if r.URL.Path == `/user` {
 			userHandler(w, r)
 		} else if strings.HasPrefix(r.URL.Path, loginPrefix) {
-			loginRedirect(w, r)
+			loginHandler(w, r)
 		} else if strings.HasPrefix(r.URL.Path, redirectPrefix) {
 			redirectHandler(w, r)
 		} else {

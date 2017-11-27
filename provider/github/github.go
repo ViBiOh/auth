@@ -75,11 +75,11 @@ func (*Auth) GetUser(header string) (*auth.User, error) {
 }
 
 // Redirect redirects user to GitHub endpoint
-func (o *Auth) Redirect() (string, map[string]string, error) {
+func (o *Auth) Redirect() (string, error) {
 	state, err := uuid.New()
 	o.states.Store(state, true)
 
-	return o.oauthConf.AuthCodeURL(state), nil, err
+	return o.oauthConf.AuthCodeURL(state), err
 }
 
 // Login exchanges code for token

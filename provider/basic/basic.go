@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/ViBiOh/auth/auth"
-	"github.com/ViBiOh/auth/provider"
 	"github.com/ViBiOh/httputils/tools"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -105,11 +104,16 @@ func (o *Auth) GetUser(header string) (*auth.User, error) {
 }
 
 // Redirect redirects user to login endpoint
-func (*Auth) Redirect() (string, map[string]string, error) {
-	return `/login/basic`, map[string]string{`WWW-Authenticate`: `Basic`}, nil
+func (*Auth) Redirect() (string, error) {
+	return `/login/basic`, nil
 }
 
 // Login exchange state to token
-func (*Auth) Login(*http.Request) (string, error) {
-	return ``, provider.ErrNoToken
+func (o *Auth) Login(r *http.Request) (string, error) {
+	authContent := r.Header.Get(`Authorization`)
+
+	if _, err := o.GetUser(strings.TrimPrefix(authContent, o.GetName()+` `)); err != nil {
+		return ``, err
+	}
+	return authContent, nil
 }

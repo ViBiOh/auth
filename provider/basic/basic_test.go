@@ -217,20 +217,18 @@ func Test_GetUser(t *testing.T) {
 
 func Test_Redirect(t *testing.T) {
 	var cases = []struct {
-		intention   string
-		want        string
-		wantHeaders map[string]string
+		intention string
+		want      string
 	}{
 		{
-			`should return Basic Authenticate header`,
+			`should return Basic redirection`,
 			`/login/basic`,
-			map[string]string{`WWW-Authenticate`: `Basic`},
 		},
 	}
 
 	for _, testCase := range cases {
-		if result, headers, _ := (&Auth{}).Redirect(); result != testCase.want && !reflect.DeepEqual(headers, testCase.wantHeaders) {
-			t.Errorf("%s\nRedirect() = (%+v, %+v), want (%+v, %+v)", testCase.intention, result, headers, testCase.want, testCase.wantHeaders)
+		if result, _ := (&Auth{}).Redirect(); result != testCase.want {
+			t.Errorf("%s\nRedirect() = (%+v), want (%+v)", testCase.intention, result, testCase.want)
 		}
 	}
 }
