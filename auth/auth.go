@@ -117,17 +117,26 @@ func IsAuthenticatedByAuth(url string, users map[string]*User, authContent, remo
 	return nil, fmt.Errorf(`[%s] %s`, user.Username, forbiddenMessage)
 }
 
-// Handler wrap next authenticated handler
-func Handler(url string, users map[string]*User, next func(http.ResponseWriter, *http.Request, *User)) http.Handler {
+func defaultFailFunc(w http.ResponseWriter, r *http.Request, err error) {
+	if IsForbiddenErr(err) {
+		httputils.Forbidden(w)
+	} else {
+		httputils.Unauthorized(w, err)
+	}
+}
+
+// HandlerWithFail wrap next authenticated handler and fail handler
+func HandlerWithFail(url string, users map[string]*User, next func(http.ResponseWriter, *http.Request, *User), fail func(http.ResponseWriter, *http.Request, error)) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if user, err := IsAuthenticated(url, users, r); err != nil {
-			if IsForbiddenErr(err) {
-				httputils.Forbidden(w)
-			} else {
-				httputils.Unauthorized(w, err)
-			}
+			fail(w, r, err)
 		} else {
 			next(w, r, user)
 		}
 	})
+}
+
+// Handler wrap next authenticated handler
+func Handler(url string, users map[string]*User, next func(http.ResponseWriter, *http.Request, *User)) http.Handler {
+	return HandlerWithFail(url, users, next, defaultFailFunc)
 }
