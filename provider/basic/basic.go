@@ -110,9 +110,9 @@ func (*Auth) Redirect() (string, error) {
 
 // Login exchange state to token
 func (o *Auth) Login(r *http.Request) (string, error) {
-	authContent := r.Header.Get(`Authorization`)
+	authContent := strings.TrimPrefix(r.Header.Get(`Authorization`), o.GetName()+` `)
 
-	if _, err := o.GetUser(strings.TrimPrefix(authContent, o.GetName()+` `)); err != nil {
+	if _, err := o.GetUser(authContent); err != nil {
 		return ``, err
 	}
 	return authContent, nil
