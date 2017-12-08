@@ -94,6 +94,10 @@ func userHandler(w http.ResponseWriter, r *http.Request) {
 	httputils.ResponseJSON(w, http.StatusOK, user, httputils.IsPretty(r.URL.RawQuery))
 }
 
+func logoutHandler(w http.ResponseWriter, r *http.Request) {
+	cookie.ClearCookieAndRedirect(w, r, *authRedirect, *cookieDomain)
+}
+
 func redirectHandler(w http.ResponseWriter, r *http.Request) {
 	for _, provider := range providers {
 		if strings.HasSuffix(r.URL.Path, strings.ToLower(provider.GetName())) {
@@ -148,6 +152,8 @@ func handler() http.Handler {
 
 		if r.URL.Path == `/user` {
 			userHandler(w, r)
+		} else if r.URL.Path == `/logout` {
+			logoutHandler(w, r)
 		} else if strings.HasPrefix(r.URL.Path, loginPrefix) {
 			loginHandler(w, r)
 		} else if strings.HasPrefix(r.URL.Path, redirectPrefix) {
