@@ -2,22 +2,22 @@
 
 
 [[projects]]
-  branch = "master"
   name = "github.com/NYTimes/gziphandler"
   packages = ["."]
   revision = "d6f46609c7629af3a02d791a4666866eed3cbd3e"
+  version = "v1.0.0"
 
 [[projects]]
   branch = "master"
   name = "github.com/ViBiOh/alcotest"
   packages = ["alcotest","httpclient"]
-  revision = "7b22ec944b1338c0a0b3f68c7a07f5ba8648ae58"
+  revision = "99e8506061b4d48c6583ae2af977bc48f1a7058a"
 
 [[projects]]
   branch = "master"
   name = "github.com/ViBiOh/httputils"
-  packages = [".","cert","cors","owasp","prometheus","rate","tools"]
-  revision = "a6b4cec81a40786b75c67462cb80e4587cfb5aa1"
+  packages = [".","cert","cors","owasp","prometheus","rate","tools","uuid"]
+  revision = "3d4642d2ffcbd9493144e8e702724dbf1fd7c35b"
 
 [[projects]]
   branch = "master"
@@ -41,7 +41,7 @@
   branch = "master"
   name = "github.com/prometheus/client_golang"
   packages = ["prometheus","prometheus/promhttp"]
-  revision = "1cdba8fdde81f444626530cce66e138d2f68ae1c"
+  revision = "661e31bf844dfca9aeba15f27ea8aa0d485ad212"
 
 [[projects]]
   branch = "master"
@@ -65,19 +65,19 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["bcrypt","blowfish"]
-  revision = "b080dc9a8c480b08e698fb1219160d598526310f"
+  revision = "94eea52f7b742c7cbe0b03b22f0c4c8631ece122"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
   packages = ["context","context/ctxhttp"]
-  revision = "80e70a3f7765a5661a179fd8399b4db2c72646fb"
+  revision = "d866cfc389cec985d6fda2859936a575a55a3ab6"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/oauth2"
   packages = [".","github","internal"]
-  revision = "f95fa95eaa936d9d87489b15d1d18b97c1ba9c28"
+  revision = "00dc70155e4c968f5afa403a799926838a4aa28f"
 
 [[projects]]
   name = "google.golang.org/appengine"
@@ -88,6 +88,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "c159fd7c118555f1afe30f3f8a43cf9caa2233eee5b144a31ca79f3297b4484a"
+  inputs-digest = "42a8411795a693a99aae9e3a055f499b2dedfc68744bf07a5ef283de7b7112ca"
   solver-name = "gps-cdcl"
   solver-version = 1

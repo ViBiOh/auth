@@ -9,9 +9,9 @@ import (
 
 	"github.com/ViBiOh/auth/auth"
 	"github.com/ViBiOh/auth/provider"
-	"github.com/ViBiOh/auth/uuid"
 	"github.com/ViBiOh/httputils"
 	"github.com/ViBiOh/httputils/tools"
+	"github.com/ViBiOh/httputils/uuid"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
 )
