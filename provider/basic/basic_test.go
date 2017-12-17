@@ -97,7 +97,7 @@ func Test_Init(t *testing.T) {
 			`should handle load error`,
 			`invalid format`,
 			0,
-			fmt.Errorf(`Invalid format of user for invalid format`),
+			fmt.Errorf(`Error while loading users: Invalid format of user for invalid format`),
 		},
 		{
 			`should load users from given args`,

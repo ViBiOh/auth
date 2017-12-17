@@ -56,13 +56,11 @@ type Auth struct {
 }
 
 // Init provider
-func (o *Auth) Init(config map[string]interface{}) error {
-	users, err := loadUsers(*(config[`users`].(*string)))
+func (o *Auth) Init(config map[string]interface{}) (err error) {
+	o.users, err = loadUsers(*(config[`users`].(*string)))
 	if err != nil {
-		return err
+		return fmt.Errorf(`Error while loading users: %v`, err)
 	}
-
-	o.users = users
 
 	return nil
 }

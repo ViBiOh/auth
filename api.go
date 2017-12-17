@@ -26,6 +26,11 @@ import (
 const loginPrefix = `/login`
 const redirectPrefix = `/redirect`
 
+var availableProviders = []provider.Auth{
+	&basic.Auth{},
+	&github.Auth{},
+}
+
 var providers []provider.Auth
 var errMalformedAuth = errors.New(`Malformed Authorization content`)
 
@@ -34,20 +39,24 @@ var (
 	cookieDomain = flag.String(`cookieDomain`, ``, `Cookie Domain to Store Authentification`)
 )
 
-func initProvider(authProvider provider.Auth, config map[string]interface{}) provider.Auth {
+func initProvider(authProvider provider.Auth, config map[string]interface{}) bool {
 	if err := authProvider.Init(config); err != nil {
-		log.Fatalf(`Error while initializing %s auth: %v`, authProvider.GetName(), err)
+		log.Printf(`Error while initializing %s provider: %v`, authProvider.GetName(), err)
+		return false
 	}
 
-	return authProvider
+	return true
 }
 
 // Init configures Auth providers
-func Init(basicConfig map[string]interface{}, githubConfig map[string]interface{}) {
-	providers = make([]provider.Auth, 2)
+func Init(providerConfig map[string]map[string]interface{}) {
+	providers = make([]provider.Auth, 0, len(availableProviders))
 
-	providers[0] = initProvider(&basic.Auth{}, basicConfig)
-	providers[1] = initProvider(&github.Auth{}, githubConfig)
+	for _, provider := range availableProviders {
+		if initProvider(&basic.Auth{}, providerConfig[provider.GetName()]) {
+			providers = append(providers, provider)
+		}
+	}
 }
 
 func healthHandler(w http.ResponseWriter, r *http.Request) {
@@ -183,7 +192,10 @@ func main() {
 
 	log.Printf(`Starting server on port %s`, *port)
 
-	Init(basicConfig, githubConfig)
+	Init(map[string]map[string]interface{}{
+		`Basic`:  basicConfig,
+		`GitHub`: githubConfig,
+	})
 
 	server := &http.Server{
 		Addr:    `:` + *port,
