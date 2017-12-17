@@ -53,7 +53,7 @@ func Init(providerConfig map[string]map[string]interface{}) {
 	providers = make([]provider.Auth, 0, len(availableProviders))
 
 	for _, provider := range availableProviders {
-		if initProvider(&basic.Auth{}, providerConfig[provider.GetName()]) {
+		if initProvider(provider, providerConfig[provider.GetName()]) {
 			providers = append(providers, provider)
 		}
 	}
