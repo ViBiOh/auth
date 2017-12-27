@@ -132,6 +132,36 @@ func Test_IsForbiddenErr(t *testing.T) {
 	}
 }
 
+func Test_LoadUsersProfiles(t *testing.T) {
+	var cases = []struct {
+		intention        string
+		usersAndProfiles string
+		want             int
+	}{
+		{
+			`should handle empty string`,
+			``,
+			0,
+		},
+		{
+			`should handle one user`,
+			`admin:admin`,
+			1,
+		},
+		{
+			`should handle multiples users`,
+			`admin:admin|multi,guest:,visitor:visitor`,
+			3,
+		},
+	}
+
+	for _, testCase := range cases {
+		if result := len(LoadUsersProfiles(testCase.usersAndProfiles)); result != testCase.want {
+			t.Errorf("%s\nLoadUsersProfiles(%+v) = %+v, want %+v", testCase.intention, testCase.usersAndProfiles, result, testCase.want)
+		}
+	}
+}
+
 func Test_IsAuthenticated(t *testing.T) {
 	testServer := authTestServer()
 	defer testServer.Close()

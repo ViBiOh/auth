@@ -46,7 +46,8 @@ func Flags(prefix string) map[string]*string {
 	}
 }
 
-func loadUsersProfiles(usersAndProfiles string) map[string]*User {
+// LoadUsersProfiles parses users ands profiles from given string
+func LoadUsersProfiles(usersAndProfiles string) map[string]*User {
 	if usersAndProfiles == `` {
 		return nil
 	}
@@ -127,7 +128,7 @@ func IsAuthenticatedByAuth(url string, users map[string]*User, authContent, remo
 // HandlerWithFail wrap next authenticated handler and fail handler
 func HandlerWithFail(config map[string]*string, next func(http.ResponseWriter, *http.Request, *User), fail func(http.ResponseWriter, *http.Request, error)) http.Handler {
 	url := *config[`url`]
-	users := loadUsersProfiles(*config[`users`])
+	users := LoadUsersProfiles(*config[`users`])
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if user, err := IsAuthenticated(url, users, r); err != nil {
