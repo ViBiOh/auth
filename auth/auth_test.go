@@ -107,36 +107,6 @@ func Test_NewUser(t *testing.T) {
 	}
 }
 
-func Test_LoadUsersProfiles(t *testing.T) {
-	var cases = []struct {
-		intention        string
-		usersAndProfiles string
-		want             int
-	}{
-		{
-			`should handle empty string`,
-			``,
-			0,
-		},
-		{
-			`should handle one user`,
-			`admin:admin`,
-			1,
-		},
-		{
-			`should handle multiples users`,
-			`admin:admin|multi,guest:,visitor:visitor`,
-			3,
-		},
-	}
-
-	for _, testCase := range cases {
-		if result := len(LoadUsersProfiles(testCase.usersAndProfiles)); result != testCase.want {
-			t.Errorf("%s\nLoadUsersProfiles(%+v) = %+v, want %+v", testCase.intention, testCase.usersAndProfiles, result, testCase.want)
-		}
-	}
-}
-
 func Test_IsForbiddenErr(t *testing.T) {
 	var cases = []struct {
 		intention string
@@ -278,12 +248,12 @@ func Test_Handler(t *testing.T) {
 	testServer := authTestServer()
 	defer testServer.Close()
 
-	admin := NewUser(1, `admin`, `admin`)
 	next := func(w http.ResponseWriter, _ *http.Request, user *User) {
 		httputils.ResponseJSON(w, http.StatusOK, user, false)
 	}
 
-	handler := Handler(testServer.URL, map[string]*User{`admin`: admin}, next)
+	adminStr := `admin:admin`
+	handler := Handler(map[string]*string{`url`: &testServer.URL, `users`: &adminStr}, next)
 
 	var cases = []struct {
 		intention     string

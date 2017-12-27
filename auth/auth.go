@@ -28,6 +28,11 @@ type User struct {
 	profiles string
 }
 
+// NewUser creates new user with given id, username and profiles
+func NewUser(id uint, username string, profiles string) *User {
+	return &User{ID: id, Username: username, profiles: profiles}
+}
+
 // HasProfile check if User has given profile
 func (user *User) HasProfile(profile string) bool {
 	return strings.Contains(user.profiles, profile)
@@ -41,13 +46,7 @@ func Flags(prefix string) map[string]*string {
 	}
 }
 
-// NewUser creates new user with given id, username and profiles
-func NewUser(id uint, username string, profiles string) *User {
-	return &User{ID: id, Username: username, profiles: profiles}
-}
-
-// LoadUsersProfiles parses users ands profiles from given string
-func LoadUsersProfiles(usersAndProfiles string) map[string]*User {
+func loadUsersProfiles(usersAndProfiles string) map[string]*User {
 	if usersAndProfiles == `` {
 		return nil
 	}
@@ -70,11 +69,6 @@ func LoadUsersProfiles(usersAndProfiles string) map[string]*User {
 	return users
 }
 
-// IsForbiddenErr check if given error refer to a forbidden
-func IsForbiddenErr(err error) bool {
-	return strings.HasSuffix(err.Error(), forbiddenMessage)
-}
-
 func readAuthContent(r *http.Request) string {
 	authContent := r.Header.Get(authorizationHeader)
 	if authContent != `` {
@@ -82,6 +76,19 @@ func readAuthContent(r *http.Request) string {
 	}
 
 	return cookie.GetCookieValue(r, `auth`)
+}
+
+func defaultFailFunc(w http.ResponseWriter, r *http.Request, err error) {
+	if IsForbiddenErr(err) {
+		httputils.Forbidden(w)
+	} else {
+		httputils.Unauthorized(w, err)
+	}
+}
+
+// IsForbiddenErr check if given error refer to a forbidden
+func IsForbiddenErr(err error) bool {
+	return strings.HasSuffix(err.Error(), forbiddenMessage)
 }
 
 // IsAuthenticated check if request has correct headers for authentification
@@ -117,16 +124,11 @@ func IsAuthenticatedByAuth(url string, users map[string]*User, authContent, remo
 	return nil, fmt.Errorf(`[%s] %s`, user.Username, forbiddenMessage)
 }
 
-func defaultFailFunc(w http.ResponseWriter, r *http.Request, err error) {
-	if IsForbiddenErr(err) {
-		httputils.Forbidden(w)
-	} else {
-		httputils.Unauthorized(w, err)
-	}
-}
-
 // HandlerWithFail wrap next authenticated handler and fail handler
-func HandlerWithFail(url string, users map[string]*User, next func(http.ResponseWriter, *http.Request, *User), fail func(http.ResponseWriter, *http.Request, error)) http.Handler {
+func HandlerWithFail(config map[string]*string, next func(http.ResponseWriter, *http.Request, *User), fail func(http.ResponseWriter, *http.Request, error)) http.Handler {
+	url := *config[`url`]
+	users := loadUsersProfiles(*config[`users`])
+
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if user, err := IsAuthenticated(url, users, r); err != nil {
 			fail(w, r, err)
@@ -137,6 +139,6 @@ func HandlerWithFail(url string, users map[string]*User, next func(http.Response
 }
 
 // Handler wrap next authenticated handler
-func Handler(url string, users map[string]*User, next func(http.ResponseWriter, *http.Request, *User)) http.Handler {
-	return HandlerWithFail(url, users, next, defaultFailFunc)
+func Handler(config map[string]*string, next func(http.ResponseWriter, *http.Request, *User)) http.Handler {
+	return HandlerWithFail(config, next, defaultFailFunc)
 }

@@ -86,7 +86,7 @@ func Test_loadUsers(t *testing.T) {
 	}
 }
 
-func Test_Init(t *testing.T) {
+func Test_NewAuth(t *testing.T) {
 	var cases = []struct {
 		intention string
 		users     string
@@ -110,8 +110,11 @@ func Test_Init(t *testing.T) {
 	var failed bool
 
 	for _, testCase := range cases {
-		authClient := Auth{}
-		err := authClient.Init(map[string]interface{}{`users`: &testCase.users})
+		auth, err := NewAuth(map[string]interface{}{`users`: &testCase.users})
+		var authClient *Auth
+		if auth != nil {
+			authClient = auth.(*Auth)
+		}
 
 		failed = false
 
@@ -121,12 +124,12 @@ func Test_Init(t *testing.T) {
 			failed = true
 		} else if err != nil && err.Error() != testCase.wantErr.Error() {
 			failed = true
-		} else if len(authClient.users) != testCase.want {
+		} else if authClient != nil && len(authClient.users) != testCase.want {
 			failed = true
 		}
 
 		if failed {
-			t.Errorf("%s\nInit(%+v) = (%+v, %+v), want (%+v, %+v)", testCase.intention, testCase.users, authClient.users, err, testCase.want, testCase.wantErr)
+			t.Errorf("%s\nNewAuth(%+v) = (%+v, %+v), want (%+v, %+v)", testCase.intention, testCase.users, authClient.users, err, testCase.want, testCase.wantErr)
 		}
 	}
 }

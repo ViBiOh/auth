@@ -41,20 +41,20 @@ type Auth struct {
 	states    sync.Map
 }
 
-// Init provider
-func (o *Auth) Init(config map[string]interface{}) error {
+// NewAuth creates new auth
+func NewAuth(config map[string]interface{}) (provider.Auth, error) {
 	if clientID, ok := config[`clientID`]; ok && *(clientID.(*string)) != `` {
-		o.oauthConf = &oauth2.Config{
-			ClientID:     *(clientID.(*string)),
-			ClientSecret: *(config[`clientSecret`].(*string)),
-			Endpoint:     endpoint,
-		}
-		o.states = sync.Map{}
-
-		return nil
+		return &Auth{
+			oauthConf: &oauth2.Config{
+				ClientID:     *(clientID.(*string)),
+				ClientSecret: *(config[`clientSecret`].(*string)),
+				Endpoint:     endpoint,
+			},
+			states: sync.Map{},
+		}, nil
 	}
 
-	return errors.New(`No github oauth configured`)
+	return nil, errors.New(`No github oauth configured`)
 }
 
 // GetName returns Authorization header prefix

@@ -26,12 +26,11 @@ import (
 const loginPrefix = `/login`
 const redirectPrefix = `/redirect`
 
-var availableProviders = []provider.Auth{
-	&basic.Auth{},
-	&github.Auth{},
+type providerConfig struct {
+	factory func(map[string]interface{}) (provider.Auth, error)
+	config  map[string]interface{}
 }
 
-var providers []provider.Auth
 var errMalformedAuth = errors.New(`Malformed Authorization content`)
 
 var (
@@ -39,31 +38,33 @@ var (
 	cookieDomain = flag.String(`cookieDomain`, ``, `Cookie Domain to Store Authentification`)
 )
 
-func initProvider(authProvider provider.Auth, config map[string]interface{}) bool {
-	if err := authProvider.Init(config); err != nil {
-		log.Printf(`Error while initializing %s provider: %v`, authProvider.GetName(), err)
-		return false
+func initProvider(name string, factory func(map[string]interface{}) (provider.Auth, error), config map[string]interface{}) provider.Auth {
+	auth, err := factory(config)
+	if err != nil {
+		log.Printf(`Error while initializing %s provider: %v`, name, err)
+		return nil
 	}
 
-	return true
+	return auth
 }
 
-// Init configures Auth providers
-func Init(providerConfig map[string]map[string]interface{}) {
-	providers = make([]provider.Auth, 0, len(availableProviders))
+func initProviders(providersConfig map[string]providerConfig) []provider.Auth {
+	providers := make([]provider.Auth, 0, len(providersConfig))
 
-	for _, provider := range availableProviders {
-		if initProvider(provider, providerConfig[provider.GetName()]) {
-			providers = append(providers, provider)
+	for name, conf := range providersConfig {
+		if auth := initProvider(name, conf.factory, conf.config); auth != nil {
+			providers = append(providers, auth)
 		}
 	}
+
+	return providers
 }
 
 func healthHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func getUser(r *http.Request) (*auth.User, error) {
+func getUser(r *http.Request, providers []provider.Auth) (*auth.User, error) {
 	authContent := r.Header.Get(`Authorization`)
 
 	if authContent == `` {
@@ -88,8 +89,8 @@ func getUser(r *http.Request) (*auth.User, error) {
 	return nil, provider.ErrUnknownAuthType
 }
 
-func userHandler(w http.ResponseWriter, r *http.Request) {
-	user, err := getUser(r)
+func userHandler(w http.ResponseWriter, r *http.Request, providers []provider.Auth) {
+	user, err := getUser(r, providers)
 	if err != nil {
 		if err == errMalformedAuth || err == provider.ErrUnknownAuthType {
 			httputils.BadRequest(w, err)
@@ -107,7 +108,7 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 	cookie.ClearCookieAndRedirect(w, r, *authRedirect, *cookieDomain)
 }
 
-func redirectHandler(w http.ResponseWriter, r *http.Request) {
+func redirectHandler(w http.ResponseWriter, r *http.Request, providers []provider.Auth) {
 	for _, provider := range providers {
 		if strings.HasSuffix(r.URL.Path, strings.ToLower(provider.GetName())) {
 			if redirect, err := provider.Redirect(); err != nil {
@@ -123,7 +124,7 @@ func redirectHandler(w http.ResponseWriter, r *http.Request) {
 	httputils.BadRequest(w, provider.ErrUnknownAuthType)
 }
 
-func loginHandler(w http.ResponseWriter, r *http.Request) {
+func loginHandler(w http.ResponseWriter, r *http.Request, providers []provider.Auth) {
 	for _, provider := range providers {
 		if strings.HasSuffix(r.URL.Path, strings.ToLower(provider.GetName())) {
 			if token, err := provider.Login(r); err != nil {
@@ -142,7 +143,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	httputils.BadRequest(w, provider.ErrUnknownAuthType)
 }
 
-func handler() http.Handler {
+func handler(providers []provider.Auth) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodOptions {
 			w.Write(nil)
@@ -160,13 +161,13 @@ func handler() http.Handler {
 		}
 
 		if r.URL.Path == `/user` {
-			userHandler(w, r)
+			userHandler(w, r, providers)
 		} else if r.URL.Path == `/logout` {
 			logoutHandler(w, r)
 		} else if strings.HasPrefix(r.URL.Path, loginPrefix) {
-			loginHandler(w, r)
+			loginHandler(w, r, providers)
 		} else if strings.HasPrefix(r.URL.Path, redirectPrefix) {
-			redirectHandler(w, r)
+			redirectHandler(w, r, providers)
 		} else {
 			w.WriteHeader(http.StatusNotFound)
 		}
@@ -192,14 +193,14 @@ func main() {
 
 	log.Printf(`Starting server on port %s`, *port)
 
-	Init(map[string]map[string]interface{}{
-		`Basic`:  basicConfig,
-		`GitHub`: githubConfig,
+	providers := initProviders(map[string]providerConfig{
+		`Basic`:  {config: basicConfig, factory: basic.NewAuth},
+		`GitHub`: {config: githubConfig, factory: github.NewAuth},
 	})
 
 	server := &http.Server{
 		Addr:    `:` + *port,
-		Handler: prometheus.Handler(prometheusConfig, rate.Handler(rateConfig, gziphandler.GzipHandler(owasp.Handler(owaspConfig, cors.Handler(corsConfig, handler()))))),
+		Handler: prometheus.Handler(prometheusConfig, rate.Handler(rateConfig, gziphandler.GzipHandler(owasp.Handler(owaspConfig, cors.Handler(corsConfig, handler(providers)))))),
 	}
 
 	var serveError = make(chan error)

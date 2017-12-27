@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/ViBiOh/auth/auth"
+	"github.com/ViBiOh/auth/provider"
 	"github.com/ViBiOh/httputils/tools"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -55,14 +56,14 @@ type Auth struct {
 	users map[string]*basicUser
 }
 
-// Init provider
-func (o *Auth) Init(config map[string]interface{}) (err error) {
-	o.users, err = loadUsers(*(config[`users`].(*string)))
+// NewAuth creates new auth
+func NewAuth(config map[string]interface{}) (provider.Auth, error) {
+	users, err := loadUsers(*(config[`users`].(*string)))
 	if err != nil {
-		return fmt.Errorf(`Error while loading users: %v`, err)
+		return nil, fmt.Errorf(`Error while loading users: %v`, err)
 	}
 
-	return nil
+	return &Auth{users}, nil
 }
 
 // GetName returns Authorization header prefix

@@ -32,7 +32,7 @@ func Test_Flags(t *testing.T) {
 	}
 }
 
-func Test_Init(t *testing.T) {
+func Test_NewAuth(t *testing.T) {
 	name := `GitHub`
 
 	var cases = []struct {
@@ -53,11 +53,18 @@ func Test_Init(t *testing.T) {
 	}
 
 	for _, testCase := range cases {
-		authClient := Auth{}
-		authClient.Init(testCase.config)
+		auth, _ := NewAuth(testCase.config)
+		var authClient *Auth
+		if auth != nil {
+			authClient = auth.(*Auth)
+		}
 
-		if result := authClient.oauthConf != nil; result != testCase.want {
-			t.Errorf("%s\nInit(%+v) = %+v, want %+v", testCase.intention, testCase.config, authClient.oauthConf, testCase.want)
+		if authClient != nil {
+			if result := authClient.oauthConf != nil; result != testCase.want {
+				t.Errorf("%s\nNewAuth(%+v) = %+v, want %+v", testCase.intention, testCase.config, authClient.oauthConf, testCase.want)
+			}
+		} else if testCase.want {
+			t.Errorf("%s\nNewAuth(%+v) = %+v, want %+v", testCase.intention, testCase.config, nil, testCase.want)
 		}
 	}
 }
@@ -157,11 +164,11 @@ func Test_Login(t *testing.T) {
 	}
 
 	configValue := `test`
-	authClient := Auth{}
-	authClient.Init(map[string]interface{}{
+	auth, _ := NewAuth(map[string]interface{}{
 		`clientID`:     &configValue,
 		`clientSecret`: &configValue,
 	})
+	authClient := auth.(*Auth)
 
 	var cases = []struct {
 		intention string

@@ -18,7 +18,6 @@ var ErrInvalidCode = errors.New(`Invalid code provided for oauth`)
 
 // Auth is a provider of Authentification methods
 type Auth interface {
-	Init(map[string]interface{}) error
 	GetName() string
 	GetUser(string) (*auth.User, error)
 	Redirect() (string, error)
