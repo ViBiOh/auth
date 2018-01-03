@@ -10,14 +10,26 @@
 [[projects]]
   branch = "master"
   name = "github.com/ViBiOh/alcotest"
-  packages = ["alcotest","httpclient"]
-  revision = "99e8506061b4d48c6583ae2af977bc48f1a7058a"
+  packages = [
+    "alcotest",
+    "httpclient"
+  ]
+  revision = "7187d04caa2bfd06fc89ca52092c0ff924ff39bc"
 
 [[projects]]
   branch = "master"
   name = "github.com/ViBiOh/httputils"
-  packages = [".","cert","cors","owasp","prometheus","rate","tools","uuid"]
-  revision = "3d4642d2ffcbd9493144e8e702724dbf1fd7c35b"
+  packages = [
+    ".",
+    "cert",
+    "cors",
+    "owasp",
+    "prometheus",
+    "rate",
+    "tools",
+    "uuid"
+  ]
+  revision = "aa8c1e9b12ee01cb4ae60f9fc34f22b7b8e9478b"
 
 [[projects]]
   branch = "master"
@@ -40,8 +52,11 @@
 [[projects]]
   branch = "master"
   name = "github.com/prometheus/client_golang"
-  packages = ["prometheus","prometheus/promhttp"]
-  revision = "661e31bf844dfca9aeba15f27ea8aa0d485ad212"
+  packages = [
+    "prometheus",
+    "prometheus/promhttp"
+  ]
+  revision = "180b8fdc22b4ea7750bcb43c925277654a1ea2f3"
 
 [[projects]]
   branch = "master"
@@ -52,36 +67,87 @@
 [[projects]]
   branch = "master"
   name = "github.com/prometheus/common"
-  packages = ["expfmt","internal/bitbucket.org/ww/goautoneg","model"]
+  packages = [
+    "expfmt",
+    "internal/bitbucket.org/ww/goautoneg",
+    "model"
+  ]
   revision = "2e54d0b93cba2fd133edc32211dcc32c06ef72ca"
 
 [[projects]]
   branch = "master"
   name = "github.com/prometheus/procfs"
-  packages = [".","xfs"]
-  revision = "a6e9df898b1336106c743392c48ee0b71f5c4efa"
+  packages = [
+    ".",
+    "xfs"
+  ]
+  revision = "b15cd069a83443be3154b719d0cc9fe8117f09fb"
+
+[[projects]]
+  name = "github.com/tdewolff/minify"
+  packages = [
+    ".",
+    "css",
+    "html",
+    "js",
+    "xml"
+  ]
+  revision = "222672169d634c440a73abc47685074e1a9daa60"
+  version = "v2.3.4"
+
+[[projects]]
+  name = "github.com/tdewolff/parse"
+  packages = [
+    ".",
+    "buffer",
+    "css",
+    "html",
+    "js",
+    "strconv",
+    "xml"
+  ]
+  revision = "639f6272aec6b52094db77b9ec488214b0b4b1a1"
+  version = "v2.3.2"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/crypto"
-  packages = ["bcrypt","blowfish"]
-  revision = "94eea52f7b742c7cbe0b03b22f0c4c8631ece122"
+  packages = [
+    "bcrypt",
+    "blowfish"
+  ]
+  revision = "0fcca4842a8d74bfddc2c96a073bd2a4d2a7a2e8"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
-  packages = ["context","context/ctxhttp"]
+  packages = [
+    "context",
+    "context/ctxhttp"
+  ]
   revision = "d866cfc389cec985d6fda2859936a575a55a3ab6"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/oauth2"
-  packages = [".","github","internal"]
-  revision = "00dc70155e4c968f5afa403a799926838a4aa28f"
+  packages = [
+    ".",
+    "github",
+    "internal"
+  ]
+  revision = "876b1c6ee618a9f8fa31ded3b27708d44b3153af"
 
 [[projects]]
   name = "google.golang.org/appengine"
-  packages = ["internal","internal/base","internal/datastore","internal/log","internal/remote_api","internal/urlfetch","urlfetch"]
+  packages = [
+    "internal",
+    "internal/base",
+    "internal/datastore",
+    "internal/log",
+    "internal/remote_api",
+    "internal/urlfetch",
+    "urlfetch"
+  ]
   revision = "150dc57a1b433e64154302bdc40b6bb8aefa313a"
   version = "v1.0.0"
 
