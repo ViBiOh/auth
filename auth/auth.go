@@ -103,7 +103,7 @@ func IsAuthenticatedByAuth(url string, users map[string]*User, authContent, remo
 		forwardedForHeader:  remoteIP,
 	}
 
-	userBytes, err := httputils.GetBody(url+`/user`, headers)
+	userBytes, err := httputils.GetRequest(url+`/user`, headers)
 	if err != nil {
 		if strings.HasPrefix(string(userBytes), ErrEmptyAuthorization.Error()) {
 			return nil, ErrEmptyAuthorization

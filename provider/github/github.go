@@ -64,7 +64,7 @@ func (*Auth) GetName() string {
 
 // GetUser returns User associated to header
 func (*Auth) GetUser(header string) (*auth.User, error) {
-	userResponse, err := httputils.GetBody(userURL, map[string]string{`Authorization`: `token ` + header})
+	userResponse, err := httputils.GetRequest(userURL, map[string]string{`Authorization`: `token ` + header})
 	if err != nil {
 		return nil, fmt.Errorf(`Error while fetching user informations: %v`, err)
 	}

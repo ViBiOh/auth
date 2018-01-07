@@ -2,10 +2,10 @@
 
 
 [[projects]]
+  branch = "master"
   name = "github.com/NYTimes/gziphandler"
   packages = ["."]
-  revision = "d6f46609c7629af3a02d791a4666866eed3cbd3e"
-  version = "v1.0.0"
+  revision = "47ca22a0aeea4c9ceddfb935d818d636d934c312"
 
 [[projects]]
   branch = "master"
@@ -29,7 +29,7 @@
     "tools",
     "uuid"
   ]
-  revision = "aa8c1e9b12ee01cb4ae60f9fc34f22b7b8e9478b"
+  revision = "78483570250a7c785bf6b15b68238e5cc3527dff"
 
 [[projects]]
   branch = "master"
@@ -125,7 +125,7 @@
     "context",
     "context/ctxhttp"
   ]
-  revision = "d866cfc389cec985d6fda2859936a575a55a3ab6"
+  revision = "42fe2e1c20de1054d3d30f82cc9fb5b41e2e3767"
 
 [[projects]]
   branch = "master"
@@ -135,7 +135,7 @@
     "github",
     "internal"
   ]
-  revision = "876b1c6ee618a9f8fa31ded3b27708d44b3153af"
+  revision = "30785a2c434e431ef7c507b54617d6a951d5f2b4"
 
 [[projects]]
   name = "google.golang.org/appengine"
