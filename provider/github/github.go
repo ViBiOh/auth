@@ -2,7 +2,6 @@ package github
 
 import (
 	"encoding/json"
-	"errors"
 	"flag"
 	"fmt"
 	"net/http"
@@ -54,7 +53,7 @@ func NewAuth(config map[string]interface{}) (provider.Auth, error) {
 		}, nil
 	}
 
-	return nil, errors.New(`No github oauth configured`)
+	return nil, nil
 }
 
 // GetName returns Authorization header prefix

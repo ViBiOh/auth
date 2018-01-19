@@ -23,17 +23,17 @@ string use for verification by OAuth Provider,
 
 Write user's credentials with the following format :
 
-```
+```bash
 [id]:[username]:[bcrypt password],[id2]:[username2]:[bcrypt password2]
 ```
 
-You can generate bcrypted password using `bin/bcrypt_pass`.
+You can generate bcrypted password using `go run bcrypt/bcrypt.go`.
 
 ## Roles
 
 You can configure roles by setting `-users` from CLI with the following format:
 
-```
+```bash
 [user1]:[role1]|[role2],[user2]:[role1]
 ```
 
@@ -43,13 +43,13 @@ Username must match with the authentification providers (see previous sections).
 
 In order to build the server stuff, run the following command.
 
-```
+```bash
 make
 ```
 
 It will compile both auth API server and password encrypter.
 
-```
+```bash
 Usage of auth:
   -authRedirect string
       Redirect URL on Auth Success
@@ -97,5 +97,4 @@ Usage of auth:
       [tls] PEM Key file
 ```
 
-Password encrypter accepts one argument, the password, and output the bcrypted
-one.
+Password encrypter accepts one argument, the password, and output the bcrypted one.

@@ -59,11 +59,16 @@ type Auth struct {
 // NewAuth creates new auth
 func NewAuth(config map[string]interface{}) (provider.Auth, error) {
 	users, err := loadUsers(*(config[`users`].(*string)))
+
 	if err != nil {
 		return nil, fmt.Errorf(`Error while loading users: %v`, err)
 	}
 
-	return &Auth{users}, nil
+	if users != nil {
+		return &Auth{users}, nil
+	}
+
+	return nil, nil
 }
 
 // GetName returns Authorization header prefix
