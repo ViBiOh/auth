@@ -27,7 +27,7 @@ Write user's credentials with the following format :
 [id]:[username]:[bcrypt password],[id2]:[username2]:[bcrypt password2]
 ```
 
-You can generate bcrypted password using `go run bcrypt/bcrypt.go`.
+You can generate bcrypted password using `go run bcrypt/bcrypt.go "password"`.
 
 ## Roles
 
@@ -52,49 +52,51 @@ It will compile both auth API server and password encrypter.
 ```bash
 Usage of auth:
   -authRedirect string
-      Redirect URL on Auth Success
+        [auth] Redirect URL on Auth Success
   -basicUsers string
-      [Basic] Users in the form "id:username:password,id2:username2:password2"
+        [Basic] Users in the form "id:username:password,id2:username2:password2"
   -c string
-      [health] URL to check
+        [health] URL to check
   -cookieDomain string
-      Cookie Domain to Store Authentification
+        [auth] Cookie Domain to Store Authentification
   -corsCredentials
-      [cors] Access-Control-Allow-Credentials
+        [cors] Access-Control-Allow-Credentials
   -corsExpose string
-      [cors] Access-Control-Expose-Headers
+        [cors] Access-Control-Expose-Headers
   -corsHeaders string
-      [cors] Access-Control-Allow-Headers (default "Content-Type")
+        [cors] Access-Control-Allow-Headers (default "Content-Type")
   -corsMethods string
-      [cors] Access-Control-Allow-Methods (default "GET")
+        [cors] Access-Control-Allow-Methods (default "GET")
   -corsOrigin string
-      [cors] Access-Control-Allow-Origin (default "*")
+        [cors] Access-Control-Allow-Origin (default "*")
   -csp string
-      [owasp] Content-Security-Policy (default "default-src 'self'")
+        [owasp] Content-Security-Policy (default "default-src 'self'")
+  -frameOptions string
+        [owasp] X-Frame-Options (default "deny")
   -githubClientId string
-      [GitHub] OAuth Client ID
+        [GitHub] OAuth Client ID
   -githubClientSecret string
-      [GitHub] OAuth Client Secret
+        [GitHub] OAuth Client Secret
   -hsts
-      [owasp] Indicate Strict Transport Security (default true)
+        [owasp] Indicate Strict Transport Security (default true)
   -port string
-      Listen port (default "1080")
+        Listen port (default "1080")
   -prometheusMetricsHost string
-      [prometheus] Allowed hostname to call metrics endpoint (default "localhost")
+        [prometheus] Allowed hostname to call metrics endpoint (default "localhost")
   -prometheusMetricsPath string
-      [prometheus] Metrics endpoint path (default "/metrics")
+        [prometheus] Metrics endpoint path (default "/metrics")
   -prometheusPrefix string
-      [prometheus] Prefix (default "http")
+        [prometheus] Prefix (default "http")
   -rateCount uint
-      [rate] IP limit (default 5000)
+        [rate] IP limit (default 5000)
   -tls
-      Serve TLS content (default true)
+        Serve TLS content (default true)
   -tlsCert string
-      [tls] PEM Certificate file
+        [tls] PEM Certificate file
   -tlsHosts string
-      [tls] Self-signed certificate hosts, comma separated (default "localhost")
+        [tls] Self-signed certificate hosts, comma separated (default "localhost")
   -tlsKey string
-      [tls] PEM Key file
+        [tls] PEM Key file
 ```
 
 Password encrypter accepts one argument, the password, and output the bcrypted one.
