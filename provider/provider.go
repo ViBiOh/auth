@@ -7,14 +7,16 @@ import (
 	"github.com/ViBiOh/auth/auth"
 )
 
-// ErrUnknownAuthType occurs when authentification type in unknown
-var ErrUnknownAuthType = errors.New(`Unknown authentication type`)
+var (
+	// ErrUnknownAuthType occurs when authentification type in unknown
+	ErrUnknownAuthType = errors.New(`Unknown authentication type`)
 
-// ErrInvalidState occurs when state is not consistent
-var ErrInvalidState = errors.New(`Invalid state provided for oauth`)
+	// ErrInvalidState occurs when state is not consistent
+	ErrInvalidState = errors.New(`Invalid state provided for oauth`)
 
-// ErrInvalidCode occurs when code is no valid
-var ErrInvalidCode = errors.New(`Invalid code provided for oauth`)
+	// ErrInvalidCode occurs when code is no valid
+	ErrInvalidCode = errors.New(`Invalid code provided for oauth`)
+)
 
 // Auth is a provider of Authentification methods
 type Auth interface {
