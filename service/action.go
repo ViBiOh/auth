@@ -1,7 +1,6 @@
 package service
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -12,8 +11,6 @@ import (
 	"github.com/ViBiOh/httputils"
 )
 
-var errMalformedAuth = errors.New(`Malformed Authorization content`)
-
 // GetUser get user from given auth content
 func (a *App) GetUser(authContent string) (*provider.User, error) {
 	if authContent == `` {
@@ -22,7 +19,7 @@ func (a *App) GetUser(authContent string) (*provider.User, error) {
 
 	parts := strings.SplitN(authContent, ` `, 2)
 	if len(parts) != 2 {
-		return nil, errMalformedAuth
+		return nil, provider.ErrMalformedAuth
 	}
 
 	for _, provider := range a.providers {
@@ -41,7 +38,7 @@ func (a *App) GetUser(authContent string) (*provider.User, error) {
 func (a *App) userHandler(w http.ResponseWriter, r *http.Request) {
 	user, err := a.GetUser(auth.ReadAuthContent(r))
 	if err != nil {
-		if err == errMalformedAuth || err == provider.ErrUnknownAuthType {
+		if err == provider.ErrMalformedAuth || err == provider.ErrUnknownAuthType {
 			httputils.BadRequest(w, err)
 		} else {
 			httputils.Unauthorized(w, err)

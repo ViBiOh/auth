@@ -15,6 +15,9 @@ var (
 
 	// ErrInvalidCode occurs when code is no valid
 	ErrInvalidCode = errors.New(`Invalid code provided for oauth`)
+
+	// ErrMalformedAuth occurs when auth header is malformed
+	ErrMalformedAuth = errors.New(`Malformed Authorization content`)
 )
 
 // User of the app
