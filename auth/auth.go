@@ -41,14 +41,14 @@ func (user *User) HasProfile(profile string) bool {
 
 // App stores informations and secret of API
 type App struct {
-	url   string
+	URL   string
 	users map[string]*User
 }
 
 // NewApp creates new App from Flags' config
 func NewApp(config map[string]*string) *App {
 	return &App{
-		url:   *config[`url`],
+		URL:   *config[`url`],
 		users: loadUsersProfiles(*config[`users`]),
 	}
 }
@@ -73,7 +73,7 @@ func (a *App) IsAuthenticatedByAuth(authContent, remoteIP string) (*User, error)
 		forwardedForHeader:  remoteIP,
 	}
 
-	userBytes, err := httputils.GetRequest(fmt.Sprintf(`%s/user`, a.url), headers)
+	userBytes, err := httputils.GetRequest(fmt.Sprintf(`%s/user`, a.URL), headers)
 	if err != nil {
 		if strings.HasPrefix(string(userBytes), ErrEmptyAuthorization.Error()) {
 			return nil, ErrEmptyAuthorization
