@@ -44,6 +44,7 @@ func Flags(prefix string) map[string]*string {
 	}
 }
 
+// Handler for net/http package handling auth requests
 func (a *App) Handler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {

@@ -54,10 +54,6 @@ func (a *App) userHandler(w http.ResponseWriter, r *http.Request, providers []pr
 	httputils.ResponseJSON(w, http.StatusOK, user, httputils.IsPretty(r.URL.RawQuery))
 }
 
-func (a *App) logoutHandler(w http.ResponseWriter, r *http.Request) {
-	cookie.ClearCookieAndRedirect(w, r, a.redirect, a.cookieDomain)
-}
-
 func (a *App) redirectHandler(w http.ResponseWriter, r *http.Request, providers []provider.Auth) {
 	for _, provider := range providers {
 		if strings.HasSuffix(r.URL.Path, strings.ToLower(provider.GetName())) {
@@ -91,4 +87,8 @@ func (a *App) loginHandler(w http.ResponseWriter, r *http.Request, providers []p
 	}
 
 	httputils.BadRequest(w, provider.ErrUnknownAuthType)
+}
+
+func (a *App) logoutHandler(w http.ResponseWriter, r *http.Request) {
+	cookie.ClearCookieAndRedirect(w, r, a.redirect, a.cookieDomain)
 }
