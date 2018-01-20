@@ -53,13 +53,13 @@ func (a *App) Handler() http.Handler {
 		}
 
 		if r.URL.Path == `/user` {
-			a.userHandler(w, r, a.providers)
+			a.userHandler(w, r)
 		} else if r.URL.Path == `/logout` {
 			a.logoutHandler(w, r)
 		} else if strings.HasPrefix(r.URL.Path, loginPrefix) {
-			a.loginHandler(w, r, a.providers)
+			a.loginHandler(w, r)
 		} else if strings.HasPrefix(r.URL.Path, redirectPrefix) {
-			a.redirectHandler(w, r, a.providers)
+			a.redirectHandler(w, r)
 		} else {
 			w.WriteHeader(http.StatusNotFound)
 		}

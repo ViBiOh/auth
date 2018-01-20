@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/ViBiOh/auth/cookie"
+	"github.com/ViBiOh/auth/provider"
 	"github.com/ViBiOh/httputils"
 	"github.com/ViBiOh/httputils/tools"
 )
@@ -22,34 +23,19 @@ const (
 // ErrEmptyAuthorization occurs when authorization content is not found
 var ErrEmptyAuthorization = errors.New(`Empty authorization content`)
 
-// User of the app
-type User struct {
-	ID       uint   `json:"id"`
-	Username string `json:"username"`
-	profiles string
-}
-
-// NewUser creates new user with given id, username and profiles
-func NewUser(id uint, username string, profiles string) *User {
-	return &User{ID: id, Username: username, profiles: profiles}
-}
-
-// HasProfile check if User has given profile
-func (user *User) HasProfile(profile string) bool {
-	return strings.Contains(user.profiles, profile)
-}
-
 // App stores informations and secret of API
 type App struct {
-	URL   string
-	users map[string]*User
+	URL        string
+	serviceApp provider.Service
+	users      map[string]*provider.User
 }
 
 // NewApp creates new App from Flags' config
-func NewApp(config map[string]*string) *App {
+func NewApp(config map[string]*string, serviceApp provider.Service) *App {
 	return &App{
-		URL:   *config[`url`],
-		users: loadUsersProfiles(*config[`users`]),
+		URL:        *config[`url`],
+		serviceApp: serviceApp,
+		users:      loadUsersProfiles(*config[`users`]),
 	}
 }
 
@@ -62,40 +48,52 @@ func Flags(prefix string) map[string]*string {
 }
 
 // IsAuthenticated check if request has correct headers for authentification
-func (a *App) IsAuthenticated(r *http.Request) (*User, error) {
-	return a.IsAuthenticatedByAuth(readAuthContent(r), httputils.GetIP(r))
+func (a *App) IsAuthenticated(r *http.Request) (*provider.User, error) {
+	return a.IsAuthenticatedByAuth(ReadAuthContent(r), httputils.GetIP(r))
 }
 
 // IsAuthenticatedByAuth check if authorization is correct
-func (a *App) IsAuthenticatedByAuth(authContent, remoteIP string) (*User, error) {
-	headers := map[string]string{
-		authorizationHeader: authContent,
-		forwardedForHeader:  remoteIP,
-	}
+func (a *App) IsAuthenticatedByAuth(authContent, remoteIP string) (*provider.User, error) {
+	var retrievedUser *provider.User
+	var err error
 
-	userBytes, err := httputils.GetRequest(fmt.Sprintf(`%s/user`, a.URL), headers)
-	if err != nil {
-		if strings.HasPrefix(string(userBytes), ErrEmptyAuthorization.Error()) {
-			return nil, ErrEmptyAuthorization
+	if a.serviceApp != nil {
+		retrievedUser, err = a.serviceApp.GetUser(authContent)
+		if err != nil {
+			return nil, fmt.Errorf(`Error while getting user from service: %v`, err)
 		}
-		return nil, fmt.Errorf(`Error while getting user: %v`, err)
+	} else if a.URL != `` {
+		headers := map[string]string{
+			authorizationHeader: authContent,
+			forwardedForHeader:  remoteIP,
+		}
+
+		userBytes, err := httputils.GetRequest(fmt.Sprintf(`%s/user`, a.URL), headers)
+		if err != nil {
+			if strings.HasPrefix(string(userBytes), ErrEmptyAuthorization.Error()) {
+				return nil, ErrEmptyAuthorization
+			}
+			return nil, fmt.Errorf(`Error while getting user from remote: %v`, err)
+		}
+
+		retrievedUser = &provider.User{}
+		if err := json.Unmarshal(userBytes, retrievedUser); err != nil {
+			return nil, fmt.Errorf(`Error while unmarshalling user: %v`, err)
+		}
+	} else {
+		return nil, errors.New(`No authentification target configured`)
 	}
 
-	user := User{}
-	if err := json.Unmarshal(userBytes, &user); err != nil {
-		return nil, fmt.Errorf(`Error while unmarshalling user: %v`, err)
-	}
-
-	if appUser, ok := a.users[strings.ToLower(string(user.Username))]; ok {
-		appUser.ID = user.ID
+	if appUser, ok := a.users[strings.ToLower(string(retrievedUser.Username))]; ok {
+		appUser.ID = retrievedUser.ID
 		return appUser, nil
 	}
 
-	return nil, fmt.Errorf(`[%s] %s`, user.Username, forbiddenMessage)
+	return nil, fmt.Errorf(`[%s] %s`, retrievedUser.Username, forbiddenMessage)
 }
 
 // HandlerWithFail wrap next authenticated handler and fail handler
-func (a *App) HandlerWithFail(next func(http.ResponseWriter, *http.Request, *User), fail func(http.ResponseWriter, *http.Request, error)) http.Handler {
+func (a *App) HandlerWithFail(next func(http.ResponseWriter, *http.Request, *provider.User), fail func(http.ResponseWriter, *http.Request, error)) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if user, err := a.IsAuthenticated(r); err != nil {
 			fail(w, r, err)
@@ -106,7 +104,7 @@ func (a *App) HandlerWithFail(next func(http.ResponseWriter, *http.Request, *Use
 }
 
 // Handler wrap next authenticated handler
-func (a *App) Handler(next func(http.ResponseWriter, *http.Request, *User)) http.Handler {
+func (a *App) Handler(next func(http.ResponseWriter, *http.Request, *provider.User)) http.Handler {
 	return a.HandlerWithFail(next, defaultFailFunc)
 }
 
@@ -115,30 +113,30 @@ func IsForbiddenErr(err error) bool {
 	return strings.HasSuffix(err.Error(), forbiddenMessage)
 }
 
-func loadUsersProfiles(usersAndProfiles string) map[string]*User {
+func loadUsersProfiles(usersAndProfiles string) map[string]*provider.User {
 	if usersAndProfiles == `` {
 		return nil
 	}
 
-	users := make(map[string]*User, 0)
+	users := make(map[string]*provider.User, 0)
 
 	for _, user := range strings.Split(usersAndProfiles, `,`) {
 		username := user
 		profiles := ``
 
-		sepIndex := strings.Index(user, `:`)
-		if sepIndex != -1 {
-			username = user[:sepIndex]
-			profiles = user[sepIndex+1:]
+		if parts := strings.Split(user, `:`); len(parts) == 2 {
+			username = parts[0]
+			profiles = parts[1]
 		}
 
-		users[strings.ToLower(username)] = NewUser(0, username, profiles)
+		users[strings.ToLower(username)] = provider.NewUser(uint(len(users)), username, profiles)
 	}
 
 	return users
 }
 
-func readAuthContent(r *http.Request) string {
+// ReadAuthContent from Header or Cookie
+func ReadAuthContent(r *http.Request) string {
 	authContent := r.Header.Get(authorizationHeader)
 	if authContent != `` {
 		return authContent

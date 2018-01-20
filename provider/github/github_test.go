@@ -8,7 +8,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ViBiOh/auth/auth"
 	"github.com/ViBiOh/auth/provider"
 	"github.com/ViBiOh/httputils"
 	"golang.org/x/oauth2"
@@ -100,7 +99,7 @@ func Test_GetUser(t *testing.T) {
 	var cases = []struct {
 		intention string
 		header    string
-		want      *auth.User
+		want      *provider.User
 		wantErr   error
 	}{
 		{
@@ -118,7 +117,7 @@ func Test_GetUser(t *testing.T) {
 		{
 			`should handle valid request`,
 			`{"id":1,"login":"vibioh"}`,
-			&auth.User{ID: 1, Username: `vibioh`},
+			&provider.User{ID: 1, Username: `vibioh`},
 			nil,
 		},
 	}

@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/ViBiOh/auth/auth"
 	"github.com/ViBiOh/auth/provider"
 	"github.com/ViBiOh/httputils"
 	"github.com/ViBiOh/httputils/tools"
@@ -62,7 +61,7 @@ func (*Auth) GetName() string {
 }
 
 // GetUser returns User associated to header
-func (*Auth) GetUser(header string) (*auth.User, error) {
+func (*Auth) GetUser(header string) (*provider.User, error) {
 	userResponse, err := httputils.GetRequest(userURL, map[string]string{`Authorization`: `token ` + header})
 	if err != nil {
 		return nil, fmt.Errorf(`Error while fetching user informations: %v`, err)
@@ -73,7 +72,7 @@ func (*Auth) GetUser(header string) (*auth.User, error) {
 		return nil, fmt.Errorf(`Error while unmarshalling user informations: %v`, err)
 	}
 
-	return &auth.User{ID: user.ID, Username: user.Login}, nil
+	return &provider.User{ID: user.ID, Username: user.Login}, nil
 }
 
 // Redirect redirects user to GitHub endpoint

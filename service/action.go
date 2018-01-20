@@ -14,9 +14,8 @@ import (
 
 var errMalformedAuth = errors.New(`Malformed Authorization content`)
 
-func (a *App) getUser(r *http.Request, providers []provider.Auth) (*auth.User, error) {
-	authContent := r.Header.Get(`Authorization`)
-
+// GetUser get user from given auth content
+func (a *App) GetUser(authContent string) (*provider.User, error) {
 	if authContent == `` {
 		return nil, auth.ErrEmptyAuthorization
 	}
@@ -26,7 +25,7 @@ func (a *App) getUser(r *http.Request, providers []provider.Auth) (*auth.User, e
 		return nil, errMalformedAuth
 	}
 
-	for _, provider := range providers {
+	for _, provider := range a.providers {
 		if parts[0] == provider.GetName() {
 			user, err := provider.GetUser(parts[1])
 			if err != nil {
@@ -39,8 +38,8 @@ func (a *App) getUser(r *http.Request, providers []provider.Auth) (*auth.User, e
 	return nil, provider.ErrUnknownAuthType
 }
 
-func (a *App) userHandler(w http.ResponseWriter, r *http.Request, providers []provider.Auth) {
-	user, err := a.getUser(r, providers)
+func (a *App) userHandler(w http.ResponseWriter, r *http.Request) {
+	user, err := a.GetUser(auth.ReadAuthContent(r))
 	if err != nil {
 		if err == errMalformedAuth || err == provider.ErrUnknownAuthType {
 			httputils.BadRequest(w, err)
@@ -54,8 +53,8 @@ func (a *App) userHandler(w http.ResponseWriter, r *http.Request, providers []pr
 	httputils.ResponseJSON(w, http.StatusOK, user, httputils.IsPretty(r.URL.RawQuery))
 }
 
-func (a *App) redirectHandler(w http.ResponseWriter, r *http.Request, providers []provider.Auth) {
-	for _, provider := range providers {
+func (a *App) redirectHandler(w http.ResponseWriter, r *http.Request) {
+	for _, provider := range a.providers {
 		if strings.HasSuffix(r.URL.Path, strings.ToLower(provider.GetName())) {
 			if redirect, err := provider.Redirect(); err != nil {
 				httputils.InternalServerError(w, err)
@@ -70,8 +69,8 @@ func (a *App) redirectHandler(w http.ResponseWriter, r *http.Request, providers 
 	httputils.BadRequest(w, provider.ErrUnknownAuthType)
 }
 
-func (a *App) loginHandler(w http.ResponseWriter, r *http.Request, providers []provider.Auth) {
-	for _, provider := range providers {
+func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
+	for _, provider := range a.providers {
 		if strings.HasSuffix(r.URL.Path, strings.ToLower(provider.GetName())) {
 			if token, err := provider.Login(r); err != nil {
 				w.Header().Add(`WWW-Authenticate`, provider.GetName())
