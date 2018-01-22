@@ -26,6 +26,7 @@ func initProviders(providersConfig map[string]providerConfig) []provider.Auth {
 
 	for name, conf := range providersConfig {
 		if auth := initProvider(name, conf.factory, conf.config); auth != nil {
+			log.Printf(`Provider for %s configured`, name)
 			providers = append(providers, auth)
 		}
 	}
