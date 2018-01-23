@@ -36,6 +36,15 @@ func NewApp(config map[string]*string, basicConfig map[string]interface{}, githu
 	}
 }
 
+// NewBasicApp creates new App from Flags' config only for basic auth wrapper
+func NewBasicApp(basicConfig map[string]interface{}) *App {
+	return &App{
+		providers: initProviders(map[string]providerConfig{
+			`Basic`: {config: basicConfig, factory: basic.NewAuth},
+		}),
+	}
+}
+
 // Flags add flags for given prefix
 func Flags(prefix string) map[string]*string {
 	return map[string]*string{

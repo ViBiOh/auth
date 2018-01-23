@@ -57,12 +57,18 @@ func (a *App) IsAuthenticatedByAuth(authContent, remoteIP string) (*provider.Use
 	var retrievedUser *provider.User
 	var err error
 
+	if a.serviceApp == nil && a.URL == `` {
+		return nil, errors.New(`No authentification target configured`)
+	}
+
 	if a.serviceApp != nil {
 		retrievedUser, err = a.serviceApp.GetUser(authContent)
-		if err != nil {
+		if err != nil && a.URL == `` {
 			return nil, fmt.Errorf(`Error while getting user from service: %v`, err)
 		}
-	} else if a.URL != `` {
+	}
+
+	if retrievedUser == nil && a.URL != `` {
 		headers := map[string]string{
 			authorizationHeader: authContent,
 			forwardedForHeader:  remoteIP,
@@ -73,6 +79,7 @@ func (a *App) IsAuthenticatedByAuth(authContent, remoteIP string) (*provider.Use
 			if strings.HasPrefix(string(userBytes), ErrEmptyAuthorization.Error()) {
 				return nil, ErrEmptyAuthorization
 			}
+
 			return nil, fmt.Errorf(`Error while getting user from remote: %v`, err)
 		}
 
@@ -80,8 +87,6 @@ func (a *App) IsAuthenticatedByAuth(authContent, remoteIP string) (*provider.Use
 		if err := json.Unmarshal(userBytes, retrievedUser); err != nil {
 			return nil, fmt.Errorf(`Error while unmarshalling user: %v`, err)
 		}
-	} else {
-		return nil, errors.New(`No authentification target configured`)
 	}
 
 	if appUser, ok := a.users[strings.ToLower(string(retrievedUser.Username))]; ok {
