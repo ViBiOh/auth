@@ -47,7 +47,9 @@ func (a *App) userHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httputils.ResponseJSON(w, http.StatusOK, user, httputils.IsPretty(r.URL.RawQuery))
+	if err := httputils.ResponseJSON(w, http.StatusOK, user, httputils.IsPretty(r.URL.RawQuery)); err != nil {
+		httputils.InternalServerError(w, err)
+	}
 }
 
 func (a *App) redirectHandler(w http.ResponseWriter, r *http.Request) {
@@ -74,8 +76,8 @@ func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 				httputils.Unauthorized(w, err)
 			} else if a.redirect != `` {
 				cookie.SetCookieAndRedirect(w, r, a.redirect, a.cookieDomain, fmt.Sprintf(`%s %s`, provider.GetName(), token))
-			} else {
-				w.Write([]byte(token))
+			} else if _, err := w.Write([]byte(token)); err != nil {
+				httputils.InternalServerError(w, err)
 			}
 
 			return
