@@ -14,7 +14,7 @@
     "alcotest",
     "httpclient"
   ]
-  revision = "10d38c99a86257c343dd2abaf4f6a6192e7aa3f8"
+  revision = "7820b5444e1a46e9edefbc45d504df7723bb0ca8"
 
 [[projects]]
   branch = "master"
@@ -24,66 +24,16 @@
     "cert",
     "cors",
     "owasp",
-    "prometheus",
-    "rate",
     "tools",
     "uuid"
   ]
-  revision = "481900a491a7bcf17a366e01f47b39c0828a0daf"
+  revision = "25bff7e5ea008fefc07a5467745b73ade0eba52c"
 
 [[projects]]
-  branch = "master"
-  name = "github.com/beorn7/perks"
-  packages = ["quantile"]
-  revision = "4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9"
-
-[[projects]]
-  branch = "master"
   name = "github.com/golang/protobuf"
   packages = ["proto"]
-  revision = "c65a0412e71e8b9b3bfd22925720d23c0f054237"
-
-[[projects]]
-  name = "github.com/matttproud/golang_protobuf_extensions"
-  packages = ["pbutil"]
-  revision = "3247c84500bff8d9fb6d579d800f20b3e091582c"
+  revision = "925541529c1fa6821df4e44ce2723319eb2be768"
   version = "v1.0.0"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/prometheus/client_golang"
-  packages = [
-    "prometheus",
-    "prometheus/promhttp"
-  ]
-  revision = "06bc6e01f4baf4ee783ffcd23abfcb0b0f9dfada"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/prometheus/client_model"
-  packages = ["go"]
-  revision = "99fa1f4be8e564e8a6b613da7fa6f46c9edafc6c"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/prometheus/common"
-  packages = [
-    "expfmt",
-    "internal/bitbucket.org/ww/goautoneg",
-    "model"
-  ]
-  revision = "89604d197083d4781071d3c65855d24ecfb0a563"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/prometheus/procfs"
-  packages = [
-    ".",
-    "internal/util",
-    "nfs",
-    "xfs"
-  ]
-  revision = "cb4147076ac75738c9a7d279075a253c0cc5acbd"
 
 [[projects]]
   name = "github.com/tdewolff/minify"
@@ -118,7 +68,7 @@
     "bcrypt",
     "blowfish"
   ]
-  revision = "3d37316aaa6bd9929127ac9a527abf408178ea7b"
+  revision = "d9133f5469342136e669e85192a26056b587f503"
 
 [[projects]]
   branch = "master"
@@ -127,7 +77,7 @@
     "context",
     "context/ctxhttp"
   ]
-  revision = "0ed95abb35c445290478a5348a7b38bb154135fd"
+  revision = "2fb46b16b8dda405028c50f7c7f0f9dd1fa6bfb1"
 
 [[projects]]
   branch = "master"
@@ -137,7 +87,7 @@
     "github",
     "internal"
   ]
-  revision = "b28fcf2b08a19742b43084fb40ab78ac6c3d8067"
+  revision = "a032972e28060ca4f5644acffae3dfc268cc09db"
 
 [[projects]]
   name = "google.golang.org/appengine"
@@ -156,6 +106,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "42a8411795a693a99aae9e3a055f499b2dedfc68744bf07a5ef283de7b7112ca"
+  inputs-digest = "2abc649aecca2de372c4035fdf52fa257f2e0f8ea00760d0fedd73cacf05cbfe"
   solver-name = "gps-cdcl"
   solver-version = 1
