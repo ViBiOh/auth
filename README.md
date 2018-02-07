@@ -81,14 +81,6 @@ Usage of auth:
         [owasp] Indicate Strict Transport Security (default true)
   -port string
         Listen port (default "1080")
-  -prometheusMetricsHost string
-        [prometheus] Allowed hostname to call metrics endpoint (default "localhost")
-  -prometheusMetricsPath string
-        [prometheus] Metrics endpoint path (default "/metrics")
-  -prometheusPrefix string
-        [prometheus] Prefix (default "http")
-  -rateCount uint
-        [rate] IP limit (default 5000)
   -tls
         Serve TLS content (default true)
   -tlsCert string
