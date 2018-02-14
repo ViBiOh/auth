@@ -17,7 +17,6 @@ import (
 const (
 	forbiddenMessage    = `Not allowed to use app`
 	authorizationHeader = `Authorization`
-	forwardedForHeader  = `X-Forwarded-For`
 )
 
 // ErrEmptyAuthorization occurs when authorization content is not found
