@@ -49,11 +49,11 @@ func Flags(prefix string) map[string]*string {
 
 // IsAuthenticated check if request has correct headers for authentification
 func (a *App) IsAuthenticated(r *http.Request) (*provider.User, error) {
-	return a.IsAuthenticatedByAuth(ReadAuthContent(r), httputils.GetIP(r))
+	return a.IsAuthenticatedByAuth(ReadAuthContent(r))
 }
 
 // IsAuthenticatedByAuth check if authorization is correct
-func (a *App) IsAuthenticatedByAuth(authContent, remoteIP string) (*provider.User, error) {
+func (a *App) IsAuthenticatedByAuth(authContent string) (*provider.User, error) {
 	var retrievedUser *provider.User
 	var err error
 
@@ -71,7 +71,6 @@ func (a *App) IsAuthenticatedByAuth(authContent, remoteIP string) (*provider.Use
 	if retrievedUser == nil && a.URL != `` {
 		headers := map[string]string{
 			authorizationHeader: authContent,
-			forwardedForHeader:  remoteIP,
 		}
 
 		userBytes, err := httputils.GetRequest(fmt.Sprintf(`%s/user`, a.URL), headers)
