@@ -37,5 +37,5 @@ func main() {
 		})
 
 		return gziphandler.GzipHandler(owasp.Handler(owaspConfig, cors.Handler(corsConfig, handler)))
-	})
+	}, nil)
 }
