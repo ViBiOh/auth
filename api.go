@@ -4,12 +4,12 @@ import (
 	"net/http"
 
 	"github.com/NYTimes/gziphandler"
-	"github.com/ViBiOh/alcotest/healthcheck"
 	"github.com/ViBiOh/auth/provider/basic"
 	"github.com/ViBiOh/auth/provider/github"
 	"github.com/ViBiOh/auth/service"
 	"github.com/ViBiOh/httputils"
 	"github.com/ViBiOh/httputils/cors"
+	"github.com/ViBiOh/httputils/healthcheck"
 	"github.com/ViBiOh/httputils/owasp"
 )
 

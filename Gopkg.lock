@@ -2,33 +2,25 @@
 
 
 [[projects]]
-  branch = "master"
   name = "github.com/NYTimes/gziphandler"
   packages = ["."]
-  revision = "289a3b81f5aedc99f8d6eb0f67827c142f1310d8"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/ViBiOh/alcotest"
-  packages = [
-    "alcotest",
-    "healthcheck",
-    "httpclient"
-  ]
-  revision = "7820b5444e1a46e9edefbc45d504df7723bb0ca8"
+  revision = "d6f46609c7629af3a02d791a4666866eed3cbd3e"
+  version = "v1.0.0"
 
 [[projects]]
   branch = "master"
   name = "github.com/ViBiOh/httputils"
   packages = [
     ".",
+    "alcotest",
     "cert",
     "cors",
+    "healthcheck",
     "owasp",
     "tools",
     "uuid"
   ]
-  revision = "288533be2fefec40812d7805b6b5abf603ac283b"
+  revision = "5ba574fa9b59230694a75168d2219f0d7f2f5190"
 
 [[projects]]
   name = "github.com/golang/protobuf"
@@ -107,6 +99,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3f53d00f64d2d7e98ba90227c5c4325c44abaf5518fd86cd4ee26679064386fd"
+  inputs-digest = "c37d79541bd87556f517a3670aa510692b0c7b7e82ab4599b0eec18d5fdd3d52"
   solver-name = "gps-cdcl"
   solver-version = 1
