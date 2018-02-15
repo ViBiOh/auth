@@ -14,7 +14,7 @@ type providerConfig struct {
 func initProvider(name string, factory func(map[string]interface{}) (provider.Auth, error), config map[string]interface{}) provider.Auth {
 	auth, err := factory(config)
 	if err != nil {
-		log.Printf(`Error while initializing %s provider: %v`, name, err)
+		log.Printf(`[auth] Error while initializing %s provider: %v`, name, err)
 		return nil
 	}
 
@@ -26,7 +26,7 @@ func initProviders(providersConfig map[string]providerConfig) []provider.Auth {
 
 	for name, conf := range providersConfig {
 		if auth := initProvider(name, conf.factory, conf.config); auth != nil {
-			log.Printf(`Provider for %s configured`, name)
+			log.Printf(`[auth] Provider for %s configured`, name)
 			providers = append(providers, auth)
 		}
 	}
