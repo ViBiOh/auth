@@ -9,6 +9,7 @@ import (
 	"github.com/ViBiOh/auth/provider"
 	"github.com/ViBiOh/auth/provider/basic"
 	"github.com/ViBiOh/auth/provider/github"
+	"github.com/ViBiOh/httputils"
 	"github.com/ViBiOh/httputils/tools"
 )
 
@@ -56,6 +57,13 @@ func Flags(prefix string) map[string]*string {
 // Handler for net/http package handling auth requests
 func (a *App) Handler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodOptions {
+			if _, err := w.Write(nil); err != nil {
+				httputils.InternalServerError(w, err)
+			}
+			return
+		}
+
 		if r.Method != http.MethodGet {
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			return

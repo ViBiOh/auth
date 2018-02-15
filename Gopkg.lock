@@ -27,7 +27,7 @@
     "tools",
     "uuid"
   ]
-  revision = "25bff7e5ea008fefc07a5467745b73ade0eba52c"
+  revision = "ea8da0656b64e1b5d610eaf6b7dc08f8a69eeb81"
 
 [[projects]]
   name = "github.com/golang/protobuf"
@@ -68,7 +68,7 @@
     "bcrypt",
     "blowfish"
   ]
-  revision = "d9133f5469342136e669e85192a26056b587f503"
+  revision = "650f4a345ab4e5b245a3034b110ebc7299e68186"
 
 [[projects]]
   branch = "master"
@@ -77,7 +77,7 @@
     "context",
     "context/ctxhttp"
   ]
-  revision = "2fb46b16b8dda405028c50f7c7f0f9dd1fa6bfb1"
+  revision = "f5dfe339be1d06f81b22525fe34671ee7d2c8904"
 
 [[projects]]
   branch = "master"
