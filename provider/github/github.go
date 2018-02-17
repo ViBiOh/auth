@@ -8,7 +8,7 @@ import (
 	"sync"
 
 	"github.com/ViBiOh/auth/provider"
-	"github.com/ViBiOh/httputils"
+	"github.com/ViBiOh/httputils/request"
 	"github.com/ViBiOh/httputils/tools"
 	"github.com/ViBiOh/httputils/uuid"
 	"golang.org/x/oauth2"
@@ -62,7 +62,7 @@ func (*Auth) GetName() string {
 
 // GetUser returns User associated to header
 func (*Auth) GetUser(header string) (*provider.User, error) {
-	userResponse, err := httputils.GetRequest(userURL, map[string]string{`Authorization`: `token ` + header})
+	userResponse, err := request.GetRequest(userURL, map[string]string{`Authorization`: `token ` + header})
 	if err != nil {
 		return nil, fmt.Errorf(`Error while fetching user informations: %v`, err)
 	}

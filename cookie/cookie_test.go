@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/ViBiOh/httputils"
+	"github.com/ViBiOh/httputils/request"
 )
 
 func Test_GetCookieValue(t *testing.T) {
@@ -73,7 +73,7 @@ func Test_SetCookieAndRedirect(t *testing.T) {
 			t.Errorf("%s\nSetCookieAndRedirect(%+v) = %+v, want status %+v", testCase.intention, testCase.request, result, testCase.wantStatus)
 		}
 
-		if result, _ := httputils.ReadBody(writer.Result().Body); string(result) != testCase.want {
+		if result, _ := request.ReadBody(writer.Result().Body); string(result) != testCase.want {
 			t.Errorf("%s\nSetCookieAndRedirect(%+v) = %+v, want %+v", testCase.intention, testCase.request, string(result), testCase.want)
 		}
 
@@ -115,7 +115,7 @@ func Test_ClearCookieAndRedirect(t *testing.T) {
 			t.Errorf("%s\nClearCookieAndRedirect(%+v) = %+v, want status %+v", testCase.intention, testCase.request, result, testCase.wantStatus)
 		}
 
-		if result, _ := httputils.ReadBody(writer.Result().Body); string(result) != testCase.want {
+		if result, _ := request.ReadBody(writer.Result().Body); string(result) != testCase.want {
 			t.Errorf("%s\nClearCookieAndRedirect(%+v) = %+v, want %+v", testCase.intention, testCase.request, string(result), testCase.want)
 		}
 

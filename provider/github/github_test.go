@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/ViBiOh/auth/provider"
-	"github.com/ViBiOh/httputils"
+	"github.com/ViBiOh/httputils/request"
 	"golang.org/x/oauth2"
 )
 
@@ -148,7 +148,7 @@ func Test_GetUser(t *testing.T) {
 
 func Test_Login(t *testing.T) {
 	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		body, _ := httputils.ReadBody(r.Body)
+		body, _ := request.ReadBody(r.Body)
 		if strings.HasPrefix(string(body), `code=invalid`) {
 			w.WriteHeader(http.StatusInternalServerError)
 		} else {

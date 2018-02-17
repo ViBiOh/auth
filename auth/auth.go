@@ -10,7 +10,8 @@ import (
 
 	"github.com/ViBiOh/auth/cookie"
 	"github.com/ViBiOh/auth/provider"
-	"github.com/ViBiOh/httputils"
+	"github.com/ViBiOh/httputils/httperror"
+	"github.com/ViBiOh/httputils/request"
 	"github.com/ViBiOh/httputils/tools"
 )
 
@@ -72,7 +73,7 @@ func (a *App) IsAuthenticatedByAuth(authContent string) (*provider.User, error) 
 			authorizationHeader: authContent,
 		}
 
-		userBytes, err := httputils.GetRequest(fmt.Sprintf(`%s/user`, a.URL), headers)
+		userBytes, err := request.GetRequest(fmt.Sprintf(`%s/user`, a.URL), headers)
 		if err != nil {
 			if strings.HasPrefix(string(userBytes), ErrEmptyAuthorization.Error()) {
 				return nil, ErrEmptyAuthorization
@@ -150,8 +151,8 @@ func ReadAuthContent(r *http.Request) string {
 
 func defaultFailFunc(w http.ResponseWriter, r *http.Request, err error) {
 	if IsForbiddenErr(err) {
-		httputils.Forbidden(w)
+		httperror.Forbidden(w)
 	} else {
-		httputils.Unauthorized(w, err)
+		httperror.Unauthorized(w, err)
 	}
 }

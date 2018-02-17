@@ -9,7 +9,7 @@ import (
 	"github.com/ViBiOh/auth/provider"
 	"github.com/ViBiOh/auth/provider/basic"
 	"github.com/ViBiOh/auth/provider/github"
-	"github.com/ViBiOh/httputils"
+	"github.com/ViBiOh/httputils/httperror"
 	"github.com/ViBiOh/httputils/tools"
 )
 
@@ -59,7 +59,7 @@ func (a *App) Handler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodOptions {
 			if _, err := w.Write(nil); err != nil {
-				httputils.InternalServerError(w, err)
+				httperror.InternalServerError(w, err)
 			}
 			return
 		}
