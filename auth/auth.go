@@ -73,7 +73,7 @@ func (a *App) IsAuthenticatedByAuth(authContent string) (*provider.User, error) 
 			authorizationHeader: authContent,
 		}
 
-		userBytes, err := request.GetRequest(fmt.Sprintf(`%s/user`, a.URL), headers)
+		userBytes, err := request.Get(fmt.Sprintf(`%s/user`, a.URL), headers)
 		if err != nil {
 			if strings.HasPrefix(string(userBytes), ErrEmptyAuthorization.Error()) {
 				return nil, ErrEmptyAuthorization

@@ -62,7 +62,7 @@ func (*Auth) GetName() string {
 
 // GetUser returns User associated to header
 func (*Auth) GetUser(header string) (*provider.User, error) {
-	userResponse, err := request.GetRequest(userURL, map[string]string{`Authorization`: `token ` + header})
+	userResponse, err := request.Get(userURL, map[string]string{`Authorization`: `token ` + header})
 	if err != nil {
 		return nil, fmt.Errorf(`Error while fetching user informations: %v`, err)
 	}
