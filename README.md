@@ -29,16 +29,6 @@ Write user's credentials with the following format :
 
 You can generate bcrypted password using `go run bcrypt/bcrypt.go "password"`.
 
-## Roles
-
-You can configure roles by setting `-users` from CLI with the following format:
-
-```bash
-[user1]:[role1]|[role2],[user2]:[role1]
-```
-
-Username must match with the authentification providers (see previous sections).
-
 ## Build
 
 In order to build the server stuff, run the following command.
