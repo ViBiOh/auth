@@ -9,7 +9,7 @@ import (
 	"github.com/ViBiOh/auth/cookie"
 	"github.com/ViBiOh/auth/provider"
 	"github.com/ViBiOh/httputils/httperror"
-	"github.com/ViBiOh/httputils/json"
+	"github.com/ViBiOh/httputils/httpjson"
 )
 
 // GetUser get user from given auth content
@@ -48,7 +48,7 @@ func (a *App) userHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := json.ResponseJSON(w, http.StatusOK, user, json.IsPretty(r.URL.RawQuery)); err != nil {
+	if err := httpjson.ResponseJSON(w, http.StatusOK, user, httpjson.IsPretty(r.URL.RawQuery)); err != nil {
 		httperror.InternalServerError(w, err)
 	}
 }
