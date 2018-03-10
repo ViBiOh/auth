@@ -28,8 +28,8 @@ var (
 // Flags add flags for given prefix
 func Flags(prefix string) map[string]interface{} {
 	return map[string]interface{}{
-		`clientID`:     flag.String(tools.ToCamel(prefix+`ClientId`), ``, `[GitHub] OAuth Client ID`),
-		`clientSecret`: flag.String(tools.ToCamel(prefix+`ClientSecret`), ``, `[GitHub] OAuth Client Secret`),
+		`clientID`:     flag.String(tools.ToCamel(fmt.Sprintf(`%s%s`, prefix, `ClientId`)), ``, `[GitHub] OAuth Client ID`),
+		`clientSecret`: flag.String(tools.ToCamel(fmt.Sprintf(`%s%s`, prefix, `ClientSecret`)), ``, `[GitHub] OAuth Client Secret`),
 	}
 }
 
@@ -62,7 +62,7 @@ func (*Auth) GetName() string {
 
 // GetUser returns User associated to header
 func (*Auth) GetUser(header string) (*provider.User, error) {
-	userResponse, err := request.Get(userURL, map[string]string{`Authorization`: `token ` + header})
+	userResponse, err := request.Get(userURL, map[string]string{`Authorization`: fmt.Sprintf(`token %s`, header)})
 	if err != nil {
 		return nil, fmt.Errorf(`Error while fetching user informations: %v`, err)
 	}

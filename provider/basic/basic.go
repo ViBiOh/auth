@@ -21,7 +21,7 @@ type basicUser struct {
 // Flags add flags for given prefix
 func Flags(prefix string) map[string]interface{} {
 	return map[string]interface{}{
-		`users`: flag.String(tools.ToCamel(prefix+`Users`), ``, `[Basic] Users in the form "id:username:password,id2:username2:password2"`),
+		`users`: flag.String(tools.ToCamel(fmt.Sprintf(`%s%s`, prefix, `Users`)), ``, `[Basic] Users in the form "id:username:password,id2:username2:password2"`),
 	}
 }
 
@@ -113,7 +113,7 @@ func (*Auth) Redirect() (string, error) {
 
 // Login exchange state to token
 func (o *Auth) Login(r *http.Request) (string, error) {
-	authContent := strings.TrimPrefix(r.Header.Get(`Authorization`), o.GetName()+` `)
+	authContent := strings.TrimPrefix(r.Header.Get(`Authorization`), fmt.Sprintf(`%s `, o.GetName()))
 
 	if _, err := o.GetUser(authContent); err != nil {
 		return ``, err
