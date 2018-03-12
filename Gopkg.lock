@@ -24,7 +24,7 @@
     "tools",
     "uuid"
   ]
-  revision = "203b8898ad2677a44cfc79ef8df214e93e7d4899"
+  revision = "ddb82b61e5aea0d60bdfdb3b7a5fb247e756c63f"
 
 [[projects]]
   name = "github.com/golang/protobuf"
@@ -48,7 +48,7 @@
     "context",
     "context/ctxhttp"
   ]
-  revision = "d0aafc73d5cdc42264b0af071c261abac580695e"
+  revision = "ae89d30ce0c63142b652837da33d782e2b0a9b25"
 
 [[projects]]
   branch = "master"

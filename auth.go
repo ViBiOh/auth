@@ -6,6 +6,7 @@ import (
 	"github.com/NYTimes/gziphandler"
 	"github.com/ViBiOh/auth/provider/basic"
 	"github.com/ViBiOh/auth/provider/github"
+	"github.com/ViBiOh/auth/provider/twitter"
 	"github.com/ViBiOh/auth/service"
 	"github.com/ViBiOh/httputils"
 	"github.com/ViBiOh/httputils/cors"
@@ -21,9 +22,10 @@ func main() {
 	serviceConfig := service.Flags(``)
 	basicConfig := basic.Flags(`basic`)
 	githubConfig := github.Flags(`github`)
+	twitterConfig := twitter.Flags(`twitter`)
 
 	httputils.StartMainServer(func() http.Handler {
-		serviceApp := service.NewApp(serviceConfig, basicConfig, githubConfig)
+		serviceApp := service.NewApp(serviceConfig, basicConfig, githubConfig, twitterConfig)
 		serviceHandler := serviceApp.Handler()
 
 		healthHandler := http.StripPrefix(healthPrefix, healthcheck.Handler())
