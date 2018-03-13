@@ -45,9 +45,10 @@ type Auth struct {
 
 // NewAuth creates new auth
 func NewAuth(config map[string]interface{}) (provider.Auth, error) {
-	log.Print(`Twitter provider implementation is WIP`)
 
 	if key, ok := config[`key`]; ok && *(key.(*string)) != `` {
+		log.Print(`Twitter provider implementation is WIP`)
+
 		return &Auth{
 			oauthConf: &oauth2.Config{
 				ClientID:     *(key.(*string)),
