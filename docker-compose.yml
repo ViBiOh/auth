@@ -4,7 +4,6 @@ services:
   auth:
     image: vibioh/auth
     command:
-    - -tls
     - -corsHeaders
     - Authorization
     - -corsCredentials

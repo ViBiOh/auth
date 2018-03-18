@@ -24,7 +24,7 @@ func main() {
 	githubConfig := github.Flags(`github`)
 	twitterConfig := twitter.Flags(`twitter`)
 
-	httputils.StartMainServer(func() http.Handler {
+	httputils.NewApp(httputils.Flags(``), func() http.Handler {
 		serviceApp := service.NewApp(serviceConfig, basicConfig, githubConfig, twitterConfig)
 		serviceHandler := serviceApp.Handler()
 
@@ -39,5 +39,5 @@ func main() {
 		})
 
 		return gziphandler.GzipHandler(owasp.Handler(owaspConfig, cors.Handler(corsConfig, handler)))
-	}, nil)
+	}, nil).ListenAndServe()
 }
