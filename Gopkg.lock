@@ -11,20 +11,20 @@
   branch = "master"
   name = "github.com/ViBiOh/httputils"
   packages = [
-    ".",
-    "alcotest",
-    "cert",
-    "cors",
-    "healthcheck",
-    "httperror",
-    "httpjson",
-    "owasp",
-    "request",
-    "server",
-    "tools",
-    "uuid"
+    "pkg",
+    "pkg/alcotest",
+    "pkg/cert",
+    "pkg/cors",
+    "pkg/healthcheck",
+    "pkg/httperror",
+    "pkg/httpjson",
+    "pkg/owasp",
+    "pkg/request",
+    "pkg/server",
+    "pkg/tools",
+    "pkg/uuid"
   ]
-  revision = "9fdf00023e957b3f8b87805f09a4a3f589fa06b7"
+  revision = "fe606d9cdfe10039ae176d5ef70cc5c7015bb0a3"
 
 [[projects]]
   name = "github.com/golang/protobuf"
@@ -39,7 +39,7 @@
     "bcrypt",
     "blowfish"
   ]
-  revision = "374053ea96cb300f8671b8d3b07edeeb06e203b4"
+  revision = "12892e8c234f4fe6f6803f052061de9057903bb2"
 
 [[projects]]
   branch = "master"
@@ -48,7 +48,7 @@
     "context",
     "context/ctxhttp"
   ]
-  revision = "24dd3780ca4f75fed9f321890729414a4b5d3f13"
+  revision = "b68f30494add4df6bd8ef5e82803f308e7f7c59c"
 
 [[projects]]
   branch = "master"
@@ -77,6 +77,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "7a178d21ccb55f88b2f30b1c4f5311834b66b4f55501d0777c1b7580ac7a3598"
+  inputs-digest = "0b6da8417e747e0198ca73770a8343c4eecc9c27969411d01d21b5895d623424"
   solver-name = "gps-cdcl"
   solver-version = 1

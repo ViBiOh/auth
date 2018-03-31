@@ -8,11 +8,11 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/ViBiOh/auth/cookie"
-	"github.com/ViBiOh/auth/provider"
-	"github.com/ViBiOh/httputils/httperror"
-	"github.com/ViBiOh/httputils/request"
-	"github.com/ViBiOh/httputils/tools"
+	"github.com/ViBiOh/auth/pkg/cookie"
+	"github.com/ViBiOh/auth/pkg/provider"
+	"github.com/ViBiOh/httputils/pkg/httperror"
+	"github.com/ViBiOh/httputils/pkg/request"
+	"github.com/ViBiOh/httputils/pkg/tools"
 )
 
 const (

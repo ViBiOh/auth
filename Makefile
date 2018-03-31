@@ -14,8 +14,8 @@ deps:
 	dep ensure
 
 format:
-	goimports -w **/*.go *.go
-	gofmt -s -w **/*.go *.go
+	goimports -w */*/*.go
+	gofmt -s -w */*/*.go
 
 lint:
 	golint `go list ./... | grep -v vendor`
@@ -29,12 +29,14 @@ bench:
 	go test ./... -bench . -benchmem -run Benchmark.*
 
 build:
-	CGO_ENABLED=0 go build -ldflags="-s -w" -installsuffix nocgo -o bin/bcrypt bcrypt/bcrypt.go
-	CGO_ENABLED=0 go build -ldflags="-s -w" -installsuffix nocgo -o bin/auth auth.go
-	CGO_ENABLED=0 go build -ldflags="-s -w" -installsuffix nocgo auth/auth.go
+	CGO_ENABLED=0 go build -ldflags="-s -w" -installsuffix nocgo -o bin/bcrypt cmd/bcrypt/bcrypt.go
+	CGO_ENABLED=0 go build -ldflags="-s -w" -installsuffix nocgo -o bin/auth cmd/auth/auth.go
+	CGO_ENABLED=0 go build -ldflags="-s -w" -installsuffix nocgo pkg/auth/auth.go
 
 start:
-	go run auth.go -tls=false -basicUsers "1:admin:`go run bcrypt/bcrypt.go admin`"
+	go run cmd/auth/auth.go \
+		-tls=false \
+		-basicUsers "1:admin:`go run bcrypt/bcrypt.go admin`"
 
 docker-deps:
 	curl -s -o cacert.pem https://curl.haxx.se/ca/cacert.pem

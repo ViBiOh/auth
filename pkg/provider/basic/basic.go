@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ViBiOh/auth/provider"
-	"github.com/ViBiOh/httputils/tools"
+	"github.com/ViBiOh/auth/pkg/provider"
+	"github.com/ViBiOh/httputils/pkg/tools"
 	"golang.org/x/crypto/bcrypt"
 )
 

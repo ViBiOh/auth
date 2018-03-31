@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ViBiOh/auth/provider"
-	"github.com/ViBiOh/httputils/request"
+	"github.com/ViBiOh/auth/pkg/provider"
+	"github.com/ViBiOh/httputils/pkg/request"
 	"golang.org/x/oauth2"
 )
 

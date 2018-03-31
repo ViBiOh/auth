@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/ViBiOh/auth/auth"
-	"github.com/ViBiOh/auth/cookie"
-	"github.com/ViBiOh/auth/provider"
-	"github.com/ViBiOh/httputils/httperror"
-	"github.com/ViBiOh/httputils/httpjson"
+	"github.com/ViBiOh/auth/pkg/auth"
+	"github.com/ViBiOh/auth/pkg/cookie"
+	"github.com/ViBiOh/auth/pkg/provider"
+	"github.com/ViBiOh/httputils/pkg/httperror"
+	"github.com/ViBiOh/httputils/pkg/httpjson"
 )
 
 // GetUser get user from given auth content

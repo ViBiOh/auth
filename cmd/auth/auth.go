@@ -4,14 +4,14 @@ import (
 	"net/http"
 
 	"github.com/NYTimes/gziphandler"
-	"github.com/ViBiOh/auth/provider/basic"
-	"github.com/ViBiOh/auth/provider/github"
-	"github.com/ViBiOh/auth/provider/twitter"
-	"github.com/ViBiOh/auth/service"
-	"github.com/ViBiOh/httputils"
-	"github.com/ViBiOh/httputils/cors"
-	"github.com/ViBiOh/httputils/healthcheck"
-	"github.com/ViBiOh/httputils/owasp"
+	"github.com/ViBiOh/auth/pkg/provider/basic"
+	"github.com/ViBiOh/auth/pkg/provider/github"
+	"github.com/ViBiOh/auth/pkg/provider/twitter"
+	"github.com/ViBiOh/auth/pkg/service"
+	"github.com/ViBiOh/httputils/pkg"
+	"github.com/ViBiOh/httputils/pkg/cors"
+	"github.com/ViBiOh/httputils/pkg/healthcheck"
+	"github.com/ViBiOh/httputils/pkg/owasp"
 )
 
 const healthPrefix = `/health`

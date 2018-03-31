@@ -6,12 +6,12 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/ViBiOh/auth/provider"
-	"github.com/ViBiOh/auth/provider/basic"
-	"github.com/ViBiOh/auth/provider/github"
-	"github.com/ViBiOh/auth/provider/twitter"
-	"github.com/ViBiOh/httputils/httperror"
-	"github.com/ViBiOh/httputils/tools"
+	"github.com/ViBiOh/auth/pkg/provider"
+	"github.com/ViBiOh/auth/pkg/provider/basic"
+	"github.com/ViBiOh/auth/pkg/provider/github"
+	"github.com/ViBiOh/auth/pkg/provider/twitter"
+	"github.com/ViBiOh/httputils/pkg/httperror"
+	"github.com/ViBiOh/httputils/pkg/tools"
 )
 
 const (

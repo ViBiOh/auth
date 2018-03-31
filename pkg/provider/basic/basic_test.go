@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/ViBiOh/auth/provider"
+	"github.com/ViBiOh/auth/pkg/provider"
 	"golang.org/x/crypto/bcrypt"
 )
 

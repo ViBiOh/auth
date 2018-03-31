@@ -7,10 +7,10 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/ViBiOh/auth/provider"
-	"github.com/ViBiOh/httputils/request"
-	"github.com/ViBiOh/httputils/tools"
-	"github.com/ViBiOh/httputils/uuid"
+	"github.com/ViBiOh/auth/pkg/provider"
+	"github.com/ViBiOh/httputils/pkg/request"
+	"github.com/ViBiOh/httputils/pkg/tools"
+	"github.com/ViBiOh/httputils/pkg/uuid"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
 )

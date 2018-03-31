@@ -3,7 +3,7 @@ package service
 import (
 	"log"
 
-	"github.com/ViBiOh/auth/provider"
+	"github.com/ViBiOh/auth/pkg/provider"
 )
 
 type providerConfig struct {
