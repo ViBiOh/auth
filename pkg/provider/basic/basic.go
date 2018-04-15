@@ -2,6 +2,7 @@ package basic
 
 import (
 	"encoding/base64"
+	"errors"
 	"flag"
 	"fmt"
 	"net/http"
@@ -86,7 +87,7 @@ func (o *Auth) GetUser(header string) (*provider.User, error) {
 
 	sepIndex := strings.Index(dataStr, `:`)
 	if sepIndex < 0 {
-		return nil, fmt.Errorf(`Error while reading basic authentication`)
+		return nil, errors.New(`Error while reading basic authentication`)
 	}
 
 	username := strings.ToLower(dataStr[:sepIndex])
