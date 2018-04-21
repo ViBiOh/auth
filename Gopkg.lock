@@ -35,7 +35,7 @@
     "pkg/tools",
     "pkg/uuid"
   ]
-  revision = "da906830ec72be878b36faf08d0bc9fdbefc7814"
+  revision = "ffc550079fc35ebf9b5872c3771e45c3157b6138"
 
 [[projects]]
   name = "github.com/golang/protobuf"
