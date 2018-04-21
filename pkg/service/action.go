@@ -73,7 +73,7 @@ func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 	for _, provider := range a.providers {
 		if strings.HasSuffix(r.URL.Path, strings.ToLower(provider.GetName())) {
 			if token, err := provider.Login(r); err != nil {
-				w.Header().Add(`WWW-Authenticate`, provider.GetName())
+				w.Header().Add(`WWW-Authenticate`, fmt.Sprintf(`%s charset="UTF-8"`, provider.GetName()))
 				httperror.Unauthorized(w, err)
 			} else if a.redirect != `` {
 				cookie.SetCookieAndRedirect(w, r, a.redirect, a.cookieDomain, fmt.Sprintf(`%s %s`, provider.GetName(), token))
