@@ -7,13 +7,14 @@ import (
 
 	"github.com/ViBiOh/auth/pkg/auth"
 	"github.com/ViBiOh/auth/pkg/cookie"
+	"github.com/ViBiOh/auth/pkg/model"
 	"github.com/ViBiOh/auth/pkg/provider"
 	"github.com/ViBiOh/httputils/pkg/httperror"
 	"github.com/ViBiOh/httputils/pkg/httpjson"
 )
 
 // GetUser get user from given auth content
-func (a *App) GetUser(authContent string) (*provider.User, error) {
+func (a *App) GetUser(authContent string) (*model.User, error) {
 	if authContent == `` {
 		return nil, auth.ErrEmptyAuthorization
 	}

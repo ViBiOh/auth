@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/ViBiOh/auth/pkg/model"
 	"github.com/ViBiOh/auth/pkg/provider"
 	"github.com/ViBiOh/httputils/pkg/request"
 	"github.com/ViBiOh/httputils/pkg/tools"
@@ -56,7 +57,7 @@ func (*Auth) GetName() string {
 }
 
 // GetUser returns User associated to header
-func (a *Auth) GetUser(header string) (*provider.User, error) {
+func (a *Auth) GetUser(header string) (*model.User, error) {
 	return nil, errors.New(`WIP`)
 }
 

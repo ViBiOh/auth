@@ -9,13 +9,14 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/ViBiOh/auth/pkg/model"
 	"github.com/ViBiOh/auth/pkg/provider"
 	"github.com/ViBiOh/httputils/pkg/tools"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type basicUser struct {
-	*provider.User
+	*model.User
 	password []byte
 }
 
@@ -44,7 +45,7 @@ func loadUsers(authUsers string) (map[string]*basicUser, error) {
 			return nil, fmt.Errorf(`Invalid id format for user %s`, authUser)
 		}
 
-		user := basicUser{&provider.User{ID: uint(id), Username: strings.ToLower(parts[1])}, []byte(parts[2])}
+		user := basicUser{&model.User{ID: uint(id), Username: strings.ToLower(parts[1])}, []byte(parts[2])}
 		users[strings.ToLower(user.Username)] = &user
 	}
 
@@ -77,7 +78,7 @@ func (*Auth) GetName() string {
 }
 
 // GetUser returns User associated to header
-func (o *Auth) GetUser(header string) (*provider.User, error) {
+func (o *Auth) GetUser(header string) (*model.User, error) {
 	data, err := base64.StdEncoding.DecodeString(header)
 	if err != nil {
 		return nil, fmt.Errorf(`Error while decoding basic authentication: %v`, err)

@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/ViBiOh/auth/pkg/provider"
+	"github.com/ViBiOh/auth/pkg/model"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -155,12 +155,12 @@ func Test_GetName(t *testing.T) {
 func Test_GetUser(t *testing.T) {
 	password, _ := bcrypt.GenerateFromPassword([]byte(`password`), 12)
 	authClient := Auth{}
-	authClient.users = map[string]*basicUser{`admin`: &basicUser{provider.NewUser(0, `admin`, ``), password}}
+	authClient.users = map[string]*basicUser{`admin`: &basicUser{model.NewUser(0, `admin`, ``), password}}
 
 	var cases = []struct {
 		intention string
 		auth      string
-		want      *provider.User
+		want      *model.User
 		wantErr   error
 	}{
 		{
@@ -190,7 +190,7 @@ func Test_GetUser(t *testing.T) {
 		{
 			`should handle valid auth`,
 			base64.StdEncoding.EncodeToString([]byte(`AdMiN:password`)),
-			&provider.User{ID: 0, Username: `admin`},
+			&model.User{ID: 0, Username: `admin`},
 			nil,
 		},
 	}

@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/ViBiOh/auth/pkg/cookie"
+	"github.com/ViBiOh/auth/pkg/model"
 	"github.com/ViBiOh/auth/pkg/provider"
 	"github.com/ViBiOh/httputils/pkg/httperror"
 	"github.com/ViBiOh/httputils/pkg/request"
@@ -27,7 +28,7 @@ var ErrEmptyAuthorization = errors.New(`Empty authorization content`)
 type App struct {
 	URL        string
 	serviceApp provider.Service
-	users      map[string]*provider.User
+	users      map[string]*model.User
 }
 
 // NewApp creates new App from Flags' config
@@ -48,13 +49,13 @@ func Flags(prefix string) map[string]*string {
 }
 
 // IsAuthenticated check if request has correct headers for authentification
-func (a *App) IsAuthenticated(r *http.Request) (*provider.User, error) {
+func (a *App) IsAuthenticated(r *http.Request) (*model.User, error) {
 	return a.IsAuthenticatedByAuth(ReadAuthContent(r))
 }
 
 // IsAuthenticatedByAuth check if authorization is correct
-func (a *App) IsAuthenticatedByAuth(authContent string) (*provider.User, error) {
-	var retrievedUser *provider.User
+func (a *App) IsAuthenticatedByAuth(authContent string) (*model.User, error) {
+	var retrievedUser *model.User
 	var err error
 
 	if a.serviceApp == nil && a.URL == `` {
@@ -82,7 +83,7 @@ func (a *App) IsAuthenticatedByAuth(authContent string) (*provider.User, error) 
 			return nil, fmt.Errorf(`Error while getting user from remote: %v`, err)
 		}
 
-		retrievedUser = &provider.User{}
+		retrievedUser = &model.User{}
 		if err := json.Unmarshal(userBytes, retrievedUser); err != nil {
 			return nil, fmt.Errorf(`Error while unmarshalling user: %v`, err)
 		}
@@ -97,7 +98,7 @@ func (a *App) IsAuthenticatedByAuth(authContent string) (*provider.User, error) 
 }
 
 // HandlerWithFail wrap next authenticated handler and fail handler
-func (a *App) HandlerWithFail(next func(http.ResponseWriter, *http.Request, *provider.User), fail func(http.ResponseWriter, *http.Request, error)) http.Handler {
+func (a *App) HandlerWithFail(next func(http.ResponseWriter, *http.Request, *model.User), fail func(http.ResponseWriter, *http.Request, error)) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if user, err := a.IsAuthenticated(r); err != nil {
 			fail(w, r, err)
@@ -108,7 +109,7 @@ func (a *App) HandlerWithFail(next func(http.ResponseWriter, *http.Request, *pro
 }
 
 // Handler wrap next authenticated handler
-func (a *App) Handler(next func(http.ResponseWriter, *http.Request, *provider.User)) http.Handler {
+func (a *App) Handler(next func(http.ResponseWriter, *http.Request, *model.User)) http.Handler {
 	return a.HandlerWithFail(next, defaultFailFunc)
 }
 
@@ -117,12 +118,12 @@ func IsForbiddenErr(err error) bool {
 	return strings.HasSuffix(err.Error(), forbiddenMessage)
 }
 
-func loadUsersProfiles(usersAndProfiles string) map[string]*provider.User {
+func loadUsersProfiles(usersAndProfiles string) map[string]*model.User {
 	if usersAndProfiles == `` {
 		return nil
 	}
 
-	users := make(map[string]*provider.User, 0)
+	users := make(map[string]*model.User, 0)
 
 	for _, user := range strings.Split(usersAndProfiles, `,`) {
 		username := user
@@ -133,7 +134,7 @@ func loadUsersProfiles(usersAndProfiles string) map[string]*provider.User {
 			profiles = parts[1]
 		}
 
-		users[strings.ToLower(username)] = provider.NewUser(uint(len(users)), username, profiles)
+		users[strings.ToLower(username)] = model.NewUser(uint(len(users)), username, profiles)
 	}
 
 	return users
