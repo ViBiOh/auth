@@ -43,8 +43,8 @@ func NewApp(config map[string]*string, serviceApp provider.Service) *App {
 // Flags add flags for given prefix
 func Flags(prefix string) map[string]*string {
 	return map[string]*string{
-		`url`:   flag.String(tools.ToCamel(fmt.Sprintf(`%s%s`, prefix, `Url`)), ``, `[auth] Auth URL, if remote`),
-		`users`: flag.String(tools.ToCamel(fmt.Sprintf(`%s%s`, prefix, `Users`)), ``, `[auth] List of allowed users and profiles (e.g. user:profile1|profile2,user2:profile3)`),
+		`url`:   flag.String(tools.ToCamel(fmt.Sprintf(`%sUrl`, prefix)), ``, `[auth] Auth URL, if remote`),
+		`users`: flag.String(tools.ToCamel(fmt.Sprintf(`%sUrl`, prefix)), ``, `[auth] List of allowed users and profiles (e.g. user:profile1|profile2,user2:profile3)`),
 	}
 }
 
