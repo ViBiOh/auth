@@ -44,7 +44,7 @@ func NewApp(config map[string]*string, serviceApp provider.Service) *App {
 func Flags(prefix string) map[string]*string {
 	return map[string]*string{
 		`url`:   flag.String(tools.ToCamel(fmt.Sprintf(`%sUrl`, prefix)), ``, `[auth] Auth URL, if remote`),
-		`users`: flag.String(tools.ToCamel(fmt.Sprintf(`%sUrl`, prefix)), ``, `[auth] List of allowed users and profiles (e.g. user:profile1|profile2,user2:profile3)`),
+		`users`: flag.String(tools.ToCamel(fmt.Sprintf(`%sUsers`, prefix)), ``, `[auth] List of allowed users and profiles (e.g. user:profile1|profile2,user2:profile3)`),
 	}
 }
 

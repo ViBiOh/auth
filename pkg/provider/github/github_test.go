@@ -26,7 +26,7 @@ func Test_Flags(t *testing.T) {
 	}
 
 	for _, testCase := range cases {
-		if result := Flags(``); len(result) != testCase.want {
+		if result := Flags(`github_test_Test_Flags`); len(result) != testCase.want {
 			t.Errorf("%s\nFlags() = %+v, want %+v", testCase.intention, result, testCase.want)
 		}
 	}

@@ -28,7 +28,7 @@ func Test_Flags(t *testing.T) {
 	}{
 		{
 			`should return map with two entries`,
-			``,
+			`auth_test_Test_Flags`,
 			2,
 		},
 	}
