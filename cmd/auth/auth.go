@@ -15,8 +15,6 @@ import (
 	"github.com/ViBiOh/httputils/pkg/owasp"
 )
 
-const healthPrefix = `/health`
-
 func main() {
 	owaspConfig := owasp.Flags(``)
 	corsConfig := cors.Flags(`cors`)
@@ -26,14 +24,16 @@ func main() {
 	twitterConfig := twitter.Flags(`twitter`)
 	datadogConfig := datadog.Flags(`datadog`)
 
+	healthcheckApp := healthcheck.NewApp()
+
 	httputils.NewApp(httputils.Flags(``), func() http.Handler {
 		serviceApp := service.NewApp(serviceConfig, basicConfig, githubConfig, twitterConfig)
 		serviceHandler := serviceApp.Handler()
 
-		healthHandler := http.StripPrefix(healthPrefix, healthcheck.Handler())
+		healthHandler := healthcheckApp.Handler(nil)
 
 		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path == healthPrefix {
+			if r.URL.Path == `/health` {
 				healthHandler.ServeHTTP(w, r)
 			} else {
 				serviceHandler.ServeHTTP(w, r)
@@ -41,5 +41,5 @@ func main() {
 		})
 
 		return datadog.NewApp(datadogConfig).Handler(gziphandler.GzipHandler(owasp.Handler(owaspConfig, cors.Handler(corsConfig, handler))))
-	}, nil).ListenAndServe()
+	}, nil, healthcheckApp).ListenAndServe()
 }
