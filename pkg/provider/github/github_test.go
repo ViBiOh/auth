@@ -33,6 +33,7 @@ func Test_Flags(t *testing.T) {
 }
 
 func Test_NewAuth(t *testing.T) {
+	empty := ``
 	name := `GitHub`
 
 	var cases = []struct {
@@ -42,7 +43,7 @@ func Test_NewAuth(t *testing.T) {
 	}{
 		{
 			`should not initialize config if not client ID`,
-			nil,
+			map[string]interface{}{`clientID`: &empty, `clientSecret`: &empty},
 			false,
 		},
 		{

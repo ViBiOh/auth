@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/ViBiOh/auth/pkg/model"
 	"github.com/ViBiOh/auth/pkg/provider"
@@ -36,19 +37,20 @@ type Auth struct {
 
 // NewAuth creates new auth
 func NewAuth(config map[string]interface{}) (provider.Auth, error) {
-	if key, ok := config[`key`]; ok && *(key.(*string)) != `` {
-		log.Print(`Twitter provider implementation is WIP`)
-
-		return &Auth{
-			oauthConf: &oauth2.Config{
-				ClientID:     *(key.(*string)),
-				ClientSecret: *(config[`secret`].(*string)),
-				Endpoint:     endpoint,
-			},
-		}, nil
+	key := strings.TrimSpace(*(config[`key`].(*string)))
+	if key == `` {
+		return nil, nil
 	}
 
-	return nil, nil
+	log.Print(`Twitter provider implementation is WIP`)
+
+	return &Auth{
+		oauthConf: &oauth2.Config{
+			ClientID:     key,
+			ClientSecret: strings.TrimSpace(*(config[`secret`].(*string))),
+			Endpoint:     endpoint,
+		},
+	}, nil
 }
 
 // GetName returns Authorization header prefix

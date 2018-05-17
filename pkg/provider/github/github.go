@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"strings"
 	"sync"
 
 	"github.com/ViBiOh/auth/pkg/model"
@@ -42,18 +43,19 @@ type Auth struct {
 
 // NewAuth creates new auth
 func NewAuth(config map[string]interface{}) (provider.Auth, error) {
-	if clientID, ok := config[`clientID`]; ok && *(clientID.(*string)) != `` {
-		return &Auth{
-			oauthConf: &oauth2.Config{
-				ClientID:     *(clientID.(*string)),
-				ClientSecret: *(config[`clientSecret`].(*string)),
-				Endpoint:     endpoint,
-			},
-			states: sync.Map{},
-		}, nil
+	clientID := strings.TrimSpace(*(config[`clientID`].(*string)))
+	if clientID == `` {
+		return nil, nil
 	}
 
-	return nil, nil
+	return &Auth{
+		oauthConf: &oauth2.Config{
+			ClientID:     clientID,
+			ClientSecret: strings.TrimSpace(*(config[`clientSecret`].(*string))),
+			Endpoint:     endpoint,
+		},
+		states: sync.Map{},
+	}, nil
 }
 
 // GetName returns Authorization header prefix

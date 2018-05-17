@@ -34,7 +34,7 @@ type App struct {
 // NewApp creates new App from Flags' config
 func NewApp(config map[string]*string, serviceApp provider.Service) *App {
 	return &App{
-		URL:        *config[`url`],
+		URL:        strings.TrimSpace(*config[`url`]),
 		serviceApp: serviceApp,
 		users:      loadUsersProfiles(*config[`users`]),
 	}
@@ -142,7 +142,7 @@ func loadUsersProfiles(usersAndProfiles string) map[string]*model.User {
 
 // ReadAuthContent from Header or Cookie
 func ReadAuthContent(r *http.Request) string {
-	authContent := r.Header.Get(authorizationHeader)
+	authContent := strings.TrimSpace(r.Header.Get(authorizationHeader))
 	if authContent != `` {
 		return authContent
 	}
