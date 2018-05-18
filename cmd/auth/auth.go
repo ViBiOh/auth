@@ -28,18 +28,16 @@ func main() {
 
 	httputils.NewApp(httputils.Flags(``), func() http.Handler {
 		serviceApp := service.NewApp(serviceConfig, basicConfig, githubConfig, twitterConfig)
-		serviceHandler := serviceApp.Handler()
+		serviceHandler := opentracing.NewApp(opentracingConfig).Handler(gziphandler.GzipHandler(owasp.Handler(owaspConfig, cors.Handler(corsConfig, serviceApp.Handler()))))
 
 		healthHandler := healthcheckApp.Handler(nil)
 
-		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if r.URL.Path == `/health` {
 				healthHandler.ServeHTTP(w, r)
 			} else {
 				serviceHandler.ServeHTTP(w, r)
 			}
 		})
-
-		return opentracing.NewApp(opentracingConfig).Handler(gziphandler.GzipHandler(owasp.Handler(owaspConfig, cors.Handler(corsConfig, handler))))
 	}, nil, healthcheckApp).ListenAndServe()
 }
