@@ -11,6 +11,7 @@ import (
 	"github.com/ViBiOh/httputils/pkg"
 	"github.com/ViBiOh/httputils/pkg/cors"
 	"github.com/ViBiOh/httputils/pkg/healthcheck"
+	"github.com/ViBiOh/httputils/pkg/opentracing"
 	"github.com/ViBiOh/httputils/pkg/owasp"
 )
 
@@ -21,6 +22,7 @@ func main() {
 	basicConfig := basic.Flags(`basic`)
 	githubConfig := github.Flags(`github`)
 	twitterConfig := twitter.Flags(`twitter`)
+	opentracingConfig := opentracing.Flags(`tracing`)
 
 	healthcheckApp := healthcheck.NewApp()
 
@@ -38,6 +40,6 @@ func main() {
 			}
 		})
 
-		return gziphandler.GzipHandler(owasp.Handler(owaspConfig, cors.Handler(corsConfig, handler)))
+		return opentracing.NewApp(opentracingConfig).Handler(gziphandler.GzipHandler(owasp.Handler(owaspConfig, cors.Handler(corsConfig, handler))))
 	}, nil, healthcheckApp).ListenAndServe()
 }

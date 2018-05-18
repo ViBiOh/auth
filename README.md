@@ -77,6 +77,10 @@ Usage of auth:
       [tls] Self-signed certificate hosts, comma separated (default "localhost")
   -tlsKey string
       [tls] PEM Key file
+  -tracingAgent string
+      [opentracing] Jaeger Agent host:port (default "jaeger:6831")
+  -tracingName string
+      [opentracing] Service name
   -twitterKey string
       [Twitter] Consumer Key
   -twitterSecret string
