@@ -1,6 +1,7 @@
 package basic
 
 import (
+	"context"
 	"encoding/base64"
 	"errors"
 	"flag"
@@ -78,7 +79,7 @@ func (*Auth) GetName() string {
 }
 
 // GetUser returns User associated to header
-func (o *Auth) GetUser(header string) (*model.User, error) {
+func (a *Auth) GetUser(ctx context.Context, header string) (*model.User, error) {
 	data, err := base64.StdEncoding.DecodeString(header)
 	if err != nil {
 		return nil, fmt.Errorf(`Error while decoding basic authentication: %v`, err)
@@ -94,7 +95,7 @@ func (o *Auth) GetUser(header string) (*model.User, error) {
 	username := strings.ToLower(dataStr[:sepIndex])
 	password := dataStr[sepIndex+1:]
 
-	user, ok := o.users[username]
+	user, ok := a.users[username]
 	if ok {
 		if err := bcrypt.CompareHashAndPassword(user.password, []byte(password)); err != nil {
 			ok = false
@@ -114,10 +115,10 @@ func (*Auth) Redirect() (string, error) {
 }
 
 // Login exchange state to token
-func (o *Auth) Login(r *http.Request) (string, error) {
-	authContent := strings.TrimPrefix(r.Header.Get(`Authorization`), fmt.Sprintf(`%s `, o.GetName()))
+func (a *Auth) Login(r *http.Request) (string, error) {
+	authContent := strings.TrimPrefix(r.Header.Get(`Authorization`), fmt.Sprintf(`%s `, a.GetName()))
 
-	if _, err := o.GetUser(authContent); err != nil {
+	if _, err := a.GetUser(r.Context(), authContent); err != nil {
 		return ``, err
 	}
 	return authContent, nil

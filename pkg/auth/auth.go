@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -50,11 +51,11 @@ func Flags(prefix string) map[string]*string {
 
 // IsAuthenticated check if request has correct headers for authentification
 func (a *App) IsAuthenticated(r *http.Request) (*model.User, error) {
-	return a.IsAuthenticatedByAuth(ReadAuthContent(r))
+	return a.IsAuthenticatedByAuth(r.Context(), ReadAuthContent(r))
 }
 
 // IsAuthenticatedByAuth check if authorization is correct
-func (a *App) IsAuthenticatedByAuth(authContent string) (*model.User, error) {
+func (a *App) IsAuthenticatedByAuth(ctx context.Context, authContent string) (*model.User, error) {
 	var retrievedUser *model.User
 	var err error
 
@@ -70,11 +71,10 @@ func (a *App) IsAuthenticatedByAuth(authContent string) (*model.User, error) {
 	}
 
 	if retrievedUser == nil && a.URL != `` {
-		headers := map[string]string{
-			authorizationHeader: authContent,
-		}
+		headers := http.Header{}
+		headers.Set(authorizationHeader, authContent)
 
-		userBytes, err := request.Get(fmt.Sprintf(`%s/user`, a.URL), headers)
+		userBytes, err := request.Get(ctx, fmt.Sprintf(`%s/user`, a.URL), headers)
 		if err != nil {
 			if strings.HasPrefix(string(userBytes), ErrEmptyAuthorization.Error()) {
 				return nil, ErrEmptyAuthorization

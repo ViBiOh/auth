@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -14,7 +15,7 @@ import (
 )
 
 // GetUser get user from given auth content
-func (a *App) GetUser(authContent string) (*model.User, error) {
+func (a *App) GetUser(ctx context.Context, authContent string) (*model.User, error) {
 	if authContent == `` {
 		return nil, auth.ErrEmptyAuthorization
 	}
@@ -26,7 +27,7 @@ func (a *App) GetUser(authContent string) (*model.User, error) {
 
 	for _, provider := range a.providers {
 		if parts[0] == provider.GetName() {
-			user, err := provider.GetUser(parts[1])
+			user, err := provider.GetUser(ctx, parts[1])
 			if err != nil {
 				return nil, err
 			}
@@ -38,7 +39,7 @@ func (a *App) GetUser(authContent string) (*model.User, error) {
 }
 
 func (a *App) userHandler(w http.ResponseWriter, r *http.Request) {
-	user, err := a.GetUser(auth.ReadAuthContent(r))
+	user, err := a.GetUser(r.Context(), auth.ReadAuthContent(r))
 	if err != nil {
 		if err == provider.ErrMalformedAuth || err == provider.ErrUnknownAuthType {
 			httperror.BadRequest(w, err)

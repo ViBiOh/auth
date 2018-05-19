@@ -1,6 +1,7 @@
 package github
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -64,8 +65,8 @@ func (*Auth) GetName() string {
 }
 
 // GetUser returns User associated to header
-func (*Auth) GetUser(header string) (*model.User, error) {
-	userResponse, err := request.Get(userURL, map[string]string{`Authorization`: fmt.Sprintf(`token %s`, header)})
+func (*Auth) GetUser(ctx context.Context, header string) (*model.User, error) {
+	userResponse, err := request.Get(ctx, userURL, http.Header{`Authorization`: []string{fmt.Sprintf(`token %s`, header)}})
 	if err != nil {
 		return nil, fmt.Errorf(`Error while fetching user informations: %v`, err)
 	}

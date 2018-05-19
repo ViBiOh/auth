@@ -1,6 +1,7 @@
 package twitter
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"fmt"
@@ -59,7 +60,7 @@ func (*Auth) GetName() string {
 }
 
 // GetUser returns User associated to header
-func (a *Auth) GetUser(header string) (*model.User, error) {
+func (a *Auth) GetUser(ctx context.Context, header string) (*model.User, error) {
 	return nil, errors.New(`WIP`)
 }
 

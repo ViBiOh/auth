@@ -198,7 +198,7 @@ func Test_GetUser(t *testing.T) {
 	var failed bool
 
 	for _, testCase := range cases {
-		result, err := authClient.GetUser(testCase.auth)
+		result, err := authClient.GetUser(nil, testCase.auth)
 
 		failed = false
 

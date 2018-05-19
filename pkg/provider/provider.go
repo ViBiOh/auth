@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"context"
 	"errors"
 	"net/http"
 
@@ -29,7 +30,7 @@ type Service interface {
 // Auth is a provider of Authentification methods
 type Auth interface {
 	GetName() string
-	GetUser(string) (*model.User, error)
+	GetUser(context.Context, string) (*model.User, error)
 	Redirect() (string, error)
 	Login(*http.Request) (string, error)
 }

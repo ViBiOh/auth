@@ -128,7 +128,7 @@ func Test_GetUser(t *testing.T) {
 
 	for _, testCase := range cases {
 		userURL = testServer.URL
-		result, err := (&Auth{}).GetUser(testCase.header)
+		result, err := (&Auth{}).GetUser(nil, testCase.header)
 
 		failed = false
 
