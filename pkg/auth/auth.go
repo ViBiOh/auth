@@ -64,7 +64,7 @@ func (a *App) IsAuthenticatedByAuth(ctx context.Context, authContent string) (*m
 	}
 
 	if a.serviceApp != nil {
-		retrievedUser, err = a.serviceApp.GetUser(authContent)
+		retrievedUser, err = a.serviceApp.GetUser(ctx, authContent)
 		if err != nil && a.URL == `` {
 			return nil, fmt.Errorf(`Error while getting user from service: %v`, err)
 		}
