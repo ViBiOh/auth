@@ -32,9 +32,9 @@ build:
 	CGO_ENABLED=0 go build -ldflags="-s -w" -installsuffix nocgo pkg/auth/auth.go
 
 start:
-	go run cmd/auth/auth.go \
+	go run -race cmd/auth/auth.go \
 		-tls=false \
-		-basicUsers "1:admin:`go run bcrypt/bcrypt.go admin`"
+		-basicUsers "1:admin:`go run -race bcrypt/bcrypt.go admin`"
 
 docker-deps:
 	curl -s -o cacert.pem https://curl.haxx.se/ca/cacert.pem
