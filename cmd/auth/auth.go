@@ -1,7 +1,7 @@
 package main
 
 import (
-	"net/http"
+	"flag"
 
 	"github.com/NYTimes/gziphandler"
 	"github.com/ViBiOh/auth/pkg/provider/basic"
@@ -9,35 +9,38 @@ import (
 	"github.com/ViBiOh/auth/pkg/provider/twitter"
 	"github.com/ViBiOh/auth/pkg/service"
 	"github.com/ViBiOh/httputils/pkg"
+	"github.com/ViBiOh/httputils/pkg/alcotest"
 	"github.com/ViBiOh/httputils/pkg/cors"
 	"github.com/ViBiOh/httputils/pkg/healthcheck"
 	"github.com/ViBiOh/httputils/pkg/opentracing"
 	"github.com/ViBiOh/httputils/pkg/owasp"
+	"github.com/ViBiOh/httputils/pkg/server"
 )
 
 func main() {
+	serverConfig := httputils.Flags(``)
+	alcotestConfig := alcotest.Flags(``)
+	opentracingConfig := opentracing.Flags(`tracing`)
 	owaspConfig := owasp.Flags(``)
 	corsConfig := cors.Flags(`cors`)
+
 	serviceConfig := service.Flags(``)
 	basicConfig := basic.Flags(`basic`)
 	githubConfig := github.Flags(`github`)
 	twitterConfig := twitter.Flags(`twitter`)
-	opentracingConfig := opentracing.Flags(`tracing`)
 
+	flag.Parse()
+
+	alcotest.DoAndExit(alcotestConfig)
+
+	serverApp := httputils.NewApp(serverConfig)
 	healthcheckApp := healthcheck.NewApp()
+	opentracingApp := opentracing.NewApp(opentracingConfig)
+	owaspApp := owasp.NewApp(owaspConfig)
+	corsApp := cors.NewApp(corsConfig)
 
-	httputils.NewApp(httputils.Flags(``), func() http.Handler {
-		serviceApp := service.NewApp(serviceConfig, basicConfig, githubConfig, twitterConfig)
-		serviceHandler := opentracing.NewApp(opentracingConfig).Handler(gziphandler.GzipHandler(owasp.Handler(owaspConfig, cors.Handler(corsConfig, serviceApp.Handler()))))
+	serviceApp := service.NewApp(serviceConfig, basicConfig, githubConfig, twitterConfig)
+	serviceHandler := server.ChainMiddlewares(gziphandler.GzipHandler(serviceApp.Handler()), opentracingApp, owaspApp, corsApp)
 
-		healthHandler := healthcheckApp.Handler(nil)
-
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path == `/health` {
-				healthHandler.ServeHTTP(w, r)
-			} else {
-				serviceHandler.ServeHTTP(w, r)
-			}
-		})
-	}, nil, healthcheckApp).ListenAndServe()
+	serverApp.ListenAndServe(serviceHandler, nil, healthcheckApp)
 }
