@@ -12,8 +12,10 @@
   name = "github.com/ViBiOh/httputils"
   packages = [
     "pkg",
+    "pkg/alcotest",
     "pkg/cert",
     "pkg/cors",
+    "pkg/gzip",
     "pkg/healthcheck",
     "pkg/httperror",
     "pkg/httpjson",
@@ -24,7 +26,7 @@
     "pkg/tools",
     "pkg/uuid"
   ]
-  revision = "102aa71021682a10c43740d54cf8879fb33e59a3"
+  revision = "5f118d9228ef4b0d3a598415e4cccc37b65f5577"
 
 [[projects]]
   branch = "master"
@@ -47,8 +49,8 @@
 [[projects]]
   name = "github.com/matttproud/golang_protobuf_extensions"
   packages = ["pbutil"]
-  revision = "3247c84500bff8d9fb6d579d800f20b3e091582c"
-  version = "v1.0.0"
+  revision = "c12348ce28de40eed0136aa2b644d0ee0650e56c"
+  version = "v1.0.1"
 
 [[projects]]
   branch = "master"
@@ -144,7 +146,7 @@
     "bcrypt",
     "blowfish"
   ]
-  revision = "159ae71589f303f9fbfd7528413e0fe944b9c1cb"
+  revision = "ab813273cd59e1333f7ae7bff5d027d4aadf528c"
 
 [[projects]]
   branch = "master"
@@ -182,6 +184,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "88759e6f8a60c8bec54908b89b7514b272d13573cc30eb8a8a7a8e7f1c5aeb59"
+  inputs-digest = "6aa775463e2b6950357149fecb4038272cd018a249a53b457682ebeefc7cbfa1"
   solver-name = "gps-cdcl"
   solver-version = 1

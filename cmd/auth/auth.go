@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 
-	"github.com/NYTimes/gziphandler"
 	"github.com/ViBiOh/auth/pkg/provider/basic"
 	"github.com/ViBiOh/auth/pkg/provider/github"
 	"github.com/ViBiOh/auth/pkg/provider/twitter"
@@ -11,6 +10,7 @@ import (
 	"github.com/ViBiOh/httputils/pkg"
 	"github.com/ViBiOh/httputils/pkg/alcotest"
 	"github.com/ViBiOh/httputils/pkg/cors"
+	"github.com/ViBiOh/httputils/pkg/gzip"
 	"github.com/ViBiOh/httputils/pkg/healthcheck"
 	"github.com/ViBiOh/httputils/pkg/opentracing"
 	"github.com/ViBiOh/httputils/pkg/owasp"
@@ -38,9 +38,10 @@ func main() {
 	opentracingApp := opentracing.NewApp(opentracingConfig)
 	owaspApp := owasp.NewApp(owaspConfig)
 	corsApp := cors.NewApp(corsConfig)
+	gzipApp := gzip.NewApp()
 
 	serviceApp := service.NewApp(serviceConfig, basicConfig, githubConfig, twitterConfig)
-	serviceHandler := server.ChainMiddlewares(gziphandler.GzipHandler(serviceApp.Handler()), opentracingApp, owaspApp, corsApp)
+	serviceHandler := server.ChainMiddlewares(serviceApp.Handler(), opentracingApp, gzipApp, owaspApp, corsApp)
 
 	serverApp.ListenAndServe(serviceHandler, nil, healthcheckApp)
 }

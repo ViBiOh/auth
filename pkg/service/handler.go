@@ -67,7 +67,7 @@ func (a *App) Handler() http.Handler {
 		}
 
 		if r.Method != http.MethodGet {
-			w.WriteHeader(http.StatusMethodNotAllowed)
+			http.Error(w, fmt.Sprintf(`%d Method not allowed`, http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 			return
 		}
 
