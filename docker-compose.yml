@@ -15,6 +15,8 @@ services:
     - ${TWITTER_OAUTH_KEY}
     - -twitterSecret
     - ${TWITTER_OAUTH_SECRET}
+    - -tracingName
+    - auth
     labels:
       traefik.frontend.passHostHeader: 'true'
       traefik.frontend.rule: 'Host: auth.vibioh.fr'
