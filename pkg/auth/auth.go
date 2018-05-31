@@ -50,12 +50,12 @@ func Flags(prefix string) map[string]*string {
 }
 
 // IsAuthenticated check if request has correct headers for authentification
-func (a *App) IsAuthenticated(r *http.Request) (*model.User, error) {
+func (a App) IsAuthenticated(r *http.Request) (*model.User, error) {
 	return a.IsAuthenticatedByAuth(r.Context(), ReadAuthContent(r))
 }
 
 // IsAuthenticatedByAuth check if authorization is correct
-func (a *App) IsAuthenticatedByAuth(ctx context.Context, authContent string) (*model.User, error) {
+func (a App) IsAuthenticatedByAuth(ctx context.Context, authContent string) (*model.User, error) {
 	var retrievedUser *model.User
 	var err error
 
@@ -98,7 +98,7 @@ func (a *App) IsAuthenticatedByAuth(ctx context.Context, authContent string) (*m
 }
 
 // HandlerWithFail wrap next authenticated handler and fail handler
-func (a *App) HandlerWithFail(next func(http.ResponseWriter, *http.Request, *model.User), fail func(http.ResponseWriter, *http.Request, error)) http.Handler {
+func (a App) HandlerWithFail(next func(http.ResponseWriter, *http.Request, *model.User), fail func(http.ResponseWriter, *http.Request, error)) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if user, err := a.IsAuthenticated(r); err != nil {
 			fail(w, r, err)
@@ -109,7 +109,7 @@ func (a *App) HandlerWithFail(next func(http.ResponseWriter, *http.Request, *mod
 }
 
 // Handler wrap next authenticated handler
-func (a *App) Handler(next func(http.ResponseWriter, *http.Request, *model.User)) http.Handler {
+func (a App) Handler(next func(http.ResponseWriter, *http.Request, *model.User)) http.Handler {
 	return a.HandlerWithFail(next, defaultFailFunc)
 }
 

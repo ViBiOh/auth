@@ -15,7 +15,7 @@ import (
 )
 
 // GetUser get user from given auth content
-func (a *App) GetUser(ctx context.Context, authContent string) (*model.User, error) {
+func (a App) GetUser(ctx context.Context, authContent string) (*model.User, error) {
 	if authContent == `` {
 		return nil, auth.ErrEmptyAuthorization
 	}
@@ -38,7 +38,7 @@ func (a *App) GetUser(ctx context.Context, authContent string) (*model.User, err
 	return nil, provider.ErrUnknownAuthType
 }
 
-func (a *App) userHandler(w http.ResponseWriter, r *http.Request) {
+func (a App) userHandler(w http.ResponseWriter, r *http.Request) {
 	user, err := a.GetUser(r.Context(), auth.ReadAuthContent(r))
 	if err != nil {
 		if err == provider.ErrMalformedAuth || err == provider.ErrUnknownAuthType {
@@ -55,7 +55,7 @@ func (a *App) userHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (a *App) redirectHandler(w http.ResponseWriter, r *http.Request) {
+func (a App) redirectHandler(w http.ResponseWriter, r *http.Request) {
 	for _, provider := range a.providers {
 		if strings.HasSuffix(r.URL.Path, strings.ToLower(provider.GetName())) {
 			if redirect, err := provider.Redirect(); err != nil {
@@ -71,7 +71,7 @@ func (a *App) redirectHandler(w http.ResponseWriter, r *http.Request) {
 	httperror.BadRequest(w, provider.ErrUnknownAuthType)
 }
 
-func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
+func (a App) loginHandler(w http.ResponseWriter, r *http.Request) {
 	for _, provider := range a.providers {
 		if strings.HasSuffix(r.URL.Path, strings.ToLower(provider.GetName())) {
 			if token, err := provider.Login(r); err != nil {
@@ -90,6 +90,6 @@ func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 	httperror.BadRequest(w, provider.ErrUnknownAuthType)
 }
 
-func (a *App) logoutHandler(w http.ResponseWriter, r *http.Request) {
+func (a App) logoutHandler(w http.ResponseWriter, r *http.Request) {
 	cookie.ClearCookieAndRedirect(w, r, a.redirect, a.cookieDomain)
 }
