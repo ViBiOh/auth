@@ -26,7 +26,7 @@
     "pkg/tools",
     "pkg/uuid"
   ]
-  revision = "5f118d9228ef4b0d3a598415e4cccc37b65f5577"
+  revision = "9f9961492345a8306528feb1283c6b76fc6d7e3e"
 
 [[projects]]
   branch = "master"
@@ -151,7 +151,7 @@
     "nfs",
     "xfs"
   ]
-  revision = "8b1c2da0d56deffdbb9e48d4414b4e674bd8083e"
+  revision = "61aaa706c6d4fda9365b6273c96839eb7e27f6e4"
 
 [[projects]]
   name = "github.com/uber/jaeger-client-go"
@@ -198,7 +198,7 @@
     "context",
     "context/ctxhttp"
   ]
-  revision = "dfa909b99c79129e1100513e5cd36307665e5723"
+  revision = "1e491301e022f8f977054da4c2d852decd59571f"
 
 [[projects]]
   branch = "master"
@@ -208,7 +208,7 @@
     "github",
     "internal"
   ]
-  revision = "770e5ebd4ab27c4d70b0983674d138217f5e2c72"
+  revision = "ec22f46f877b4505e0117eeaab541714644fdd28"
 
 [[projects]]
   branch = "master"
@@ -233,6 +233,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "75cc574cac728c97648a9d0108f664bc37249fccd42ed88384345ec67be3e2dc"
+  inputs-digest = "a6ce8255bbfeb876e09fbcc3c6f08cb4d44493374376b4e54c442c84b23fac34"
   solver-name = "gps-cdcl"
   solver-version = 1
