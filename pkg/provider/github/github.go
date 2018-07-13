@@ -21,6 +21,7 @@ import (
 type githubUser struct {
 	ID    uint
 	Login string
+	Email string
 }
 
 var (
@@ -76,7 +77,7 @@ func (*Auth) GetUser(ctx context.Context, header string) (*model.User, error) {
 		return nil, fmt.Errorf(`Error while unmarshalling user informations: %v`, err)
 	}
 
-	return &model.User{ID: user.ID, Username: user.Login}, nil
+	return &model.User{ID: user.ID, Username: user.Login, Email: user.Email}, nil
 }
 
 // Redirect redirects user to GitHub endpoint

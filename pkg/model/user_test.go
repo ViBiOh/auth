@@ -10,6 +10,7 @@ func Test_NewUser(t *testing.T) {
 		intention string
 		id        uint
 		username  string
+		email     string
 		profiles  string
 		want      *User
 	}{
@@ -17,13 +18,14 @@ func Test_NewUser(t *testing.T) {
 			`should work with given params`,
 			1,
 			`vibioh`,
+			`nobody@localhost`,
 			`admin|multi`,
-			&User{1, `vibioh`, `admin|multi`},
+			&User{1, `vibioh`, `nobody@localhost`, `admin|multi`},
 		},
 	}
 
 	for _, testCase := range cases {
-		if result := NewUser(testCase.id, testCase.username, testCase.profiles); !reflect.DeepEqual(result, testCase.want) {
+		if result := NewUser(testCase.id, testCase.username, testCase.email, testCase.profiles); !reflect.DeepEqual(result, testCase.want) {
 			t.Errorf("%s\nNewUser(%+v, %+v, %+v) = %+v, want %+v", testCase.intention, testCase.id, testCase.username, testCase.profiles, result, testCase.want)
 		}
 	}
