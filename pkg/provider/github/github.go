@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 	"sync"
@@ -81,6 +82,7 @@ func (*Auth) GetUser(ctx context.Context, header string) (*model.User, error) {
 	}
 
 	user := githubUser{}
+	log.Printf(`Github User: %s`, userResponse) // TODO temp
 	if err := json.Unmarshal(userResponse, &user); err != nil {
 		return nil, fmt.Errorf(`Error while unmarshalling user informations: %v`, err)
 	}
