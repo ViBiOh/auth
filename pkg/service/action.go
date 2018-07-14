@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 
@@ -33,7 +32,6 @@ func (a App) GetUser(ctx context.Context, authContent string) (*model.User, erro
 				return nil, err
 			}
 
-			log.Printf(`Output User: %+v`, user) // TODO temp
 			return user, nil
 		}
 	}

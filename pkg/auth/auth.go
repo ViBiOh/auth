@@ -6,7 +6,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 	"sync"
@@ -96,7 +95,6 @@ func (a *App) IsAuthenticatedByAuth(ctx context.Context, authContent string) (*m
 	a.mutex.Lock()
 	defer a.mutex.Unlock()
 
-	log.Printf(`Authenticated user: %+v`, retrievedUser) // TODO temp
 	if appUser, ok := a.users[strings.ToLower(retrievedUser.Username)]; ok {
 		if appUser.ID != retrievedUser.ID || appUser.Email != retrievedUser.Email {
 			appUser.ID = retrievedUser.ID

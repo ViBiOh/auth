@@ -19,14 +19,20 @@ import (
 	"golang.org/x/oauth2/github"
 )
 
+type githubEmail struct {
+	Email    string
+	Primary  bool
+	Verified bool
+}
+
 type githubUser struct {
-	ID    uint   `json:"id"`
-	Login string `json:"login"`
-	Email string `json:"email"`
+	ID    uint
+	Login string
 }
 
 var (
 	userURL  = `https://api.github.com/user`
+	emailURL = `https://api.github.com/user/emails`
 	endpoint = github.Endpoint
 )
 
@@ -74,20 +80,41 @@ func (*Auth) GetName() string {
 	return `GitHub`
 }
 
+func (*Auth) getUserEmail(ctx context.Context, header string) string {
+	mailResponse, err := request.Get(ctx, emailURL, http.Header{`Authorization`: []string{fmt.Sprintf(`token %s`, header)}})
+	if err != nil {
+		log.Printf(`[github] Error while fetching email informations: %v`, err)
+		return ``
+	}
+
+	emails := make([]githubEmail, 0)
+	if err := json.Unmarshal(mailResponse, &emails); err != nil {
+		log.Printf(`[github] Error while unmarshalling emails informations: %v`, err)
+		return ``
+	}
+
+	for _, email := range emails {
+		if email.Verified && email.Primary {
+			return email.Email
+		}
+	}
+
+	return ``
+}
+
 // GetUser returns User associated to header
-func (*Auth) GetUser(ctx context.Context, header string) (*model.User, error) {
+func (o *Auth) GetUser(ctx context.Context, header string) (*model.User, error) {
 	userResponse, err := request.Get(ctx, userURL, http.Header{`Authorization`: []string{fmt.Sprintf(`token %s`, header)}})
 	if err != nil {
 		return nil, fmt.Errorf(`Error while fetching user informations: %v`, err)
 	}
 
 	user := githubUser{}
-	log.Printf(`Github User: %s`, userResponse) // TODO temp
 	if err := json.Unmarshal(userResponse, &user); err != nil {
 		return nil, fmt.Errorf(`Error while unmarshalling user informations: %v`, err)
 	}
 
-	return &model.User{ID: user.ID, Username: user.Login, Email: user.Email}, nil
+	return &model.User{ID: user.ID, Username: user.Login, Email: o.getUserEmail(ctx, header)}, nil
 }
 
 // Redirect redirects user to GitHub endpoint
