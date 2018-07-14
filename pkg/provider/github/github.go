@@ -83,7 +83,7 @@ func (*Auth) GetName() string {
 func (*Auth) getUserEmail(ctx context.Context, header string) string {
 	mailResponse, err := request.Get(ctx, emailURL, http.Header{`Authorization`: []string{fmt.Sprintf(`token %s`, header)}})
 	if err != nil {
-		log.Printf(`[github] Error while fetching email informations: %v`, err)
+		log.Printf(`[github] Error while fetching email informations: %v: %s`, err, mailResponse)
 		return ``
 	}
 
