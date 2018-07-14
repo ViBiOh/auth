@@ -6,6 +6,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 	"sync"
@@ -87,6 +88,7 @@ func (a *App) IsAuthenticatedByAuth(ctx context.Context, authContent string) (*m
 		}
 
 		retrievedUser = &model.User{}
+		log.Printf(`Github User: %s`, userBytes) // TODO temp
 		if err := json.Unmarshal(userBytes, retrievedUser); err != nil {
 			return nil, fmt.Errorf(`Error while unmarshalling user: %v`, err)
 		}
@@ -95,7 +97,7 @@ func (a *App) IsAuthenticatedByAuth(ctx context.Context, authContent string) (*m
 	a.mutex.Lock()
 	defer a.mutex.Unlock()
 
-	if appUser, ok := a.users[strings.ToLower(string(retrievedUser.Username))]; ok {
+	if appUser, ok := a.users[strings.ToLower(retrievedUser.Username)]; ok {
 		if appUser.ID != retrievedUser.ID || appUser.Email != retrievedUser.Email {
 			appUser.ID = retrievedUser.ID
 			appUser.Email = retrievedUser.Email

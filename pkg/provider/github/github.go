@@ -19,9 +19,9 @@ import (
 )
 
 type githubUser struct {
-	ID    uint
-	Login string
-	Email string
+	ID    uint   `json:"id"`
+	Login string `json:"login"`
+	Email string `json:"email"`
 }
 
 var (
