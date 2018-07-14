@@ -2,6 +2,7 @@ package github
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -17,17 +18,35 @@ import (
 func Test_Flags(t *testing.T) {
 	var cases = []struct {
 		intention string
-		want      int
+		want      string
+		wantType  string
 	}{
 		{
-			`should return map with two entries`,
-			2,
+			`should add string clientID param to flags`,
+			`clientID`,
+			`*string`,
+		},
+		{
+			`should add string clientSecret param to flags`,
+			`clientSecret`,
+			`*string`,
+		},
+		{
+			`should add string scopes param to flags`,
+			`scopes`,
+			`*string`,
 		},
 	}
 
 	for _, testCase := range cases {
-		if result := Flags(`github_test_Test_Flags`); len(result) != testCase.want {
-			t.Errorf("%s\nFlags() = %+v, want %+v", testCase.intention, result, testCase.want)
+		result := Flags(testCase.intention)[testCase.want]
+
+		if result == nil {
+			t.Errorf("%s\nFlags() = %+v, want `%s`", testCase.intention, result, testCase.want)
+		}
+
+		if fmt.Sprintf(`%T`, result) != testCase.wantType {
+			t.Errorf("%s\nFlags() = `%T`, want `%s`", testCase.intention, result, testCase.wantType)
 		}
 	}
 }
@@ -43,12 +62,12 @@ func Test_NewAuth(t *testing.T) {
 	}{
 		{
 			`should not initialize config if not client ID`,
-			map[string]interface{}{`clientID`: &empty, `clientSecret`: &empty},
+			map[string]interface{}{`clientID`: &empty, `clientSecret`: &empty, `scopes`: &empty},
 			false,
 		},
 		{
 			`should init oauth config`,
-			map[string]interface{}{`clientID`: &name, `clientSecret`: &name},
+			map[string]interface{}{`clientID`: &name, `clientSecret`: &name, `scopes`: &empty},
 			true,
 		},
 	}
@@ -168,6 +187,7 @@ func Test_Login(t *testing.T) {
 	auth, _ := NewAuth(map[string]interface{}{
 		`clientID`:     &configValue,
 		`clientSecret`: &configValue,
+		`scopes`: &configValue,
 	})
 	authClient := auth.(*Auth)
 

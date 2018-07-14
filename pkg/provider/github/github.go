@@ -32,8 +32,9 @@ var (
 // Flags add flags for given prefix
 func Flags(prefix string) map[string]interface{} {
 	return map[string]interface{}{
-		`clientID`:     flag.String(tools.ToCamel(fmt.Sprintf(`%s%s`, prefix, `ClientId`)), ``, `[GitHub] OAuth Client ID`),
-		`clientSecret`: flag.String(tools.ToCamel(fmt.Sprintf(`%s%s`, prefix, `ClientSecret`)), ``, `[GitHub] OAuth Client Secret`),
+		`clientID`:     flag.String(tools.ToCamel(fmt.Sprintf(`%sClientId`, prefix)), ``, `[GitHub] OAuth Client ID`),
+		`clientSecret`: flag.String(tools.ToCamel(fmt.Sprintf(`%sClientSecret`, prefix)), ``, `[GitHub] OAuth Client Secret`),
+		`scopes`:       flag.String(tools.ToCamel(fmt.Sprintf(`%sScopes`, prefix)), ``, `[GitHub] OAuth Scopes, comma separated`),
 	}
 }
 
@@ -50,11 +51,18 @@ func NewAuth(config map[string]interface{}) (provider.Auth, error) {
 		return nil, nil
 	}
 
+	var scopes []string
+	rawScopes := strings.TrimSpace(*(config[`scopes`].(*string)))
+	if rawScopes != `` {
+		scopes = strings.Split(rawScopes, `,`)
+	}
+
 	return &Auth{
 		oauthConf: &oauth2.Config{
 			ClientID:     clientID,
 			ClientSecret: strings.TrimSpace(*(config[`clientSecret`].(*string))),
 			Endpoint:     endpoint,
+			Scopes:       scopes,
 		},
 		states: sync.Map{},
 	}, nil
