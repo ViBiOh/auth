@@ -18,18 +18,6 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
 )
-
-type githubEmail struct {
-	Email    string
-	Primary  bool
-	Verified bool
-}
-
-type githubUser struct {
-	ID    uint
-	Login string
-}
-
 var (
 	userURL  = `https://api.github.com/user`
 	emailURL = `https://api.github.com/user/emails`
@@ -80,7 +68,25 @@ func (*Auth) GetName() string {
 	return `GitHub`
 }
 
-func (*Auth) getUserEmail(ctx context.Context, header string) string {
+func (a *Auth) hasEmailAccess() bool {
+	if len(a.oauthConf.Scopes) == 0 {
+		return false
+	}
+
+	for _, scope := range a.oauthConf.Scopes {
+		if scope == `user:email` || scope == `user` {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (a *Auth) getUserEmail(ctx context.Context, header string) string {
+	if !a.hasEmailAccess() {
+		return ``
+	}
+
 	mailResponse, err := request.Get(ctx, emailURL, http.Header{`Authorization`: []string{fmt.Sprintf(`token %s`, header)}})
 	if err != nil {
 		log.Printf(`[github] Error while fetching email informations: %v: %s`, err, mailResponse)
@@ -103,7 +109,7 @@ func (*Auth) getUserEmail(ctx context.Context, header string) string {
 }
 
 // GetUser returns User associated to header
-func (o *Auth) GetUser(ctx context.Context, header string) (*model.User, error) {
+func (a *Auth) GetUser(ctx context.Context, header string) (*model.User, error) {
 	userResponse, err := request.Get(ctx, userURL, http.Header{`Authorization`: []string{fmt.Sprintf(`token %s`, header)}})
 	if err != nil {
 		return nil, fmt.Errorf(`Error while fetching user informations: %v`, err)
@@ -114,28 +120,28 @@ func (o *Auth) GetUser(ctx context.Context, header string) (*model.User, error) 
 		return nil, fmt.Errorf(`Error while unmarshalling user informations: %v`, err)
 	}
 
-	return &model.User{ID: user.ID, Username: user.Login, Email: o.getUserEmail(ctx, header)}, nil
+	return &model.User{ID: user.ID, Username: user.Login, Email: a.getUserEmail(ctx, header)}, nil
 }
 
 // Redirect redirects user to GitHub endpoint
-func (o *Auth) Redirect() (string, error) {
+func (a *Auth) Redirect() (string, error) {
 	state, err := uuid.New()
-	o.states.Store(state, true)
+	a.states.Store(state, true)
 
-	return o.oauthConf.AuthCodeURL(state), err
+	return a.oauthConf.AuthCodeURL(state), err
 }
 
 // Login exchanges code for token
-func (o *Auth) Login(r *http.Request) (string, error) {
+func (a *Auth) Login(r *http.Request) (string, error) {
 	state := r.FormValue(`state`)
 	code := r.FormValue(`code`)
 
-	if _, ok := o.states.Load(state); !ok {
+	if _, ok := a.states.Load(state); !ok {
 		return ``, provider.ErrInvalidState
 	}
-	o.states.Delete(state)
+	a.states.Delete(state)
 
-	token, err := o.oauthConf.Exchange(oauth2.NoContext, code)
+	token, err := a.oauthConf.Exchange(oauth2.NoContext, code)
 	if err != nil {
 		return ``, provider.ErrInvalidCode
 	}

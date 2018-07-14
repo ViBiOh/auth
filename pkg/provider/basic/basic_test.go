@@ -14,17 +14,25 @@ import (
 func Test_Flags(t *testing.T) {
 	var cases = []struct {
 		intention string
-		want      int
+		want      string
+		wantType  string
 	}{
 		{
-			`should return map with one entries`,
-			1,
+			`should add string users param to flags`,
+			`users`,
+			`*string`,
 		},
 	}
 
 	for _, testCase := range cases {
-		if result := Flags(`basic_test_Test_Flags`); len(result) != testCase.want {
-			t.Errorf("%s\nFlags() = %+v, want %+v", testCase.intention, result, testCase.want)
+		result := Flags(testCase.intention)[testCase.want]
+
+		if result == nil {
+			t.Errorf("%s\nFlags() = %+v, want `%s`", testCase.intention, result, testCase.want)
+		}
+
+		if fmt.Sprintf(`%T`, result) != testCase.wantType {
+			t.Errorf("%s\nFlags() = `%T`, want `%s`", testCase.intention, result, testCase.wantType)
 		}
 	}
 }

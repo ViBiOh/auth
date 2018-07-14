@@ -147,7 +147,9 @@ func Test_GetUser(t *testing.T) {
 
 	for _, testCase := range cases {
 		userURL = testServer.URL
-		result, err := (&Auth{}).GetUser(nil, testCase.header)
+		result, err := (&Auth{
+			oauthConf: &oauth2.Config{},
+		}).GetUser(nil, testCase.header)
 
 		failed = false
 
@@ -187,7 +189,7 @@ func Test_Login(t *testing.T) {
 	auth, _ := NewAuth(map[string]interface{}{
 		`clientID`:     &configValue,
 		`clientSecret`: &configValue,
-		`scopes`: &configValue,
+		`scopes`:       &configValue,
 	})
 	authClient := auth.(*Auth)
 
