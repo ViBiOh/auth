@@ -163,7 +163,7 @@ func Test_GetName(t *testing.T) {
 func Test_GetUser(t *testing.T) {
 	password, _ := bcrypt.GenerateFromPassword([]byte(`password`), 12)
 	authClient := Auth{}
-	authClient.users = map[string]*basicUser{`admin`: &basicUser{model.NewUser(0, `admin`, ``, ``), password}}
+	authClient.users = map[string]*basicUser{`admin`: {model.NewUser(0, `admin`, ``, ``), password}}
 
 	var cases = []struct {
 		intention string

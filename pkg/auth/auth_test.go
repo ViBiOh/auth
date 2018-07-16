@@ -23,19 +23,30 @@ func authTestServer() *httptest.Server {
 func Test_Flags(t *testing.T) {
 	var cases = []struct {
 		intention string
-		prefix    string
-		want      int
+		want      string
+		wantType  string
 	}{
 		{
-			`should return map with two entries`,
-			`auth_test_Test_Flags`,
-			2,
+			`should add string url param to flags`,
+			`url`,
+			`*string`,
+		},
+		{
+			`should add string users param to flags`,
+			`users`,
+			`*string`,
 		},
 	}
 
 	for _, testCase := range cases {
-		if result := Flags(testCase.prefix); len(result) != testCase.want {
-			t.Errorf("%s\nFlags(%+v) = %+v, want %+v", testCase.intention, testCase.prefix, result, testCase.want)
+		result := Flags(testCase.intention)[testCase.want]
+
+		if result == nil {
+			t.Errorf("%s\nFlags() = %+v, want `%s`", testCase.intention, result, testCase.want)
+		}
+
+		if fmt.Sprintf(`%T`, result) != testCase.wantType {
+			t.Errorf("%s\nFlags() = `%T`, want `%s`", testCase.intention, result, testCase.wantType)
 		}
 	}
 }
