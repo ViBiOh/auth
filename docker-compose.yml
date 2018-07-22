@@ -15,6 +15,10 @@ services:
     - ${TWITTER_OAUTH_KEY}
     - -twitterSecret
     - ${TWITTER_OAUTH_SECRET}
+    - -rollbarToken
+    - ${ROLLBAR_TOKEN}
+    - -rollbarServerRoot
+    - github.com/ViBiOh/auth
     - -tracingName
     - auth
     labels:

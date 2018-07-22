@@ -14,6 +14,7 @@ import (
 	"github.com/ViBiOh/httputils/pkg/healthcheck"
 	"github.com/ViBiOh/httputils/pkg/opentracing"
 	"github.com/ViBiOh/httputils/pkg/owasp"
+	"github.com/ViBiOh/httputils/pkg/rollbar"
 	"github.com/ViBiOh/httputils/pkg/server"
 )
 
@@ -23,6 +24,7 @@ func main() {
 	opentracingConfig := opentracing.Flags(`tracing`)
 	owaspConfig := owasp.Flags(``)
 	corsConfig := cors.Flags(`cors`)
+	rollbarConfig := rollbar.Flags(`rollbar`)
 
 	serviceConfig := service.Flags(``)
 	basicConfig := basic.Flags(`basic`)
@@ -38,10 +40,11 @@ func main() {
 	opentracingApp := opentracing.NewApp(opentracingConfig)
 	owaspApp := owasp.NewApp(owaspConfig)
 	corsApp := cors.NewApp(corsConfig)
+	rollbarApp := rollbar.NewApp(rollbarConfig)
 	gzipApp := gzip.NewApp()
 
 	serviceApp := service.NewApp(serviceConfig, basicConfig, githubConfig, twitterConfig)
-	serviceHandler := server.ChainMiddlewares(serviceApp.Handler(), opentracingApp, gzipApp, owaspApp, corsApp)
+	serviceHandler := server.ChainMiddlewares(serviceApp.Handler(), opentracingApp, rollbarApp, gzipApp, owaspApp, corsApp)
 
-	serverApp.ListenAndServe(serviceHandler, nil, healthcheckApp)
+	serverApp.ListenAndServe(serviceHandler, nil, healthcheckApp, rollbarApp)
 }
