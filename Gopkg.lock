@@ -11,7 +11,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:58c7804d501a3451e00513d47e664095e6121fc276846aa69dde4aa36bab7eea"
+  digest = "1:6efdef925a3e519388a9b61def7628f66735effc599cd433f81e36319f034899"
   name = "github.com/ViBiOh/httputils"
   packages = [
     "pkg",
@@ -31,7 +31,7 @@
     "pkg/uuid",
   ]
   pruneopts = "UT"
-  revision = "f38266de7b355232d0813c3dc45d812e8c1be293"
+  revision = "86591b20f496b2bfbd5e5b5c8df86937c0d7555b"
 
 [[projects]]
   branch = "master"
@@ -85,7 +85,7 @@
   revision = "2d01aacdc34a083dca635ba869909f5fc0cd4f41"
 
 [[projects]]
-  digest = "1:1d91b448bf2712d1ecd32d06deeea681a01ff24f4b883fbff24b73003197c9dd"
+  digest = "1:7b34ff816a7ff97eb1dfb839ad5b2e0deeae9aed28a6676a640f38df29299567"
   name = "github.com/manifoldco/promptui"
   packages = [
     ".",
@@ -93,8 +93,8 @@
     "screenbuf",
   ]
   pruneopts = "UT"
-  revision = "3dd80c00b7cb0bc779d1c204da6f3ae0fa6a4eee"
-  version = "v0.3.0"
+  revision = "157c96fb638a14d268b305cf2012582431fcc410"
+  version = "v0.3.1"
 
 [[projects]]
   digest = "1:c658e84ad3916da105a761660dcaeb01e63416c8ec7bc62256a9b411a05fcd67"
@@ -181,7 +181,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:55d7449d6987dabf272b4e81b2f9c449f05b17415c939b68d1e82f57e3374b7f"
+  digest = "1:a37c98f4b7a66bb5c539c0539f0915a74ef1c8e0b3b6f45735289d94cae92bfd"
   name = "github.com/prometheus/procfs"
   packages = [
     ".",
@@ -190,7 +190,7 @@
     "xfs",
   ]
   pruneopts = "UT"
-  revision = "ae68e2d4c00fed4943b5f6698d504a5fe083da8a"
+  revision = "05ee40e3a273f7245e8777337fc7b46e533a9a92"
 
 [[projects]]
   digest = "1:f9141ca80ae9d81b7b8a624848750d6ac73bf942de994086bdcf6e373349be3f"
@@ -242,7 +242,7 @@
     "blowfish",
   ]
   pruneopts = "UT"
-  revision = "a2144134853fc9a27a7b1e3eb4f19f1a76df13c9"
+  revision = "c126467f60eb25f8f27e5a981f32a87e3965053f"
 
 [[projects]]
   branch = "master"
@@ -253,7 +253,7 @@
     "context/ctxhttp",
   ]
   pruneopts = "UT"
-  revision = "a680a1efc54dd51c040b3b5ce4939ea3cf2ea0d1"
+  revision = "3673e40ba22529d22c3fd7c93e97b0ce50fa7bdd"
 
 [[projects]]
   branch = "master"
@@ -265,15 +265,15 @@
     "internal",
   ]
   pruneopts = "UT"
-  revision = "ef147856a6ddbb60760db74283d2424e98c87bff"
+  revision = "3d292e4d0cdc3a0113e6d207bb137145ef1de42f"
 
 [[projects]]
   branch = "master"
-  digest = "1:d773e525476aefa22ea944a5425a9bfb99819b2e67eeb9b1966454fd57522bbf"
+  digest = "1:dbe2ad3afac439a4bfd3e1b0352c4869dc26aae52662dcab72355408776ed5d5"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "ac767d655b305d4e9612f5f6e33120b9176c4ad4"
+  revision = "e072cadbbdc8dd3d3ffa82b8b4b9304c261d9311"
 
 [[projects]]
   digest = "1:1df608126759f99976e509eef1645a75a3bb5472d2fc57cf0664444d13915a23"
@@ -305,6 +305,7 @@
     "github.com/ViBiOh/httputils/pkg/opentracing",
     "github.com/ViBiOh/httputils/pkg/owasp",
     "github.com/ViBiOh/httputils/pkg/request",
+    "github.com/ViBiOh/httputils/pkg/rollbar",
     "github.com/ViBiOh/httputils/pkg/server",
     "github.com/ViBiOh/httputils/pkg/tools",
     "github.com/ViBiOh/httputils/pkg/uuid",
