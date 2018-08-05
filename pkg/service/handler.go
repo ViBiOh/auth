@@ -9,7 +9,6 @@ import (
 	"github.com/ViBiOh/auth/pkg/provider"
 	"github.com/ViBiOh/auth/pkg/provider/basic"
 	"github.com/ViBiOh/auth/pkg/provider/github"
-	"github.com/ViBiOh/auth/pkg/provider/twitter"
 	"github.com/ViBiOh/httputils/pkg/httperror"
 	"github.com/ViBiOh/httputils/pkg/tools"
 )
@@ -27,14 +26,13 @@ type App struct {
 }
 
 // NewApp creates new App from Flags' config
-func NewApp(config map[string]*string, basicConfig map[string]interface{}, githubConfig map[string]interface{}, twitterConfig map[string]interface{}) *App {
+func NewApp(config map[string]*string, basicConfig map[string]interface{}, githubConfig map[string]interface{}) *App {
 	return &App{
 		redirect:     *config[`redirect`],
 		cookieDomain: *config[`cookieDomain`],
 		providers: initProviders(map[string]providerConfig{
-			`Basic`:   {config: basicConfig, factory: basic.NewAuth},
-			`GitHub`:  {config: githubConfig, factory: github.NewAuth},
-			`Twitter`: {config: twitterConfig, factory: twitter.NewAuth},
+			`Basic`:  {config: basicConfig, factory: basic.NewAuth},
+			`GitHub`: {config: githubConfig, factory: github.NewAuth},
 		}),
 	}
 }

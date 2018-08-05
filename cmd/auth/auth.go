@@ -5,7 +5,6 @@ import (
 
 	"github.com/ViBiOh/auth/pkg/provider/basic"
 	"github.com/ViBiOh/auth/pkg/provider/github"
-	"github.com/ViBiOh/auth/pkg/provider/twitter"
 	"github.com/ViBiOh/auth/pkg/service"
 	"github.com/ViBiOh/httputils/pkg"
 	"github.com/ViBiOh/httputils/pkg/alcotest"
@@ -29,7 +28,6 @@ func main() {
 	serviceConfig := service.Flags(``)
 	basicConfig := basic.Flags(`basic`)
 	githubConfig := github.Flags(`github`)
-	twitterConfig := twitter.Flags(`twitter`)
 
 	flag.Parse()
 
@@ -43,7 +41,7 @@ func main() {
 	rollbarApp := rollbar.NewApp(rollbarConfig)
 	gzipApp := gzip.NewApp()
 
-	serviceApp := service.NewApp(serviceConfig, basicConfig, githubConfig, twitterConfig)
+	serviceApp := service.NewApp(serviceConfig, basicConfig, githubConfig)
 	serviceHandler := server.ChainMiddlewares(serviceApp.Handler(), opentracingApp, rollbarApp, gzipApp, owaspApp, corsApp)
 
 	serverApp.ListenAndServe(serviceHandler, nil, healthcheckApp, rollbarApp)

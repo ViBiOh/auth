@@ -91,10 +91,6 @@ Usage of auth:
       [opentracing] Jaeger Agent (e.g. host:port) (default "jaeger:6831")
   -tracingName string
       [opentracing] Service name
-  -twitterKey string
-      [Twitter] Consumer Key
-  -twitterSecret string
-      [Twitter] Consumer Secret
   -url string
       [health] URL to check
   -userAgent string

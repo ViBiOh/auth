@@ -18,6 +18,7 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
 )
+
 var (
 	userURL  = `https://api.github.com/user`
 	emailURL = `https://api.github.com/user/emails`
@@ -35,8 +36,9 @@ func Flags(prefix string) map[string]interface{} {
 
 // Auth auth with GitHub OAuth
 type Auth struct {
-	oauthConf *oauth2.Config
-	states    sync.Map
+	oauthConf  *oauth2.Config
+	usersCache sync.Map
+	states     sync.Map
 }
 
 // NewAuth creates new auth
