@@ -9,9 +9,11 @@ import (
 	"net/http"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/ViBiOh/auth/pkg/model"
 	"github.com/ViBiOh/auth/pkg/provider"
+	"github.com/ViBiOh/httputils/pkg/cache"
 	"github.com/ViBiOh/httputils/pkg/request"
 	"github.com/ViBiOh/httputils/pkg/tools"
 	"github.com/ViBiOh/httputils/pkg/uuid"
@@ -23,6 +25,8 @@ var (
 	userURL  = `https://api.github.com/user`
 	emailURL = `https://api.github.com/user/emails`
 	endpoint = github.Endpoint
+
+	userCacheDuration = time.Minute * 5
 )
 
 // Flags add flags for given prefix
@@ -37,7 +41,7 @@ func Flags(prefix string) map[string]interface{} {
 // Auth auth with GitHub OAuth
 type Auth struct {
 	oauthConf  *oauth2.Config
-	usersCache sync.Map
+	usersCache cache.TimeMap
 	states     sync.Map
 }
 
@@ -61,7 +65,8 @@ func NewAuth(config map[string]interface{}) (provider.Auth, error) {
 			Endpoint:     endpoint,
 			Scopes:       scopes,
 		},
-		states: sync.Map{},
+		usersCache: cache.New(),
+		states:     sync.Map{},
 	}, nil
 }
 
@@ -112,6 +117,10 @@ func (a *Auth) getUserEmail(ctx context.Context, header string) string {
 
 // GetUser returns User associated to header
 func (a *Auth) GetUser(ctx context.Context, header string) (*model.User, error) {
+	if user, ok := a.usersCache.Load(header); ok {
+		return user.(*model.User), nil
+	}
+
 	userResponse, err := request.Get(ctx, userURL, http.Header{`Authorization`: []string{fmt.Sprintf(`token %s`, header)}})
 	if err != nil {
 		return nil, fmt.Errorf(`Error while fetching user informations: %v`, err)
@@ -122,7 +131,10 @@ func (a *Auth) GetUser(ctx context.Context, header string) (*model.User, error) 
 		return nil, fmt.Errorf(`Error while unmarshalling user informations: %v`, err)
 	}
 
-	return &model.User{ID: user.ID, Username: user.Login, Email: a.getUserEmail(ctx, header)}, nil
+	githubUser := &model.User{ID: user.ID, Username: user.Login, Email: a.getUserEmail(ctx, header)}
+	a.usersCache.Store(header, githubUser, userCacheDuration)
+
+	return githubUser, nil
 }
 
 // Redirect redirects user to GitHub endpoint

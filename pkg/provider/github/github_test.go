@@ -11,6 +11,7 @@ import (
 
 	"github.com/ViBiOh/auth/pkg/model"
 	"github.com/ViBiOh/auth/pkg/provider"
+	"github.com/ViBiOh/httputils/pkg/cache"
 	"github.com/ViBiOh/httputils/pkg/request"
 	"golang.org/x/oauth2"
 )
@@ -148,7 +149,8 @@ func Test_GetUser(t *testing.T) {
 	for _, testCase := range cases {
 		userURL = testServer.URL
 		result, err := (&Auth{
-			oauthConf: &oauth2.Config{},
+			oauthConf:  &oauth2.Config{},
+			usersCache: cache.New(),
 		}).GetUser(nil, testCase.header)
 
 		failed = false
