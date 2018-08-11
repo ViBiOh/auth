@@ -40,14 +40,14 @@ docker-deps:
 	curl -s -o cacert.pem https://curl.haxx.se/ca/cacert.pem
 
 docker-login:
-	echo $(DOCKER_PASS) | docker login -u $(DOCKER_USER) --password-stdin
+	echo $(DOCKER_PASS) | docker login -u vibioh --password-stdin
 
 docker-api: docker-build-api docker-push-api
 
 docker-build-api: docker-deps
-	docker build -t $(DOCKER_USER)/auth .
+	docker build -t vibioh/auth .
 
 docker-push-api: docker-login
-	docker push $(DOCKER_USER)/auth
+	docker push vibioh/auth
 
 .PHONY: api go deps format lint tst bench build start docker-deps docker-login docker-api docker-build-api docker-push-api
