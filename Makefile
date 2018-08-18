@@ -50,4 +50,4 @@ start:
 		-tls=false \
 		-basicUsers "1:admin:`go run cmd/bcrypt/bcrypt.go admin`"
 
-.PHONY: $(APP_NAME) go name version author deps format lint tst bench build start
+.PHONY: docker $(APP_NAME) go name version author deps format lint tst bench build start
