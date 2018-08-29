@@ -51,7 +51,7 @@ func (a App) userHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := httpjson.ResponseJSON(w, http.StatusOK, user, httpjson.IsPretty(r.URL.RawQuery)); err != nil {
+	if err := httpjson.ResponseJSON(w, http.StatusOK, user, httpjson.IsPretty(r)); err != nil {
 		httperror.InternalServerError(w, err)
 	}
 }
