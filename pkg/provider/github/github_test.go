@@ -173,7 +173,7 @@ func Test_GetUser(t *testing.T) {
 
 func Test_Login(t *testing.T) {
 	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		body, _ := request.ReadBody(r.Body)
+		body, _ := request.ReadBodyRequest(r)
 		if strings.HasPrefix(string(body), `code=invalid`) {
 			w.WriteHeader(http.StatusInternalServerError)
 		} else {

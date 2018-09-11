@@ -11,7 +11,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:73e0c308e9c7ad6ba6ae2fd8d7a04306f98316a51fdd7dbd8dc99537144470de"
+  digest = "1:e0fbc8416efa1aed8240b34c9c41451a0ba266293a653f12988e3ac73da500c4"
   name = "github.com/ViBiOh/httputils"
   packages = [
     "pkg",
@@ -34,7 +34,7 @@
     "pkg/uuid",
   ]
   pruneopts = "UT"
-  revision = "f3ea8ad8f900dc62836623435ef0daadf32a887a"
+  revision = "fb865f36bf80f309c5083b2c635ffdeb70a7f07f"
 
 [[projects]]
   branch = "master"
@@ -245,7 +245,7 @@
     "blowfish",
   ]
   pruneopts = "UT"
-  revision = "182538f80094b6a8efaade63a8fd8e0d9d5843dd"
+  revision = "0e37d006457bf46f9e6692014ba72ef82c33022c"
 
 [[projects]]
   branch = "master"
@@ -256,7 +256,7 @@
     "context/ctxhttp",
   ]
   pruneopts = "UT"
-  revision = "8a410e7b638dca158bf9e766925842f6651ff828"
+  revision = "161cd47e91fd58ac17490ef4d742dc98bb4cf60e"
 
 [[projects]]
   branch = "master"
@@ -272,11 +272,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:4b487c782bc804d994e91adbd3d2a8a77a482671efd87b2fde0805adb01a39c0"
+  digest = "1:6eb2645d74b43d9c87b51947df39f7c668a4f422cd512053f7f6f75bfaad0197"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "fa5fdf94c78965f1aa8423f0cc50b8b8d728b05a"
+  revision = "d0be0721c37eeb5299f245a996a483160fc36940"
 
 [[projects]]
   digest = "1:328b5e4f197d928c444a51a75385f4b978915c0e75521f0ad6a3db976c97a7d3"
