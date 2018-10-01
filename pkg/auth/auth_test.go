@@ -59,12 +59,12 @@ func Test_IsForbiddenErr(t *testing.T) {
 	}{
 		{
 			`should identify error with pattern`,
-			fmt.Errorf(`An error occurred %s`, forbiddenMessage),
+			fmt.Errorf(`an error occurred %s`, forbiddenMessage),
 			true,
 		},
 		{
 			`should identify error without pattern`,
-			errors.New(`Not allowed`),
+			errors.New(`not allowed`),
 			false,
 		},
 	}

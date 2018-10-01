@@ -128,13 +128,13 @@ func Test_GetUser(t *testing.T) {
 			`should handle fetching error`,
 			`unauthorized`,
 			nil,
-			errors.New(`Error while fetching user informations: Error status 401`),
+			errors.New(`error while fetching user informations: error status 401`),
 		},
 		{
 			`should handle malformed json`,
 			`{"id":1,"login":"vibioh"`,
 			nil,
-			errors.New(`Error while unmarshalling user informations: unexpected end of JSON input`),
+			errors.New(`error while unmarshalling user informations: unexpected end of JSON input`),
 		},
 		{
 			`should handle valid request`,

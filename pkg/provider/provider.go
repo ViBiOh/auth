@@ -10,16 +10,16 @@ import (
 
 var (
 	// ErrUnknownAuthType occurs when authentification type in unknown
-	ErrUnknownAuthType = errors.New(`Unknown authentication type`)
+	ErrUnknownAuthType = errors.New(`unknown authentication type`)
 
 	// ErrInvalidState occurs when state is not consistent
-	ErrInvalidState = errors.New(`Invalid state provided for oauth`)
+	ErrInvalidState = errors.New(`invalid state provided for oauth`)
 
 	// ErrInvalidCode occurs when code is no valid
-	ErrInvalidCode = errors.New(`Invalid code provided for oauth`)
+	ErrInvalidCode = errors.New(`invalid code provided for oauth`)
 
 	// ErrMalformedAuth occurs when auth header is malformed
-	ErrMalformedAuth = errors.New(`Malformed Authorization content`)
+	ErrMalformedAuth = errors.New(`malformed Authorization content`)
 )
 
 // Service provide methods for dealing with authentification

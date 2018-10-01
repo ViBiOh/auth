@@ -38,12 +38,12 @@ func loadUsers(authUsers string) (map[string]*basicUser, error) {
 	for _, authUser := range strings.Split(authUsers, `,`) {
 		parts := strings.Split(authUser, `:`)
 		if len(parts) != 3 {
-			return nil, fmt.Errorf(`Invalid format of user for %s`, authUser)
+			return nil, fmt.Errorf(`invalid format of user for %s`, authUser)
 		}
 
 		id, err := strconv.ParseUint(parts[0], 10, 32)
 		if err != nil {
-			return nil, fmt.Errorf(`Invalid id format for user %s`, authUser)
+			return nil, fmt.Errorf(`invalid id format for user %s`, authUser)
 		}
 
 		user := basicUser{&model.User{ID: uint(id), Username: strings.ToLower(parts[1])}, []byte(parts[2])}
@@ -63,7 +63,7 @@ func NewAuth(config map[string]interface{}) (provider.Auth, error) {
 	users, err := loadUsers(*(config[`users`].(*string)))
 
 	if err != nil {
-		return nil, fmt.Errorf(`Error while loading users: %v`, err)
+		return nil, fmt.Errorf(`error while loading users: %v`, err)
 	}
 
 	if users != nil {
@@ -82,14 +82,14 @@ func (*Auth) GetName() string {
 func (a *Auth) GetUser(ctx context.Context, header string) (*model.User, error) {
 	data, err := base64.StdEncoding.DecodeString(header)
 	if err != nil {
-		return nil, fmt.Errorf(`Error while decoding basic authentication: %v`, err)
+		return nil, fmt.Errorf(`error while decoding basic authentication: %v`, err)
 	}
 
 	dataStr := string(data)
 
 	sepIndex := strings.Index(dataStr, `:`)
 	if sepIndex < 0 {
-		return nil, errors.New(`Error while reading basic authentication`)
+		return nil, errors.New(`error while reading basic authentication`)
 	}
 
 	username := strings.ToLower(dataStr[:sepIndex])
@@ -103,7 +103,7 @@ func (a *Auth) GetUser(ctx context.Context, header string) (*model.User, error) 
 	}
 
 	if !ok {
-		return nil, fmt.Errorf(`Invalid credentials for %s`, username)
+		return nil, fmt.Errorf(`invalid credentials for %s`, username)
 	}
 
 	return user.User, nil

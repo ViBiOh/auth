@@ -24,7 +24,7 @@ const (
 )
 
 // ErrEmptyAuthorization occurs when authorization content is not found
-var ErrEmptyAuthorization = errors.New(`Empty authorization content`)
+var ErrEmptyAuthorization = errors.New(`empty authorization content`)
 
 // App stores informations and secret of API
 type App struct {
@@ -63,13 +63,13 @@ func (a *App) IsAuthenticatedByAuth(ctx context.Context, authContent string) (*m
 	var err error
 
 	if a.serviceApp == nil && a.URL == `` {
-		return nil, errors.New(`No authentification target configured`)
+		return nil, errors.New(`no authentification target configured`)
 	}
 
 	if a.serviceApp != nil {
 		retrievedUser, err = a.serviceApp.GetUser(ctx, authContent)
 		if err != nil && a.URL == `` {
-			return nil, fmt.Errorf(`Error while getting user from service: %v`, err)
+			return nil, fmt.Errorf(`error while getting user from service: %v`, err)
 		}
 	}
 
@@ -83,12 +83,12 @@ func (a *App) IsAuthenticatedByAuth(ctx context.Context, authContent string) (*m
 				return nil, ErrEmptyAuthorization
 			}
 
-			return nil, fmt.Errorf(`Error while getting user from remote: %v`, err)
+			return nil, fmt.Errorf(`error while getting user from remote: %v`, err)
 		}
 
 		retrievedUser = &model.User{}
 		if err := json.Unmarshal(userBytes, retrievedUser); err != nil {
-			return nil, fmt.Errorf(`Error while unmarshalling user: %v`, err)
+			return nil, fmt.Errorf(`error while unmarshalling user: %v`, err)
 		}
 	}
 

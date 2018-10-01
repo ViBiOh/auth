@@ -123,12 +123,12 @@ func (a *Auth) GetUser(ctx context.Context, header string) (*model.User, error) 
 
 	userResponse, err := request.Get(ctx, userURL, http.Header{`Authorization`: []string{fmt.Sprintf(`token %s`, header)}})
 	if err != nil {
-		return nil, fmt.Errorf(`Error while fetching user informations: %v`, err)
+		return nil, fmt.Errorf(`error while fetching user informations: %v`, err)
 	}
 
 	user := githubUser{}
 	if err := json.Unmarshal(userResponse, &user); err != nil {
-		return nil, fmt.Errorf(`Error while unmarshalling user informations: %v`, err)
+		return nil, fmt.Errorf(`error while unmarshalling user informations: %v`, err)
 	}
 
 	githubUser := &model.User{ID: user.ID, Username: user.Login, Email: a.getUserEmail(ctx, header)}
