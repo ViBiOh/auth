@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/ViBiOh/auth/pkg/provider"
+	"github.com/ViBiOh/httputils/pkg/rollbar"
 )
 
 type providerConfig struct {
@@ -14,7 +15,7 @@ type providerConfig struct {
 func initProvider(name string, factory func(map[string]interface{}) (provider.Auth, error), config map[string]interface{}) provider.Auth {
 	auth, err := factory(config)
 	if err != nil {
-		log.Printf(`[auth] Error while initializing %s provider: %v`, name, err)
+		rollbar.LogError(`error while initializing %s provider: %v`, name, err)
 		return nil
 	}
 
@@ -26,7 +27,7 @@ func initProviders(providersConfig map[string]providerConfig) []provider.Auth {
 
 	for name, conf := range providersConfig {
 		if auth := initProvider(name, conf.factory, conf.config); auth != nil {
-			log.Printf(`[auth] Provider for %s configured`, name)
+			log.Printf(`Provider for %s configured`, name)
 			providers = append(providers, auth)
 		}
 	}

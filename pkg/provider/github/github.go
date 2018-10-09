@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 	"sync"
@@ -15,6 +14,7 @@ import (
 	"github.com/ViBiOh/auth/pkg/provider"
 	"github.com/ViBiOh/httputils/pkg/cache"
 	"github.com/ViBiOh/httputils/pkg/request"
+	"github.com/ViBiOh/httputils/pkg/rollbar"
 	"github.com/ViBiOh/httputils/pkg/tools"
 	"github.com/ViBiOh/httputils/pkg/uuid"
 	"golang.org/x/oauth2"
@@ -96,13 +96,13 @@ func (a *Auth) getUserEmail(ctx context.Context, header string) string {
 
 	mailResponse, err := request.Get(ctx, emailURL, http.Header{`Authorization`: []string{fmt.Sprintf(`token %s`, header)}})
 	if err != nil {
-		log.Printf(`[github] Error while fetching email informations: %v: %s`, err, mailResponse)
+		rollbar.LogError(`error while fetching email informations: %v: %s`, err, mailResponse)
 		return ``
 	}
 
 	emails := make([]githubEmail, 0)
 	if err := json.Unmarshal(mailResponse, &emails); err != nil {
-		log.Printf(`[github] Error while unmarshalling emails informations: %v`, err)
+		rollbar.LogError(`error while unmarshalling emails informations: %v`, err)
 		return ``
 	}
 

@@ -104,7 +104,7 @@ func (a *App) IsAuthenticatedByAuth(ctx context.Context, authContent string) (*m
 		return appUser, nil
 	}
 
-	return nil, fmt.Errorf(`[%s] %s`, retrievedUser.Username, forbiddenMessage)
+	return nil, fmt.Errorf(`%s: %s`, retrievedUser.Username, forbiddenMessage)
 }
 
 // HandlerWithFail wrap next authenticated handler and fail handler
