@@ -57,9 +57,9 @@ func (a App) userHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a App) redirectHandler(w http.ResponseWriter, r *http.Request) {
-	for _, provider := range a.providers {
-		if strings.HasSuffix(r.URL.Path, strings.ToLower(provider.GetName())) {
-			if redirect, err := provider.Redirect(); err != nil {
+	for _, p := range a.providers {
+		if strings.HasSuffix(r.URL.Path, strings.ToLower(p.GetName())) {
+			if redirect, err := p.Redirect(); err != nil {
 				httperror.InternalServerError(w, err)
 			} else {
 				http.Redirect(w, r, redirect, http.StatusFound)
@@ -73,18 +73,26 @@ func (a App) redirectHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a App) loginHandler(w http.ResponseWriter, r *http.Request) {
-	for _, provider := range a.providers {
-		if strings.HasSuffix(r.URL.Path, strings.ToLower(provider.GetName())) {
-			if token, err := provider.Login(r); err != nil {
-				w.Header().Add(`WWW-Authenticate`, fmt.Sprintf(`%s charset="UTF-8"`, provider.GetName()))
-				httperror.Unauthorized(w, err)
-			} else if a.redirect != `` {
-				cookie.SetCookieAndRedirect(w, r, a.redirect, a.cookieDomain, fmt.Sprintf(`%s %s`, provider.GetName(), token))
-			} else if _, err := w.Write([]byte(token)); err != nil {
-				httperror.InternalServerError(w, err)
+	for _, p := range a.providers {
+		providerName := p.GetName()
+
+		if strings.HasSuffix(r.URL.Path, strings.ToLower(providerName)) {
+			token, err := p.Login(r)
+
+			if err != nil {
+				p.OnUnauthorized(w, r, err)
+				return
 			}
 
-			return
+			if a.redirect != `` {
+				cookie.SetCookieAndRedirect(w, r, a.redirect, a.cookieDomain, fmt.Sprintf(`%s %s`, providerName, token))
+				return
+			}
+
+			if _, err := w.Write([]byte(token)); err != nil {
+				httperror.InternalServerError(w, err)
+				return
+			}
 		}
 	}
 

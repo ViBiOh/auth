@@ -12,6 +12,7 @@ import (
 
 	"github.com/ViBiOh/auth/pkg/model"
 	"github.com/ViBiOh/auth/pkg/provider"
+	"github.com/ViBiOh/httputils/pkg/httperror"
 	"github.com/ViBiOh/httputils/pkg/tools"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -74,12 +75,12 @@ func NewAuth(config map[string]interface{}) (provider.Auth, error) {
 }
 
 // GetName returns Authorization header prefix
-func (*Auth) GetName() string {
+func (Auth) GetName() string {
 	return `Basic`
 }
 
 // GetUser returns User associated to header
-func (a *Auth) GetUser(ctx context.Context, header string) (*model.User, error) {
+func (a Auth) GetUser(ctx context.Context, header string) (*model.User, error) {
 	data, err := base64.StdEncoding.DecodeString(header)
 	if err != nil {
 		return nil, fmt.Errorf(`error while decoding basic authentication: %v`, err)
@@ -109,14 +110,20 @@ func (a *Auth) GetUser(ctx context.Context, header string) (*model.User, error) 
 	return user.User, nil
 }
 
+// OnUnauthorized handle action when user is not authorized
+func (Auth) OnUnauthorized(w http.ResponseWriter, _ *http.Request, err error) {
+	w.Header().Add(`WWW-Authenticate`, `Basic charset="UTF-8"`)
+	httperror.Unauthorized(w, err)
+}
+
 // Redirect redirects user to login endpoint
-func (*Auth) Redirect() (string, error) {
+func (Auth) Redirect() (string, error) {
 	return `/login/basic`, nil
 }
 
 // Login exchange state to token
-func (a *Auth) Login(r *http.Request) (string, error) {
-	authContent := strings.TrimPrefix(r.Header.Get(`Authorization`), fmt.Sprintf(`%s `, a.GetName()))
+func (a Auth) Login(r *http.Request) (string, error) {
+	authContent := strings.TrimSpace(strings.TrimPrefix(r.Header.Get(`Authorization`), a.GetName()))
 
 	if _, err := a.GetUser(r.Context(), authContent); err != nil {
 		return ``, err

@@ -137,6 +137,11 @@ func (a *Auth) GetUser(ctx context.Context, header string) (*model.User, error) 
 	return githubUser, nil
 }
 
+// OnUnauthorized handle action when user is not authorized
+func (*Auth) OnUnauthorized(w http.ResponseWriter, r *http.Request, _ error) {
+	http.Redirect(w, r, `/redirect/github`, http.StatusFound)
+}
+
 // Redirect redirects user to GitHub endpoint
 func (a *Auth) Redirect() (string, error) {
 	state, err := uuid.New()

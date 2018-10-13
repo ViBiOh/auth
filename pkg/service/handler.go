@@ -57,28 +57,29 @@ func Flags(prefix string) map[string]*string {
 // Handler for net/http package handling auth requests
 func (a App) Handler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodOptions {
+		switch r.Method {
+		case http.MethodOptions:
 			if _, err := w.Write(nil); err != nil {
 				httperror.InternalServerError(w, err)
 			}
-			return
-		}
+			break
 
-		if r.Method != http.MethodGet {
+		case http.MethodGet:
+			if r.URL.Path == `/user` {
+				a.userHandler(w, r)
+			} else if r.URL.Path == `/logout` {
+				a.logoutHandler(w, r)
+			} else if strings.HasPrefix(r.URL.Path, loginPrefix) {
+				a.loginHandler(w, r)
+			} else if strings.HasPrefix(r.URL.Path, redirectPrefix) {
+				a.redirectHandler(w, r)
+			} else {
+				w.WriteHeader(http.StatusNotFound)
+			}
+			break
+
+		default:
 			http.Error(w, fmt.Sprintf(`%d Method not allowed`, http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-			return
-		}
-
-		if r.URL.Path == `/user` {
-			a.userHandler(w, r)
-		} else if r.URL.Path == `/logout` {
-			a.logoutHandler(w, r)
-		} else if strings.HasPrefix(r.URL.Path, loginPrefix) {
-			a.loginHandler(w, r)
-		} else if strings.HasPrefix(r.URL.Path, redirectPrefix) {
-			a.redirectHandler(w, r)
-		} else {
-			w.WriteHeader(http.StatusNotFound)
 		}
 	})
 }

@@ -31,6 +31,7 @@ type Service interface {
 type Auth interface {
 	GetName() string
 	GetUser(context.Context, string) (*model.User, error)
+	OnUnauthorized(http.ResponseWriter, *http.Request, error)
 	Redirect() (string, error)
 	Login(*http.Request) (string, error)
 }
