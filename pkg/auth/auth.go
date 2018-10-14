@@ -27,25 +27,28 @@ var ErrEmptyAuthorization = errors.New(`empty authorization content`)
 
 // App stores informations and secret of API
 type App struct {
-	URL        string
 	serviceApp provider.Service
+	URL        string
 	users      map[string]string
+	disabled   bool
 }
 
 // NewApp creates new App from Flags' config
-func NewApp(config map[string]*string, serviceApp provider.Service) *App {
+func NewApp(config map[string]interface{}, serviceApp provider.Service) *App {
 	return &App{
-		URL:        strings.TrimSpace(*config[`url`]),
 		serviceApp: serviceApp,
-		users:      loadUsersProfiles(*config[`users`]),
+		URL:        strings.TrimSpace(*config[`url`].(*string)),
+		users:      loadUsersProfiles(*config[`users`].(*string)),
+		disabled:   *config[`disable`].(*bool),
 	}
 }
 
 // Flags add flags for given prefix
-func Flags(prefix string) map[string]*string {
-	return map[string]*string{
-		`url`:   flag.String(tools.ToCamel(fmt.Sprintf(`%sUrl`, prefix)), ``, `[auth] Auth URL, if remote`),
-		`users`: flag.String(tools.ToCamel(fmt.Sprintf(`%sUsers`, prefix)), ``, `[auth] List of allowed users and profiles (e.g. user:profile1|profile2,user2:profile3)`),
+func Flags(prefix string) map[string]interface{} {
+	return map[string]interface{}{
+		`disable`: flag.Bool(tools.ToCamel(fmt.Sprintf(`%sDisable`, prefix)), false, `[auth] Disable auth`),
+		`url`:     flag.String(tools.ToCamel(fmt.Sprintf(`%sUrl`, prefix)), ``, `[auth] Auth URL, if remote`),
+		`users`:   flag.String(tools.ToCamel(fmt.Sprintf(`%sUsers`, prefix)), ``, `[auth] List of allowed users and profiles (e.g. user:profile1|profile2,user2:profile3)`),
 	}
 }
 
@@ -99,6 +102,12 @@ func (a App) IsAuthenticatedByAuth(ctx context.Context, authContent string) (*mo
 
 // HandlerWithFail wrap next authenticated handler and fail handler
 func (a App) HandlerWithFail(next func(http.ResponseWriter, *http.Request, *model.User), fail func(http.ResponseWriter, *http.Request, error)) http.Handler {
+	if a.disabled {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			next(w, r, nil)
+		})
+	}
+
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if user, err := a.IsAuthenticated(r); err != nil {
 			fail(w, r, err)
@@ -110,6 +119,12 @@ func (a App) HandlerWithFail(next func(http.ResponseWriter, *http.Request, *mode
 
 // Handler wrap next authenticated handler
 func (a App) Handler(next func(http.ResponseWriter, *http.Request, *model.User)) http.Handler {
+	if a.disabled {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			next(w, r, nil)
+		})
+	}
+
 	return a.HandlerWithFail(next, defaultFailFunc)
 }
 
