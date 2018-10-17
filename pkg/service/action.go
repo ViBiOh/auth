@@ -93,6 +93,8 @@ func (a App) loginHandler(w http.ResponseWriter, r *http.Request) {
 				httperror.InternalServerError(w, err)
 				return
 			}
+
+			return
 		}
 	}
 
