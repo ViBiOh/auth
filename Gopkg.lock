@@ -11,7 +11,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:acf6e00e9524025fe73b9dcbf1559078e72d88d017e494eb94586a528f03fcad"
+  digest = "1:8e4f64d244a843466db6ac48ba29de7c229be5f295cc4e67c42e95ac8f484ff8"
   name = "github.com/ViBiOh/httputils"
   packages = [
     "pkg",
@@ -27,6 +27,7 @@
     "pkg/model",
     "pkg/opentracing",
     "pkg/owasp",
+    "pkg/prometheus",
     "pkg/query",
     "pkg/request",
     "pkg/rollbar",
@@ -35,7 +36,7 @@
     "pkg/uuid",
   ]
   pruneopts = "UT"
-  revision = "6d390f0a5253464bccb4c2b069fde6d58fc9d6ed"
+  revision = "2fa55f3c04629fa0b3a5be6a2efba29137fddaaa"
 
 [[projects]]
   branch = "master"
@@ -258,11 +259,11 @@
     "context/ctxhttp",
   ]
   pruneopts = "UT"
-  revision = "49bb7cea24b1df9410e1712aa6433dae904ff66a"
+  revision = "04a2e542c03f1d053ab3e4d6e5abcd4b66e2be8e"
 
 [[projects]]
   branch = "master"
-  digest = "1:1ad0746c59519b759facab5468e5e016f163fc8043628c0123574798f01f753c"
+  digest = "1:908c9fc10f266c629423f62bb351c2f508848b03ad9a8cb6b42209a4a0dc6077"
   name = "golang.org/x/oauth2"
   packages = [
     ".",
@@ -270,7 +271,7 @@
     "internal",
   ]
   pruneopts = "UT"
-  revision = "c57b0facaced709681d9f90397429b9430a74754"
+  revision = "9dcd33a902f40452422c2367fefcb95b54f9f8f8"
 
 [[projects]]
   branch = "master"
@@ -308,8 +309,10 @@
     "github.com/ViBiOh/httputils/pkg/healthcheck",
     "github.com/ViBiOh/httputils/pkg/httperror",
     "github.com/ViBiOh/httputils/pkg/httpjson",
+    "github.com/ViBiOh/httputils/pkg/logger",
     "github.com/ViBiOh/httputils/pkg/opentracing",
     "github.com/ViBiOh/httputils/pkg/owasp",
+    "github.com/ViBiOh/httputils/pkg/prometheus",
     "github.com/ViBiOh/httputils/pkg/request",
     "github.com/ViBiOh/httputils/pkg/rollbar",
     "github.com/ViBiOh/httputils/pkg/server",
