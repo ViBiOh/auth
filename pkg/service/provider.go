@@ -13,7 +13,7 @@ type providerConfig struct {
 func initProvider(name string, factory func(map[string]interface{}) (provider.Auth, error), config map[string]interface{}) provider.Auth {
 	auth, err := factory(config)
 	if err != nil {
-		logger.Error(`error while initializing %s provider: %v`, name, err)
+		logger.Error(`%+v`, err)
 		return nil
 	}
 

@@ -17,7 +17,7 @@ func getPromptPassword() string {
 
 	result, err := prompt.Run()
 	if err != nil {
-		fmt.Printf("Error while reading prompt: %v", err)
+		fmt.Printf(`invalid prompt: %v`, err)
 		os.Exit(1)
 	}
 
@@ -47,7 +47,7 @@ func main() {
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), 12)
 	if err != nil {
-		fmt.Printf(`Error while generating password: %v`, err)
+		fmt.Printf(`generate password: %v`, err)
 	}
 	fmt.Print(string(hash))
 }

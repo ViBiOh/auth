@@ -11,7 +11,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:8e4f64d244a843466db6ac48ba29de7c229be5f295cc4e67c42e95ac8f484ff8"
+  digest = "1:aec7606116ee180990db14657766bce37c5b5ae88441d182ca20eeb055c11443"
   name = "github.com/ViBiOh/httputils"
   packages = [
     "pkg",
@@ -19,6 +19,7 @@
     "pkg/cache",
     "pkg/cert",
     "pkg/cors",
+    "pkg/errors",
     "pkg/gzip",
     "pkg/healthcheck",
     "pkg/httperror",
@@ -36,7 +37,7 @@
     "pkg/uuid",
   ]
   pruneopts = "UT"
-  revision = "2fa55f3c04629fa0b3a5be6a2efba29137fddaaa"
+  revision = "a147310fb9a8c422292a2d6f7fe4781eda74919d"
 
 [[projects]]
   branch = "master"
@@ -174,7 +175,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:c0d39a0cad193ac49b6e24516e0f994b241d7c27142e5a58e8bd13defb2d9ac8"
+  digest = "1:1261069fb38fbe59aba55117ee39c59814f211c027d66d59ed1c60e5c11b377c"
   name = "github.com/prometheus/common"
   packages = [
     "expfmt",
@@ -182,7 +183,7 @@
     "model",
   ]
   pruneopts = "UT"
-  revision = "bcb74de08d37a417cb6789eec1d6c810040f0470"
+  revision = "16b4535ad14a9ef20a9d9fd8055143c5faa15224"
 
 [[projects]]
   branch = "master"
@@ -275,11 +276,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:0a40b0bdd57a93e741d8557465be3a2edeec408e9b6399586ad65bbe8e355796"
+  digest = "1:be4f165c438aa39318fd5c8c180a95f4a52524641c0b714638b0fd9fd912b38d"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "fa43e7bc11baaae89f3f902b2b4d832b68234844"
+  revision = "8e24a49d80f82323e1c4db1b5da3e0f31171a151"
 
 [[projects]]
   digest = "1:6247f76e55a1e1a5c19a81e2d4b4dff6730461eeb5bbb0a16dd4a8ec8637ee93"

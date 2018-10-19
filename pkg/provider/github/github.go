@@ -13,6 +13,7 @@ import (
 	"github.com/ViBiOh/auth/pkg/model"
 	"github.com/ViBiOh/auth/pkg/provider"
 	"github.com/ViBiOh/httputils/pkg/cache"
+	"github.com/ViBiOh/httputils/pkg/errors"
 	"github.com/ViBiOh/httputils/pkg/logger"
 	"github.com/ViBiOh/httputils/pkg/request"
 	"github.com/ViBiOh/httputils/pkg/tools"
@@ -96,13 +97,13 @@ func (a *Auth) getUserEmail(ctx context.Context, header string) string {
 
 	mailResponse, err := request.Get(ctx, emailURL, http.Header{`Authorization`: []string{fmt.Sprintf(`token %s`, header)}})
 	if err != nil {
-		logger.Error(`error while fetching email informations: %v: %s`, err, mailResponse)
+		logger.Error(`%+v`, err)
 		return ``
 	}
 
 	emails := make([]githubEmail, 0)
 	if err := json.Unmarshal(mailResponse, &emails); err != nil {
-		logger.Error(`error while unmarshalling emails informations: %v`, err)
+		logger.Error(`%+v`, errors.WithStack(err))
 		return ``
 	}
 
@@ -123,12 +124,12 @@ func (a *Auth) GetUser(ctx context.Context, header string) (*model.User, error) 
 
 	userResponse, err := request.Get(ctx, userURL, http.Header{`Authorization`: []string{fmt.Sprintf(`token %s`, header)}})
 	if err != nil {
-		return nil, fmt.Errorf(`error while fetching user informations: %v`, err)
+		return nil, err
 	}
 
 	user := githubUser{}
 	if err := json.Unmarshal(userResponse, &user); err != nil {
-		return nil, fmt.Errorf(`error while unmarshalling user informations: %v`, err)
+		return nil, errors.WithStack(err)
 	}
 
 	githubUser := &model.User{ID: user.ID, Username: user.Login, Email: a.getUserEmail(ctx, header)}

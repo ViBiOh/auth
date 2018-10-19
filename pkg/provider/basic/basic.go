@@ -3,7 +3,6 @@ package basic
 import (
 	"context"
 	"encoding/base64"
-	"errors"
 	"flag"
 	"fmt"
 	"net/http"
@@ -12,6 +11,7 @@ import (
 
 	"github.com/ViBiOh/auth/pkg/model"
 	"github.com/ViBiOh/auth/pkg/provider"
+	"github.com/ViBiOh/httputils/pkg/errors"
 	"github.com/ViBiOh/httputils/pkg/httperror"
 	"github.com/ViBiOh/httputils/pkg/tools"
 	"golang.org/x/crypto/bcrypt"
@@ -39,12 +39,12 @@ func loadUsers(authUsers string) (map[string]*basicUser, error) {
 	for _, authUser := range strings.Split(authUsers, `,`) {
 		parts := strings.Split(authUser, `:`)
 		if len(parts) != 3 {
-			return nil, fmt.Errorf(`invalid format of user for %s`, authUser)
+			return nil, errors.New(`invalid format of user for %s`, authUser)
 		}
 
 		id, err := strconv.ParseUint(parts[0], 10, 32)
 		if err != nil {
-			return nil, fmt.Errorf(`invalid id format for user %s`, authUser)
+			return nil, errors.New(`invalid id format for user %s`, authUser)
 		}
 
 		user := basicUser{&model.User{ID: uint(id), Username: strings.ToLower(parts[1])}, []byte(parts[2])}
@@ -62,9 +62,8 @@ type Auth struct {
 // NewAuth creates new auth
 func NewAuth(config map[string]interface{}) (provider.Auth, error) {
 	users, err := loadUsers(*(config[`users`].(*string)))
-
 	if err != nil {
-		return nil, fmt.Errorf(`error while loading users: %v`, err)
+		return nil, err
 	}
 
 	if users != nil {
@@ -83,14 +82,14 @@ func (Auth) GetName() string {
 func (a Auth) GetUser(ctx context.Context, header string) (*model.User, error) {
 	data, err := base64.StdEncoding.DecodeString(header)
 	if err != nil {
-		return nil, fmt.Errorf(`error while decoding basic authentication: %v`, err)
+		return nil, errors.WithStack(err)
 	}
 
 	dataStr := string(data)
 
 	sepIndex := strings.Index(dataStr, `:`)
 	if sepIndex < 0 {
-		return nil, errors.New(`error while reading basic authentication`)
+		return nil, errors.New(`invalid format for basic auth`)
 	}
 
 	username := strings.ToLower(dataStr[:sepIndex])
@@ -104,7 +103,7 @@ func (a Auth) GetUser(ctx context.Context, header string) (*model.User, error) {
 	}
 
 	if !ok {
-		return nil, fmt.Errorf(`invalid credentials for %s`, username)
+		return nil, errors.New(`invalid credentials`)
 	}
 
 	return user.User, nil

@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -47,31 +46,6 @@ func Test_Flags(t *testing.T) {
 
 		if fmt.Sprintf(`%T`, result) != testCase.wantType {
 			t.Errorf("%s\nFlags() = `%T`, want `%s`", testCase.intention, result, testCase.wantType)
-		}
-	}
-}
-
-func Test_IsForbiddenErr(t *testing.T) {
-	var cases = []struct {
-		intention string
-		err       error
-		want      bool
-	}{
-		{
-			`should identify error with pattern`,
-			fmt.Errorf(`an error occurred %s`, forbiddenMessage),
-			true,
-		},
-		{
-			`should identify error without pattern`,
-			errors.New(`not allowed`),
-			false,
-		},
-	}
-
-	for _, testCase := range cases {
-		if result := IsForbiddenErr(testCase.err); result != testCase.want {
-			t.Errorf("%s\nIsForbiddenErr(%+v) = %+v, want %+v", testCase.intention, testCase.err, result, testCase.want)
 		}
 	}
 }

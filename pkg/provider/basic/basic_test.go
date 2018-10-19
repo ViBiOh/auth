@@ -105,7 +105,7 @@ func Test_NewAuth(t *testing.T) {
 			`should handle load error`,
 			`invalid format`,
 			0,
-			fmt.Errorf(`error while loading users: invalid format of user for invalid format`),
+			errors.New(`invalid format of user for invalid format`),
 		},
 		{
 			`should load users from given args`,
@@ -175,25 +175,25 @@ func Test_GetUser(t *testing.T) {
 			`should handle malformed header`,
 			`admin`,
 			nil,
-			errors.New(`error while decoding basic authentication: illegal base64 data at input byte 4`),
+			errors.New(`illegal base64 data at input byte 4`),
 		},
 		{
 			`should handle malformed content`,
 			base64.StdEncoding.EncodeToString([]byte(`AdMiN`)),
 			nil,
-			errors.New(`error while reading basic authentication`),
+			errors.New(`invalid format for basic auth`),
 		},
 		{
 			`should handle not found user`,
 			base64.StdEncoding.EncodeToString([]byte(`guest:password`)),
 			nil,
-			errors.New(`invalid credentials for guest`),
+			errors.New(`invalid credentials`),
 		},
 		{
 			`should handle invalid credentials`,
 			base64.StdEncoding.EncodeToString([]byte(`AdMiN:admin`)),
 			nil,
-			errors.New(`invalid credentials for admin`),
+			errors.New(`invalid credentials`),
 		},
 		{
 			`should handle valid auth`,

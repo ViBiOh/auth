@@ -3,7 +3,7 @@ package auth
 import (
 	"context"
 	"encoding/json"
-	"errors"
+	native_errors "errors"
 	"flag"
 	"fmt"
 	"net/http"
@@ -12,18 +12,21 @@ import (
 	"github.com/ViBiOh/auth/pkg/cookie"
 	"github.com/ViBiOh/auth/pkg/model"
 	"github.com/ViBiOh/auth/pkg/provider"
+	"github.com/ViBiOh/httputils/pkg/errors"
 	"github.com/ViBiOh/httputils/pkg/httperror"
 	"github.com/ViBiOh/httputils/pkg/request"
 	"github.com/ViBiOh/httputils/pkg/tools"
 )
 
-const (
-	forbiddenMessage    = `Not allowed to use app`
-	authorizationHeader = `Authorization`
-)
+const authorizationHeader = `Authorization`
 
-// ErrEmptyAuthorization occurs when authorization content is not found
-var ErrEmptyAuthorization = errors.New(`empty authorization content`)
+var (
+	// ErrEmptyAuthorization occurs when authorization content is not found
+	ErrEmptyAuthorization = native_errors.New(`empty authorization content`)
+
+	// ErrNotAllowed occurs when user is authentified but not granted
+	ErrNotAllowed = native_errors.New(`not allowed to use app`)
+)
 
 // App stores informations and secret of API
 type App struct {
@@ -69,7 +72,7 @@ func (a App) IsAuthenticatedByAuth(ctx context.Context, authContent string) (*mo
 	if a.serviceApp != nil {
 		retrievedUser, err = a.serviceApp.GetUser(ctx, authContent)
 		if err != nil && a.URL == `` {
-			return nil, fmt.Errorf(`error while getting user from service: %v`, err)
+			return nil, err
 		}
 	}
 
@@ -83,12 +86,12 @@ func (a App) IsAuthenticatedByAuth(ctx context.Context, authContent string) (*mo
 				return nil, ErrEmptyAuthorization
 			}
 
-			return nil, fmt.Errorf(`error while getting user from remote: %v`, err)
+			return nil, errors.New(`authentication failed: %v`, err)
 		}
 
 		retrievedUser = &model.User{}
 		if err := json.Unmarshal(userBytes, retrievedUser); err != nil {
-			return nil, fmt.Errorf(`error while unmarshalling user: %v`, err)
+			return nil, errors.WithStack(err)
 		}
 	}
 
@@ -97,7 +100,7 @@ func (a App) IsAuthenticatedByAuth(ctx context.Context, authContent string) (*mo
 		return model.NewUser(retrievedUser.ID, username, retrievedUser.Email, profiles), nil
 	}
 
-	return nil, fmt.Errorf(`%s: %s`, retrievedUser.Username, forbiddenMessage)
+	return nil, ErrNotAllowed
 }
 
 // HandlerWithFail wrap next authenticated handler and fail handler
@@ -126,11 +129,6 @@ func (a App) Handler(next func(http.ResponseWriter, *http.Request, *model.User))
 	}
 
 	return a.HandlerWithFail(next, defaultFailFunc)
-}
-
-// IsForbiddenErr check if given error refer to a forbidden
-func IsForbiddenErr(err error) bool {
-	return strings.HasSuffix(err.Error(), forbiddenMessage)
 }
 
 func loadUsersProfiles(usersAndProfiles string) map[string]string {
@@ -166,7 +164,7 @@ func ReadAuthContent(r *http.Request) string {
 }
 
 func defaultFailFunc(w http.ResponseWriter, r *http.Request, err error) {
-	if IsForbiddenErr(err) {
+	if err == ErrNotAllowed {
 		httperror.Forbidden(w)
 	} else {
 		httperror.Unauthorized(w, err)
