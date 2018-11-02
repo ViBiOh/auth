@@ -14,11 +14,17 @@ import (
 	"github.com/ViBiOh/auth/pkg/provider"
 	"github.com/ViBiOh/httputils/pkg/errors"
 	"github.com/ViBiOh/httputils/pkg/httperror"
+	http_model "github.com/ViBiOh/httputils/pkg/model"
 	"github.com/ViBiOh/httputils/pkg/request"
 	"github.com/ViBiOh/httputils/pkg/tools"
 )
 
-const authorizationHeader = `Authorization`
+type key int
+
+const (
+	authorizationHeader     = `Authorization`
+	ctxUserName         key = iota
+)
 
 var (
 	// ErrEmptyAuthorization occurs when authorization content is not found
@@ -26,6 +32,8 @@ var (
 
 	// ErrNotAllowed occurs when user is authentified but not granted
 	ErrNotAllowed = native_errors.New(`not allowed to use app`)
+
+	_ http_model.Middleware = &App{}
 )
 
 // App stores informations and secret of API
@@ -104,31 +112,43 @@ func (a App) IsAuthenticatedByAuth(ctx context.Context, authContent string) (*mo
 }
 
 // HandlerWithFail wrap next authenticated handler and fail handler
-func (a App) HandlerWithFail(next func(http.ResponseWriter, *http.Request, *model.User), fail func(http.ResponseWriter, *http.Request, error)) http.Handler {
+func (a App) HandlerWithFail(next http.Handler, fail func(http.ResponseWriter, *http.Request, error)) http.Handler {
 	if a.disabled {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			next(w, r, nil)
+			next.ServeHTTP(w, r)
 		})
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if user, err := a.IsAuthenticated(r); err != nil {
+		user, err := a.IsAuthenticated(r)
+		if err != nil {
 			fail(w, r, err)
-		} else {
-			next(w, r, user)
+			return
 		}
+
+		ctx := context.WithValue(r.Context(), ctxUserName, user)
+		r.WithContext(ctx)
+
+		next.ServeHTTP(w, r)
 	})
 }
 
 // Handler wrap next authenticated handler
-func (a App) Handler(next func(http.ResponseWriter, *http.Request, *model.User)) http.Handler {
-	if a.disabled {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			next(w, r, nil)
-		})
+func (a App) Handler(next http.Handler) http.Handler {
+	return a.HandlerWithFail(next, defaultFailFunc)
+}
+
+// UserFromContext retrieves user from context
+func UserFromContext(ctx context.Context) *model.User {
+	rawUser := ctx.Value(ctxUserName)
+	if rawUser == nil {
+		return nil
 	}
 
-	return a.HandlerWithFail(next, defaultFailFunc)
+	if user, ok := rawUser.(*model.User); ok {
+		return user
+	}
+	return nil
 }
 
 func loadUsersProfiles(usersAndProfiles string) map[string]string {
