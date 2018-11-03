@@ -178,6 +178,7 @@ func (a App) defaultFailFunc(w http.ResponseWriter, r *http.Request, err error) 
 	if err == provider.ErrEmptyAuthorization {
 		if a.serviceApp != nil {
 			a.serviceApp.OnError(w, r, err)
+			return
 		}
 
 		if a.URL != `` {
