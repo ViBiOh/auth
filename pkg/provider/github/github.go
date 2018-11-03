@@ -14,6 +14,7 @@ import (
 	"github.com/ViBiOh/auth/pkg/provider"
 	"github.com/ViBiOh/httputils/pkg/cache"
 	"github.com/ViBiOh/httputils/pkg/errors"
+	"github.com/ViBiOh/httputils/pkg/httperror"
 	"github.com/ViBiOh/httputils/pkg/logger"
 	"github.com/ViBiOh/httputils/pkg/request"
 	"github.com/ViBiOh/httputils/pkg/tools"
@@ -95,7 +96,7 @@ func (a *Auth) getUserEmail(ctx context.Context, header string) string {
 		return ``
 	}
 
-	mailResponse, err := request.Get(ctx, emailURL, http.Header{`Authorization`: []string{fmt.Sprintf(`token %s`, header)}})
+	mailResponse, _, _, err := request.Get(ctx, emailURL, http.Header{`Authorization`: []string{fmt.Sprintf(`token %s`, header)}})
 	if err != nil {
 		logger.Error(`%+v`, err)
 		return ``
@@ -122,7 +123,7 @@ func (a *Auth) GetUser(ctx context.Context, header string) (*model.User, error) 
 		return user.(*model.User), nil
 	}
 
-	userResponse, err := request.Get(ctx, userURL, http.Header{`Authorization`: []string{fmt.Sprintf(`token %s`, header)}})
+	userResponse, _, _, err := request.Get(ctx, userURL, http.Header{`Authorization`: []string{fmt.Sprintf(`token %s`, header)}})
 	if err != nil {
 		return nil, err
 	}
@@ -138,17 +139,15 @@ func (a *Auth) GetUser(ctx context.Context, header string) (*model.User, error) 
 	return githubUser, nil
 }
 
-// OnUnauthorized handle action when user is not authorized
-func (*Auth) OnUnauthorized(w http.ResponseWriter, r *http.Request, _ error) {
-	http.Redirect(w, r, `/redirect/github`, http.StatusFound)
-}
-
 // Redirect redirects user to GitHub endpoint
-func (a *Auth) Redirect() (string, error) {
+func (a *Auth) Redirect(w http.ResponseWriter, r *http.Request) {
 	state, err := uuid.New()
-	a.states.Store(state, true)
+	if err != nil {
+		httperror.InternalServerError(w, err)
+	}
 
-	return a.oauthConf.AuthCodeURL(state), err
+	a.states.Store(state, true)
+	http.Redirect(w, r, a.oauthConf.AuthCodeURL(state), http.StatusFound)
 }
 
 // Login exchanges code for token
@@ -167,4 +166,9 @@ func (a *Auth) Login(r *http.Request) (string, error) {
 	}
 
 	return token.AccessToken, nil
+}
+
+// OnLoginError handle action when login fails
+func (*Auth) OnLoginError(w http.ResponseWriter, r *http.Request, _ error) {
+	http.Redirect(w, r, `/redirect/github`, http.StatusFound)
 }

@@ -109,15 +109,9 @@ func (a Auth) GetUser(ctx context.Context, header string) (*model.User, error) {
 	return user.User, nil
 }
 
-// OnUnauthorized handle action when user is not authorized
-func (Auth) OnUnauthorized(w http.ResponseWriter, _ *http.Request, err error) {
-	w.Header().Add(`WWW-Authenticate`, `Basic charset="UTF-8"`)
-	httperror.Unauthorized(w, err)
-}
-
 // Redirect redirects user to login endpoint
-func (Auth) Redirect() (string, error) {
-	return `/login/basic`, nil
+func (Auth) Redirect(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, `/login/basic`, http.StatusFound)
 }
 
 // Login exchange state to token
@@ -128,4 +122,10 @@ func (a Auth) Login(r *http.Request) (string, error) {
 		return ``, err
 	}
 	return authContent, nil
+}
+
+// OnLoginError handle action when login fails
+func (Auth) OnLoginError(w http.ResponseWriter, _ *http.Request, err error) {
+	w.Header().Add(`WWW-Authenticate`, `Basic charset="UTF-8"`)
+	httperror.Unauthorized(w, err)
 }

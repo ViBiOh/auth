@@ -17,7 +17,7 @@ import (
 // GetUser get user from given auth content
 func (a App) GetUser(ctx context.Context, authContent string) (*model.User, error) {
 	if authContent == `` {
-		return nil, auth.ErrEmptyAuthorization
+		return nil, provider.ErrEmptyAuthorization
 	}
 
 	parts := strings.SplitN(authContent, ` `, 2)
@@ -25,9 +25,9 @@ func (a App) GetUser(ctx context.Context, authContent string) (*model.User, erro
 		return nil, provider.ErrMalformedAuth
 	}
 
-	for _, provider := range a.providers {
-		if parts[0] == provider.GetName() {
-			user, err := provider.GetUser(ctx, parts[1])
+	for _, p := range a.providers {
+		if parts[0] == p.GetName() {
+			user, err := p.GetUser(ctx, parts[1])
 			if err != nil {
 				return nil, err
 			}
@@ -57,19 +57,31 @@ func (a App) userHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a App) redirectHandler(w http.ResponseWriter, r *http.Request) {
-	for _, p := range a.providers {
-		if strings.HasSuffix(r.URL.Path, strings.ToLower(p.GetName())) {
-			if redirect, err := p.Redirect(); err != nil {
-				httperror.InternalServerError(w, err)
-			} else {
-				http.Redirect(w, r, redirect, http.StatusFound)
-			}
+	url := strings.TrimPrefix(r.URL.Path, redirectPrefix)
 
+	if url == `` || url == `/` {
+		a.RedirectToFirstProvider(w, r)
+		return
+	}
+
+	for _, p := range a.providers {
+		if strings.HasSuffix(url, strings.ToLower(p.GetName())) {
+			p.Redirect(w, r)
 			return
 		}
 	}
 
 	httperror.BadRequest(w, provider.ErrUnknownAuthType)
+}
+
+// RedirectToFirstProvider redirects user to first provider in list
+func (a App) RedirectToFirstProvider(w http.ResponseWriter, r *http.Request) bool {
+	if len(a.providers) > 0 {
+		a.providers[0].Redirect(w, r)
+		return true
+	}
+
+	return false
 }
 
 func (a App) loginHandler(w http.ResponseWriter, r *http.Request) {
@@ -78,9 +90,8 @@ func (a App) loginHandler(w http.ResponseWriter, r *http.Request) {
 
 		if strings.HasSuffix(r.URL.Path, strings.ToLower(providerName)) {
 			token, err := p.Login(r)
-
 			if err != nil {
-				p.OnUnauthorized(w, r, err)
+				p.OnLoginError(w, r, err)
 				return
 			}
 

@@ -3,7 +3,6 @@ package auth
 import (
 	"context"
 	"encoding/json"
-	native_errors "errors"
 	"flag"
 	"fmt"
 	"net/http"
@@ -26,15 +25,7 @@ const (
 	ctxUserName         key = iota
 )
 
-var (
-	// ErrEmptyAuthorization occurs when authorization content is not found
-	ErrEmptyAuthorization = native_errors.New(`empty authorization content`)
-
-	// ErrNotAllowed occurs when user is authentified but not granted
-	ErrNotAllowed = native_errors.New(`not allowed to use app`)
-
-	_ http_model.Middleware = &App{}
-)
+var _ http_model.Middleware = &App{}
 
 // App stores informations and secret of API
 type App struct {
@@ -63,6 +54,51 @@ func Flags(prefix string) map[string]interface{} {
 	}
 }
 
+func loadUsersProfiles(usersAndProfiles string) map[string]string {
+	if usersAndProfiles == `` {
+		return nil
+	}
+
+	users := make(map[string]string, 0)
+
+	for _, user := range strings.Split(usersAndProfiles, `,`) {
+		username := user
+		profiles := ``
+
+		if parts := strings.Split(user, `:`); len(parts) == 2 {
+			username = parts[0]
+			profiles = parts[1]
+		}
+
+		users[strings.ToLower(username)] = profiles
+	}
+
+	return users
+}
+
+// UserFromContext retrieves user from context
+func UserFromContext(ctx context.Context) *model.User {
+	rawUser := ctx.Value(ctxUserName)
+	if rawUser == nil {
+		return nil
+	}
+
+	if user, ok := rawUser.(*model.User); ok {
+		return user
+	}
+	return nil
+}
+
+// ReadAuthContent from Header or Cookie
+func ReadAuthContent(r *http.Request) string {
+	authContent := strings.TrimSpace(r.Header.Get(authorizationHeader))
+	if authContent != `` {
+		return authContent
+	}
+
+	return cookie.GetCookieValue(r, `auth`)
+}
+
 // IsAuthenticated check if request has correct headers for authentification
 func (a App) IsAuthenticated(r *http.Request) (*model.User, error) {
 	return a.IsAuthenticatedByAuth(r.Context(), ReadAuthContent(r))
@@ -88,10 +124,10 @@ func (a App) IsAuthenticatedByAuth(ctx context.Context, authContent string) (*mo
 		headers := http.Header{}
 		headers.Set(authorizationHeader, authContent)
 
-		userBytes, err := request.Get(ctx, fmt.Sprintf(`%s/user`, a.URL), headers)
+		userBytes, status, _, err := request.Get(ctx, fmt.Sprintf(`%s/user`, a.URL), headers)
 		if err != nil {
-			if strings.HasPrefix(string(userBytes), ErrEmptyAuthorization.Error()) {
-				return nil, ErrEmptyAuthorization
+			if status == http.StatusUnauthorized {
+				return nil, provider.ErrEmptyAuthorization
 			}
 
 			return nil, errors.New(`authentication failed: %v`, err)
@@ -108,7 +144,7 @@ func (a App) IsAuthenticatedByAuth(ctx context.Context, authContent string) (*mo
 		return model.NewUser(retrievedUser.ID, username, retrievedUser.Email, profiles), nil
 	}
 
-	return nil, ErrNotAllowed
+	return nil, provider.ErrForbiden
 }
 
 // HandlerWithFail wrap next authenticated handler and fail handler
@@ -135,58 +171,29 @@ func (a App) HandlerWithFail(next http.Handler, fail func(http.ResponseWriter, *
 
 // Handler wrap next authenticated handler
 func (a App) Handler(next http.Handler) http.Handler {
-	return a.HandlerWithFail(next, defaultFailFunc)
+	return a.HandlerWithFail(next, a.defaultFailFunc)
 }
 
-// UserFromContext retrieves user from context
-func UserFromContext(ctx context.Context) *model.User {
-	rawUser := ctx.Value(ctxUserName)
-	if rawUser == nil {
-		return nil
-	}
-
-	if user, ok := rawUser.(*model.User); ok {
-		return user
-	}
-	return nil
-}
-
-func loadUsersProfiles(usersAndProfiles string) map[string]string {
-	if usersAndProfiles == `` {
-		return nil
-	}
-
-	users := make(map[string]string, 0)
-
-	for _, user := range strings.Split(usersAndProfiles, `,`) {
-		username := user
-		profiles := ``
-
-		if parts := strings.Split(user, `:`); len(parts) == 2 {
-			username = parts[0]
-			profiles = parts[1]
+func (a App) defaultFailFunc(w http.ResponseWriter, r *http.Request, err error) {
+	if err == provider.ErrEmptyAuthorization {
+		if a.serviceApp != nil {
+			if a.serviceApp.RedirectToFirstProvider(w, r) {
+				return
+			}
 		}
 
-		users[strings.ToLower(username)] = profiles
+		if a.URL != `` {
+			if _, _, _, err := request.Get(r.Context(), fmt.Sprintf(`%s/redirect`, a.URL), nil); err != nil {
+				httperror.InternalServerError(w, err)
+				return
+			}
+		}
 	}
 
-	return users
-}
-
-// ReadAuthContent from Header or Cookie
-func ReadAuthContent(r *http.Request) string {
-	authContent := strings.TrimSpace(r.Header.Get(authorizationHeader))
-	if authContent != `` {
-		return authContent
-	}
-
-	return cookie.GetCookieValue(r, `auth`)
-}
-
-func defaultFailFunc(w http.ResponseWriter, r *http.Request, err error) {
-	if err == ErrNotAllowed {
+	if err == provider.ErrForbiden {
 		httperror.Forbidden(w)
-	} else {
-		httperror.Unauthorized(w, err)
+		return
 	}
+
+	httperror.Unauthorized(w, err)
 }

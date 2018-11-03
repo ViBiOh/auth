@@ -4,6 +4,8 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"reflect"
 	"testing"
 
@@ -238,7 +240,11 @@ func Test_Redirect(t *testing.T) {
 	}
 
 	for _, testCase := range cases {
-		if result, _ := (&Auth{}).Redirect(); result != testCase.want {
+		writer := httptest.NewRecorder()
+
+		(&Auth{}).Redirect(writer, httptest.NewRequest(http.MethodGet, `/`, nil))
+		result := writer.Header().Get(`location`)
+		if result != testCase.want {
 			t.Errorf("%s\nRedirect() = (%+v), want (%+v)", testCase.intention, result, testCase.want)
 		}
 	}
