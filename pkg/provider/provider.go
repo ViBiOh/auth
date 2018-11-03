@@ -24,8 +24,8 @@ var (
 	// ErrMalformedAuth occurs when auth header is malformed
 	ErrMalformedAuth = errors.New(`malformed Authorization content`)
 
-	// ErrForbiden occurs when user is authentified but not granted
-	ErrForbiden = errors.New(`forbidden access`)
+	// ErrForbidden occurs when user is authentified but not granted
+	ErrForbidden = errors.New(`forbidden access`)
 )
 
 // Service provide methods for dealing with authentification

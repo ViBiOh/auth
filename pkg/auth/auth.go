@@ -144,7 +144,7 @@ func (a App) IsAuthenticatedByAuth(ctx context.Context, authContent string) (*mo
 		return model.NewUser(retrievedUser.ID, username, retrievedUser.Email, profiles), nil
 	}
 
-	return nil, provider.ErrForbiden
+	return nil, provider.ErrForbidden
 }
 
 // HandlerWithFail wrap next authenticated handler and fail handler
@@ -189,7 +189,7 @@ func (a App) defaultFailFunc(w http.ResponseWriter, r *http.Request, err error) 
 		}
 	}
 
-	if err == provider.ErrForbiden {
+	if err == provider.ErrForbidden {
 		httperror.Forbidden(w)
 		return
 	}
