@@ -31,7 +31,7 @@ var (
 // Service provide methods for dealing with authentification
 type Service interface {
 	GetUser(context.Context, string) (*model.User, error)
-	RedirectToFirstProvider(http.ResponseWriter, *http.Request) bool
+	OnError(http.ResponseWriter, *http.Request, error)
 }
 
 // Auth is a provider of Authentification methods

@@ -177,9 +177,7 @@ func (a App) Handler(next http.Handler) http.Handler {
 func (a App) defaultFailFunc(w http.ResponseWriter, r *http.Request, err error) {
 	if err == provider.ErrEmptyAuthorization {
 		if a.serviceApp != nil {
-			if a.serviceApp.RedirectToFirstProvider(w, r) {
-				return
-			}
+			a.serviceApp.OnError(w, r, err)
 		}
 
 		if a.URL != `` {
