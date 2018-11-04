@@ -120,7 +120,7 @@ func Test_NewAuth(t *testing.T) {
 	var failed bool
 
 	for _, testCase := range cases {
-		auth, err := NewAuth(map[string]interface{}{`users`: &testCase.users})
+		auth, err := NewAuth(map[string]interface{}{`users`: &testCase.users}, nil)
 		var authClient *Auth
 		if auth != nil {
 			authClient = auth.(*Auth)

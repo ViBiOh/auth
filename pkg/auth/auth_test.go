@@ -6,13 +6,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/ViBiOh/auth/pkg/provider"
+	"github.com/ViBiOh/auth/pkg/ident"
 )
 
 func authTestServer() *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get(`Authorization`) == `` {
-			http.Error(w, provider.ErrEmptyAuthorization.Error(), http.StatusUnauthorized)
+			http.Error(w, ident.ErrEmptyAuth.Error(), http.StatusUnauthorized)
 		} else if r.Header.Get(`Authorization`) == `unauthorized` {
 			w.WriteHeader(http.StatusUnauthorized)
 		} else {

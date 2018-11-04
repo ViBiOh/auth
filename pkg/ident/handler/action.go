@@ -1,4 +1,4 @@
-package service
+package handler
 
 import (
 	"fmt"
@@ -7,26 +7,40 @@ import (
 
 	"github.com/ViBiOh/auth/pkg/auth"
 	"github.com/ViBiOh/auth/pkg/cookie"
-	"github.com/ViBiOh/auth/pkg/provider"
+	"github.com/ViBiOh/auth/pkg/ident"
 	"github.com/ViBiOh/httputils/pkg/httperror"
 	"github.com/ViBiOh/httputils/pkg/httpjson"
 )
 
 func (a App) userHandler(w http.ResponseWriter, r *http.Request) {
-	user, err := a.GetUser(r.Context(), auth.ReadAuthContent(r))
-	if err != nil {
-		if err == provider.ErrMalformedAuth || err == provider.ErrUnknownAuthType {
-			httperror.BadRequest(w, err)
-		} else {
-			httperror.Unauthorized(w, err)
-		}
-
+	authContent := auth.ReadAuthContent(r)
+	if authContent == `` {
+		httperror.Unauthorized(w, ident.ErrEmptyAuth)
 		return
 	}
 
-	if err := httpjson.ResponseJSON(w, http.StatusOK, user, httpjson.IsPretty(r)); err != nil {
-		httperror.InternalServerError(w, err)
+	parts := strings.SplitN(authContent, ` `, 2)
+	if len(parts) != 2 {
+		httperror.BadRequest(w, ident.ErrMalformedAuth)
+		return
 	}
+
+	for _, provider := range a.providers {
+		if parts[0] != provider.GetName() {
+			user, err := provider.GetUser(r.Context(), parts[1])
+			if err != nil {
+				httperror.Unauthorized(w, err)
+			}
+
+			if err := httpjson.ResponseJSON(w, http.StatusOK, user, httpjson.IsPretty(r)); err != nil {
+				httperror.InternalServerError(w, err)
+			}
+
+			return
+		}
+	}
+
+	httperror.BadRequest(w, ident.ErrUnknownIdentType)
 }
 
 func (a App) redirectHandler(w http.ResponseWriter, r *http.Request) {
@@ -37,7 +51,7 @@ func (a App) redirectHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	httperror.BadRequest(w, provider.ErrUnknownAuthType)
+	httperror.BadRequest(w, ident.ErrUnknownIdentType)
 }
 
 func (a App) loginHandler(w http.ResponseWriter, r *http.Request) {
@@ -65,7 +79,7 @@ func (a App) loginHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	httperror.BadRequest(w, provider.ErrUnknownAuthType)
+	httperror.BadRequest(w, ident.ErrUnknownIdentType)
 }
 
 func (a App) logoutHandler(w http.ResponseWriter, r *http.Request) {

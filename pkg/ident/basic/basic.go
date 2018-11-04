@@ -2,6 +2,7 @@ package basic
 
 import (
 	"context"
+	"database/sql"
 	"encoding/base64"
 	"flag"
 	"fmt"
@@ -9,8 +10,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/ViBiOh/auth/pkg/ident"
 	"github.com/ViBiOh/auth/pkg/model"
-	"github.com/ViBiOh/auth/pkg/provider"
 	"github.com/ViBiOh/httputils/pkg/errors"
 	"github.com/ViBiOh/httputils/pkg/httperror"
 	"github.com/ViBiOh/httputils/pkg/tools"
@@ -30,11 +31,11 @@ func Flags(prefix string) map[string]interface{} {
 }
 
 func loadUsers(authUsers string) (map[string]*basicUser, error) {
-	users := make(map[string]*basicUser)
-
 	if authUsers == `` {
 		return nil, nil
 	}
+
+	users := make(map[string]*basicUser)
 
 	for _, authUser := range strings.Split(authUsers, `,`) {
 		parts := strings.Split(authUser, `:`)
@@ -57,20 +58,20 @@ func loadUsers(authUsers string) (map[string]*basicUser, error) {
 // Auth with login/pass
 type Auth struct {
 	users map[string]*basicUser
+	db    *sql.DB
 }
 
 // NewAuth creates new auth
-func NewAuth(config map[string]interface{}) (provider.Auth, error) {
+func NewAuth(config map[string]interface{}, db *sql.DB) (ident.Auth, error) {
 	users, err := loadUsers(*(config[`users`].(*string)))
 	if err != nil {
 		return nil, err
 	}
 
-	if users != nil {
-		return &Auth{users}, nil
-	}
-
-	return nil, nil
+	return &Auth{
+		users: users,
+		db: db,
+	}, nil
 }
 
 // GetName returns Authorization header prefix
@@ -95,14 +96,22 @@ func (a Auth) GetUser(ctx context.Context, header string) (*model.User, error) {
 	username := strings.ToLower(dataStr[:sepIndex])
 	password := dataStr[sepIndex+1:]
 
-	user, ok := a.users[username]
-	if ok {
-		if err := bcrypt.CompareHashAndPassword(user.password, []byte(password)); err != nil {
-			ok = false
-		}
+	if a.users == nil && a.db == nil {
+		return nil, errors.New(`no basic source provided`)
 	}
 
-	if !ok {
+	var user *basicUser
+	if a.users != nil {
+		user = a.users[username]
+	} else {
+		user = a.dbLoginUser(username)
+	}
+
+	if user == nil {
+		return nil, errors.New(`invalid credentials`)
+	}
+
+	if err := bcrypt.CompareHashAndPassword(user.password, []byte(password)); err != nil {
 		return nil, errors.New(`invalid credentials`)
 	}
 

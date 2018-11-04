@@ -1,4 +1,4 @@
-package service
+package handler
 
 import (
 	"flag"
@@ -6,9 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/ViBiOh/auth/pkg/provider"
-	"github.com/ViBiOh/auth/pkg/provider/basic"
-	"github.com/ViBiOh/auth/pkg/provider/github"
+	"github.com/ViBiOh/auth/pkg/ident"
 	"github.com/ViBiOh/httputils/pkg/httperror"
 	"github.com/ViBiOh/httputils/pkg/tools"
 )
@@ -20,29 +18,17 @@ const (
 
 // App stores informations and secret of API
 type App struct {
-	providers    []provider.Auth
+	providers    []ident.Auth
 	redirect     string
 	cookieDomain string
 }
 
 // NewApp creates new App from Flags' config
-func NewApp(config map[string]*string, basicConfig map[string]interface{}, githubConfig map[string]interface{}) *App {
+func NewApp(config map[string]*string, providers []ident.Auth) *App {
 	return &App{
 		redirect:     *config[`redirect`],
 		cookieDomain: *config[`cookieDomain`],
-		providers: initProviders(map[string]providerConfig{
-			`Basic`:  {config: basicConfig, factory: basic.NewAuth},
-			`GitHub`: {config: githubConfig, factory: github.NewAuth},
-		}),
-	}
-}
-
-// NewBasicApp creates new App from Flags' config only for basic auth wrapper
-func NewBasicApp(basicConfig map[string]interface{}) *App {
-	return &App{
-		providers: initProviders(map[string]providerConfig{
-			`Basic`: {config: basicConfig, factory: basic.NewAuth},
-		}),
+		providers:    providers,
 	}
 }
 

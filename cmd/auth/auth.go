@@ -3,14 +3,16 @@ package main
 import (
 	"flag"
 
-	"github.com/ViBiOh/auth/pkg/provider/basic"
-	"github.com/ViBiOh/auth/pkg/provider/github"
-	"github.com/ViBiOh/auth/pkg/service"
+	"github.com/ViBiOh/auth/pkg/ident"
+	"github.com/ViBiOh/auth/pkg/ident/basic"
+	"github.com/ViBiOh/auth/pkg/ident/github"
+	"github.com/ViBiOh/auth/pkg/ident/handler"
 	"github.com/ViBiOh/httputils/pkg"
 	"github.com/ViBiOh/httputils/pkg/alcotest"
 	"github.com/ViBiOh/httputils/pkg/cors"
 	"github.com/ViBiOh/httputils/pkg/gzip"
 	"github.com/ViBiOh/httputils/pkg/healthcheck"
+	"github.com/ViBiOh/httputils/pkg/logger"
 	"github.com/ViBiOh/httputils/pkg/opentracing"
 	"github.com/ViBiOh/httputils/pkg/owasp"
 	"github.com/ViBiOh/httputils/pkg/prometheus"
@@ -25,7 +27,7 @@ func main() {
 	owaspConfig := owasp.Flags(``)
 	corsConfig := cors.Flags(`cors`)
 
-	serviceConfig := service.Flags(``)
+	handlerConfig := handler.Flags(``)
 	basicConfig := basic.Flags(`basic`)
 	githubConfig := github.Flags(`github`)
 
@@ -41,8 +43,18 @@ func main() {
 	owaspApp := owasp.NewApp(owaspConfig)
 	corsApp := cors.NewApp(corsConfig)
 
-	serviceApp := service.NewApp(serviceConfig, basicConfig, githubConfig)
-	serviceHandler := server.ChainMiddlewares(serviceApp.Handler(), prometheusApp, opentracingApp, gzipApp, owaspApp, corsApp)
+	basicApp, err := basic.NewAuth(basicConfig, nil)
+	if err != nil {
+		logger.Warn(`%+v`, err)
+	}
 
-	serverApp.ListenAndServe(serviceHandler, nil, healthcheckApp)
+	githubApp, err := github.NewAuth(githubConfig)
+	if err != nil {
+		logger.Warn(`%+v`, err)
+	}
+
+	identApp := handler.NewApp(handlerConfig, []ident.Auth{basicApp, githubApp})
+	identHandler := server.ChainMiddlewares(identApp.Handler(), prometheusApp, opentracingApp, gzipApp, owaspApp, corsApp)
+
+	serverApp.ListenAndServe(identHandler, nil, healthcheckApp)
 }

@@ -10,8 +10,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ViBiOh/auth/pkg/ident"
 	"github.com/ViBiOh/auth/pkg/model"
-	"github.com/ViBiOh/auth/pkg/provider"
 	"github.com/ViBiOh/httputils/pkg/cache"
 	"github.com/ViBiOh/httputils/pkg/errors"
 	"github.com/ViBiOh/httputils/pkg/httperror"
@@ -48,7 +48,7 @@ type Auth struct {
 }
 
 // NewAuth creates new auth
-func NewAuth(config map[string]interface{}) (provider.Auth, error) {
+func NewAuth(config map[string]interface{}) (ident.Auth, error) {
 	clientID := strings.TrimSpace(*(config[`clientID`].(*string)))
 	if clientID == `` {
 		return nil, nil
@@ -156,13 +156,13 @@ func (a *Auth) Login(r *http.Request) (string, error) {
 	code := r.FormValue(`code`)
 
 	if _, ok := a.states.Load(state); !ok {
-		return ``, provider.ErrInvalidState
+		return ``, ident.ErrInvalidState
 	}
 	a.states.Delete(state)
 
 	token, err := a.oauthConf.Exchange(oauth2.NoContext, code)
 	if err != nil {
-		return ``, provider.ErrInvalidCode
+		return ``, ident.ErrInvalidCode
 	}
 
 	return token.AccessToken, nil

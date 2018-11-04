@@ -1,4 +1,4 @@
-package provider
+package ident
 
 import (
 	"context"
@@ -9,32 +9,29 @@ import (
 )
 
 var (
+	// ErrUnknownIdentType occurs when identification type in unknown
+	ErrUnknownIdentType = errors.New(`unknown identification type`)
+
+	// ErrEmptyAuth occurs when authorization content is not found
+	ErrEmptyAuth = errors.New(`empty authorization content`)
+
+	// ErrMalformedAuth occurs when authorization content is malformed
+	ErrMalformedAuth = errors.New(`malformed authorization content`)
+
 	// ErrInvalidState occurs when state is not consistent
 	ErrInvalidState = errors.New(`invalid state provided for oauth`)
 
 	// ErrInvalidCode occurs when code is no valid
 	ErrInvalidCode = errors.New(`invalid code provided for oauth`)
-
-	// ErrUnknownAuthType occurs when authentification type in unknown
-	ErrUnknownAuthType = errors.New(`unknown authentication type`)
-
-	// ErrEmptyAuthorization occurs when authorization content is not found
-	ErrEmptyAuthorization = errors.New(`empty authorization content`)
-
-	// ErrMalformedAuth occurs when auth header is malformed
-	ErrMalformedAuth = errors.New(`malformed Authorization content`)
-
-	// ErrForbidden occurs when user is authentified but not granted
-	ErrForbidden = errors.New(`forbidden access`)
 )
 
-// Service provide methods for dealing with authentification
+// Service provide methods for dealing with identification
 type Service interface {
 	GetUser(context.Context, string) (*model.User, error)
 	OnError(http.ResponseWriter, *http.Request, error)
 }
 
-// Auth is a provider of Authentification methods
+// Auth is a provider of identification methods
 type Auth interface {
 	GetName() string
 	GetUser(context.Context, string) (*model.User, error)

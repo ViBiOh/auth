@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/ViBiOh/auth/pkg/model"
-	"github.com/ViBiOh/auth/pkg/provider"
+	"github.com/ViBiOh/auth/pkg/ident"
 	"github.com/ViBiOh/httputils/pkg/cache"
 	"github.com/ViBiOh/httputils/pkg/request"
 	"golang.org/x/oauth2"
@@ -205,13 +205,13 @@ func Test_Login(t *testing.T) {
 			`should identify invalid state`,
 			httptest.NewRequest(http.MethodGet, `/?state=state`, nil),
 			``,
-			provider.ErrInvalidState,
+			ident.ErrInvalidState,
 		},
 		{
 			`should identify invalid code`,
 			httptest.NewRequest(http.MethodGet, `/?state=test&code=invalidcode`, nil),
 			``,
-			provider.ErrInvalidCode,
+			ident.ErrInvalidCode,
 		},
 		{
 			`should return given token`,
