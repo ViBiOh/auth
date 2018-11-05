@@ -175,9 +175,7 @@ func (a App) Handler(next http.Handler) http.Handler {
 		}
 
 		ctx := context.WithValue(r.Context(), ctxUserName, user)
-		r.WithContext(ctx)
-
-		next.ServeHTTP(w, r)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 

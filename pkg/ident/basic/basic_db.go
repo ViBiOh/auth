@@ -17,7 +17,7 @@ SELECT
 FROM
   "user"
 WHERE
-  login = $1
+  username = $1
 `
 
 func (a Auth) dbLoginUser(login string) *basicUser {

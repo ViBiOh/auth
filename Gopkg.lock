@@ -36,7 +36,7 @@
     "pkg/uuid",
   ]
   pruneopts = "UT"
-  revision = "c58a9f65c48ba7dcba0c44f4efed009c341c17a5"
+  revision = "08cb8f858a20d8b33b15504d05bff2b97b35883f"
 
 [[projects]]
   branch = "master"
