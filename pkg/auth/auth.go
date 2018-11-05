@@ -168,6 +168,11 @@ func (a App) Handler(next http.Handler) http.Handler {
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
 		user, err := a.IsAuthenticated(r)
 		if err != nil {
 			a.onHandlerFail(w, r, err)
