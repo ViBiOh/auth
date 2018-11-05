@@ -56,6 +56,7 @@ func (a App) Handler() http.Handler {
 		case http.MethodOptions:
 			if _, err := w.Write(nil); err != nil {
 				httperror.InternalServerError(w, err)
+				return
 			}
 			break
 

@@ -30,10 +30,12 @@ func (a App) userHandler(w http.ResponseWriter, r *http.Request) {
 			user, err := provider.GetUser(r.Context(), parts[1])
 			if err != nil {
 				httperror.Unauthorized(w, err)
+				return
 			}
 
 			if err := httpjson.ResponseJSON(w, http.StatusOK, user, httpjson.IsPretty(r)); err != nil {
 				httperror.InternalServerError(w, err)
+				return
 			}
 
 			return

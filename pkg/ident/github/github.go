@@ -145,6 +145,7 @@ func (a *Auth) Redirect(w http.ResponseWriter, r *http.Request) {
 	state, err := uuid.New()
 	if err != nil {
 		httperror.InternalServerError(w, err)
+		return
 	}
 
 	a.states.Store(state, true)
