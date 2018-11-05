@@ -8,6 +8,7 @@ import (
 
 	"github.com/ViBiOh/auth/pkg/ident"
 	"github.com/ViBiOh/httputils/pkg/httperror"
+	"github.com/ViBiOh/httputils/pkg/logger"
 	"github.com/ViBiOh/httputils/pkg/tools"
 )
 
@@ -29,6 +30,7 @@ func NewApp(config map[string]*string, providers []ident.Auth) *App {
 	for _, provider := range providers {
 		if provider != nil {
 			usedProviders = append(usedProviders, provider)
+			logger.Info(`Provider for %s`, provider.GetName())
 		}
 	}
 

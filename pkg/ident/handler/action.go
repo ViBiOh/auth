@@ -26,7 +26,7 @@ func (a App) userHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, provider := range a.providers {
-		if parts[0] != provider.GetName() {
+		if parts[0] == provider.GetName() {
 			user, err := provider.GetUser(r.Context(), parts[1])
 			if err != nil {
 				httperror.Unauthorized(w, err)
