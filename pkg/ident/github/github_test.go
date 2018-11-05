@@ -139,7 +139,7 @@ func Test_GetUser(t *testing.T) {
 		{
 			`should handle valid request`,
 			`{"id":1,"login":"vibioh"}`,
-			&model.User{ID: 1, Username: `vibioh`},
+			&model.User{ID: `1`, Username: `vibioh`},
 			nil,
 		},
 	}

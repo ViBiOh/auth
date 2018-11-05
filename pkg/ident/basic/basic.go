@@ -7,7 +7,6 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/ViBiOh/auth/pkg/ident"
@@ -43,12 +42,7 @@ func loadUsers(authUsers string) (map[string]*basicUser, error) {
 			return nil, errors.New(`invalid format of user for %s`, authUser)
 		}
 
-		id, err := strconv.ParseUint(parts[0], 10, 32)
-		if err != nil {
-			return nil, errors.New(`invalid id format for user %s`, authUser)
-		}
-
-		user := basicUser{&model.User{ID: uint(id), Username: strings.ToLower(parts[1])}, []byte(parts[2])}
+		user := basicUser{&model.User{ID: parts[0], Username: strings.ToLower(parts[1])}, []byte(parts[2])}
 		users[strings.ToLower(user.Username)] = &user
 	}
 
@@ -70,7 +64,7 @@ func NewAuth(config map[string]interface{}, db *sql.DB) (ident.Auth, error) {
 
 	return &Auth{
 		users: users,
-		db: db,
+		db:    db,
 	}, nil
 }
 

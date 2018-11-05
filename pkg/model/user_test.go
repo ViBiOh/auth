@@ -8,7 +8,7 @@ import (
 func Test_NewUser(t *testing.T) {
 	var cases = []struct {
 		intention string
-		id        uint
+		id        string
 		username  string
 		email     string
 		profiles  string
@@ -16,11 +16,11 @@ func Test_NewUser(t *testing.T) {
 	}{
 		{
 			`should work with given params`,
-			1,
+			`1`,
 			`vibioh`,
 			`nobody@localhost`,
 			`admin|multi`,
-			&User{1, `vibioh`, `nobody@localhost`, `admin|multi`},
+			&User{`1`, `vibioh`, `nobody@localhost`, `admin|multi`},
 		},
 	}
 

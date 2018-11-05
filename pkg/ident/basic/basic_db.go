@@ -22,7 +22,7 @@ WHERE
 
 func (a Auth) dbLoginUser(login string) *basicUser {
 	var (
-		id       uint
+		id       string
 		username string
 		email    string
 		password string

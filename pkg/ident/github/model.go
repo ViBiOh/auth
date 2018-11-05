@@ -7,6 +7,6 @@ type githubEmail struct {
 }
 
 type githubUser struct {
-	ID    uint
+	ID    int
 	Login string
 }

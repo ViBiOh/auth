@@ -59,14 +59,8 @@ func Test_loadUsers(t *testing.T) {
 			errors.New(`invalid format of user for invalid_username`),
 		},
 		{
-			`should handle invalid uint format`,
-			`abc:invalid_username:abc`,
-			0,
-			errors.New(`invalid id format for user abc:invalid_username:abc`),
-		},
-		{
 			`should handle valid format`,
-			`0:admin:admin,1:guest:guest`,
+			`anc:admin:admin,1:guest:guest`,
 			2,
 			nil,
 		},
@@ -165,7 +159,7 @@ func Test_GetName(t *testing.T) {
 func Test_GetUser(t *testing.T) {
 	password, _ := bcrypt.GenerateFromPassword([]byte(`password`), 12)
 	authClient := Auth{}
-	authClient.users = map[string]*basicUser{`admin`: {model.NewUser(0, `admin`, ``, ``), password}}
+	authClient.users = map[string]*basicUser{`admin`: {model.NewUser(`0`, `admin`, ``, ``), password}}
 
 	var cases = []struct {
 		intention string
@@ -200,7 +194,7 @@ func Test_GetUser(t *testing.T) {
 		{
 			`should handle valid auth`,
 			base64.StdEncoding.EncodeToString([]byte(`AdMiN:password`)),
-			&model.User{ID: 0, Username: `admin`},
+			&model.User{ID: `0`, Username: `admin`},
 			nil,
 		},
 	}

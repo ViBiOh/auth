@@ -4,14 +4,14 @@ import "strings"
 
 // User of the app
 type User struct {
-	ID       uint   `json:"id"`
+	ID       string `json:"id"`
 	Username string `json:"username"`
 	Email    string `json:"email"`
 	profiles string
 }
 
 // NewUser creates new user with given id, username and profiles
-func NewUser(id uint, username, email, profiles string) *User {
+func NewUser(id, username, email, profiles string) *User {
 	return &User{ID: id, Username: username, Email: email, profiles: profiles}
 }
 

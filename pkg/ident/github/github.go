@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -133,7 +134,7 @@ func (a *Auth) GetUser(ctx context.Context, header string) (*model.User, error) 
 		return nil, errors.WithStack(err)
 	}
 
-	githubUser := &model.User{ID: user.ID, Username: user.Login, Email: a.getUserEmail(ctx, header)}
+	githubUser := &model.User{ID: strconv.Itoa(user.ID), Username: user.Login, Email: a.getUserEmail(ctx, header)}
 	a.usersCache.Store(header, githubUser, userCacheDuration)
 
 	return githubUser, nil
