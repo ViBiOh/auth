@@ -25,10 +25,17 @@ type App struct {
 
 // NewApp creates new App from Flags' config
 func NewApp(config map[string]*string, providers []ident.Auth) *App {
+	usedProviders := make([]ident.Auth, 0)
+	for _, provider := range providers {
+		if provider != nil {
+			usedProviders = append(usedProviders, provider)
+		}
+	}
+
 	return &App{
 		redirect:     *config[`redirect`],
 		cookieDomain: *config[`cookieDomain`],
-		providers:    providers,
+		providers:    usedProviders,
 	}
 }
 
