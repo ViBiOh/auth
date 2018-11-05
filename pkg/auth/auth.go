@@ -180,18 +180,9 @@ func (a App) Handler(next http.Handler) http.Handler {
 }
 
 func (a App) onHandlerFail(w http.ResponseWriter, r *http.Request, err error) {
-	if err == ident.ErrEmptyAuth {
-		if a.identService != nil {
-			a.identService.OnError(w, r, err)
-			return
-		}
-
-		if a.URL != `` {
-			if _, _, _, err := request.Get(r.Context(), fmt.Sprintf(`%s/redirect`, a.URL), nil); err != nil {
-				httperror.InternalServerError(w, err)
-				return
-			}
-		}
+	if err == ident.ErrEmptyAuth && a.identService != nil {
+		a.identService.OnError(w, r, err)
+		return
 	}
 
 	if err == ErrForbidden {
