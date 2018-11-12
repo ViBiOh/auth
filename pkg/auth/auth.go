@@ -53,6 +53,7 @@ func NewApp(config map[string]interface{}) *App {
 func NewServiceApp(config map[string]interface{}, identService ident.Service) *App {
 	return &App{
 		identService: identService,
+		users:        loadUsersProfiles(*config[`users`].(*string)),
 		disabled:     *config[`disable`].(*bool),
 	}
 }
