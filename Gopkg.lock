@@ -11,7 +11,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:533c8b253f8e36950a3c0722e25bcd983a57894922a1f9967e2eb63fb17578fc"
+  digest = "1:59678ee8c86c940f28b6969e7aa030126d556422aa54d09b844afc4bd38c7769"
   name = "github.com/ViBiOh/httputils"
   packages = [
     "pkg",
@@ -36,7 +36,7 @@
     "pkg/uuid",
   ]
   pruneopts = "UT"
-  revision = "9ff165f27876dc806981d470f4c31c68e1b035c5"
+  revision = "56a96ad8671ec77441ad5cd779ca9ec7364a0ea9"
 
 [[projects]]
   branch = "master"
@@ -182,7 +182,7 @@
     "model",
   ]
   pruneopts = "UT"
-  revision = "0b1957f9d949dfa3084171a6ec5642b38055276a"
+  revision = "aeab699e26f4d4089dba5e522e5d9babd2adbaf7"
 
 [[projects]]
   branch = "master"
@@ -240,22 +240,22 @@
     "blowfish",
   ]
   pruneopts = "UT"
-  revision = "e4dc69e5b2fd71dcaf8bd5d054eb936deb78d1fa"
+  revision = "3d3f9f413869b949e48070b5bc593aa22cc2b8f2"
 
 [[projects]]
   branch = "master"
-  digest = "1:d6b719875cf8091fbab38527d81d34e71f4521b9ee9ccfbd4a32cff2ac5af96e"
+  digest = "1:f8b491a7c25030a895a0e579742d07136e6958e77ef2d46e769db8eec4e58fcd"
   name = "golang.org/x/net"
   packages = [
     "context",
     "context/ctxhttp",
   ]
   pruneopts = "UT"
-  revision = "03003ca0c849e57b6ea29a4bab8d3cb6e4d568fe"
+  revision = "adae6a3d119ae4890b46832a2e88a95adc62b8e7"
 
 [[projects]]
   branch = "master"
-  digest = "1:e53d48ed2a166c32d348527ee0423bbfe11e50ba0b23b776c574172db06a6271"
+  digest = "1:08c8fcebd2a3a7c2bf415eda56222087d4c1aabf6fe4f81ed8640fcb5e3d3ecf"
   name = "golang.org/x/oauth2"
   packages = [
     ".",
@@ -263,15 +263,15 @@
     "internal",
   ]
   pruneopts = "UT"
-  revision = "f42d05182288abf10faef86d16c0d07b8d40ea2d"
+  revision = "8f65e3013ebad444f13bc19536f7865efc793816"
 
 [[projects]]
   branch = "master"
-  digest = "1:7ba061af4131fb44b30448572acd0d6fefbf63a61b97b7ef1dea0be5871c2742"
+  digest = "1:225564f71149334315118db714e1ea87513e4a11cf4acb27e26bc7577cebfa0b"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "66b7b1311ac80bbafcd2daeef9a5e6e2cd1e2399"
+  revision = "0cf1ed9e522b7dbb416f080a5c8003de9b702bf4"
 
 [[projects]]
   digest = "1:08206298775e5b462e6c0333f4471b44e63f1a70e42952b6ede4ecc9572281eb"
