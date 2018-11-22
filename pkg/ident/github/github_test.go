@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ViBiOh/auth/pkg/model"
 	"github.com/ViBiOh/auth/pkg/ident"
+	"github.com/ViBiOh/auth/pkg/model"
 	"github.com/ViBiOh/httputils/pkg/cache"
 	"github.com/ViBiOh/httputils/pkg/request"
 	"golang.org/x/oauth2"
@@ -159,7 +159,7 @@ func Test_GetUser(t *testing.T) {
 			failed = true
 		} else if err != nil && testCase.wantErr == nil {
 			failed = true
-		} else if err != nil && err.Error() != testCase.wantErr.Error() {
+		} else if err != nil && !strings.Contains(err.Error(), testCase.wantErr.Error()) {
 			failed = true
 		} else if !reflect.DeepEqual(result, testCase.want) {
 			failed = true
