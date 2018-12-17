@@ -65,8 +65,8 @@ func New(config Config) *App {
 	}
 }
 
-// NewServiceApp creates new App from Flags' config with service
-func NewServiceApp(config map[string]interface{}, identService ident.Service) *App {
+// NewService creates new App from Flags' config with service
+func NewService(config map[string]interface{}, identService ident.Service) *App {
 	return &App{
 		disabled:     *config[`disable`].(*bool),
 		identService: identService,
