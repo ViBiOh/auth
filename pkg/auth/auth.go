@@ -66,11 +66,11 @@ func New(config Config) *App {
 }
 
 // NewService creates new App from Flags' config with service
-func NewService(config map[string]interface{}, identService ident.Service) *App {
+func NewService(config Config, identService ident.Service) *App {
 	return &App{
-		disabled:     *config[`disable`].(*bool),
+		disabled:     *config.disable,
 		identService: identService,
-		users:        loadUsersProfiles(*config[`users`].(*string)),
+		users:        loadUsersProfiles(*config.users),
 	}
 }
 
