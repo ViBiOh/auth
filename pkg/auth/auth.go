@@ -32,38 +32,45 @@ var (
 	_ http_model.Middleware = &App{}
 )
 
-// App stores informations and secret of API
+// Config of package
+type Config struct {
+	disable *bool
+	url     *string
+	users   *string
+}
+
+// App of package
 type App struct {
+	disabled     bool
 	identService ident.Service
 	URL          string
 	users        map[string]string
-	disabled     bool
 }
 
-// NewApp creates new App from Flags' config wuth url
-func NewApp(config map[string]interface{}) *App {
+// Flags adds flags for configuring package
+func Flags(fs *flag.FlagSet, prefix string) Config {
+	return Config{
+		disable: fs.Bool(tools.ToCamel(fmt.Sprintf(`%sDisable`, prefix)), false, `[auth] Disable auth`),
+		url:     fs.String(tools.ToCamel(fmt.Sprintf(`%sUrl`, prefix)), ``, `[auth] Auth URL, if remote`),
+		users:   fs.String(tools.ToCamel(fmt.Sprintf(`%sUsers`, prefix)), ``, `[auth] Allowed users and profiles (e.g. user:profile1|profile2,user2:profile3). Empty allow any identified user`),
+	}
+}
+
+// New creates new App from Config
+func New(config Config) *App {
 	return &App{
-		URL:      strings.TrimSpace(*config[`url`].(*string)),
-		users:    loadUsersProfiles(*config[`users`].(*string)),
-		disabled: *config[`disable`].(*bool),
+		disabled: *config.disable,
+		URL:      strings.TrimSpace(*config.url),
+		users:    loadUsersProfiles(*config.users),
 	}
 }
 
 // NewServiceApp creates new App from Flags' config with service
 func NewServiceApp(config map[string]interface{}, identService ident.Service) *App {
 	return &App{
+		disabled:     *config[`disable`].(*bool),
 		identService: identService,
 		users:        loadUsersProfiles(*config[`users`].(*string)),
-		disabled:     *config[`disable`].(*bool),
-	}
-}
-
-// Flags add flags for given prefix
-func Flags(prefix string) map[string]interface{} {
-	return map[string]interface{}{
-		`disable`: flag.Bool(tools.ToCamel(fmt.Sprintf(`%sDisable`, prefix)), false, `[auth] Disable auth`),
-		`url`:     flag.String(tools.ToCamel(fmt.Sprintf(`%sUrl`, prefix)), ``, `[auth] Auth URL, if remote`),
-		`users`:   flag.String(tools.ToCamel(fmt.Sprintf(`%sUsers`, prefix)), ``, `[auth] Allowed users and profiles (e.g. user:profile1|profile2,user2:profile3). Empty allow any identified user`),
 	}
 }
 

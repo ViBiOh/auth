@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -19,37 +18,6 @@ func authTestServer() *httptest.Server {
 			w.Write([]byte(r.Header.Get(`Authorization`)))
 		}
 	}))
-}
-
-func Test_Flags(t *testing.T) {
-	var cases = []struct {
-		intention string
-		want      string
-		wantType  string
-	}{
-		{
-			`should add string url param to flags`,
-			`url`,
-			`*string`,
-		},
-		{
-			`should add string users param to flags`,
-			`users`,
-			`*string`,
-		},
-	}
-
-	for _, testCase := range cases {
-		result := Flags(testCase.intention)[testCase.want]
-
-		if result == nil {
-			t.Errorf("%s\nFlags() = %+v, want `%s`", testCase.intention, result, testCase.want)
-		}
-
-		if fmt.Sprintf(`%T`, result) != testCase.wantType {
-			t.Errorf("%s\nFlags() = `%T`, want `%s`", testCase.intention, result, testCase.wantType)
-		}
-	}
 }
 
 func Test_loadUsersProfiles(t *testing.T) {

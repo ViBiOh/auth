@@ -20,40 +20,42 @@ import (
 )
 
 func main() {
-	serverConfig := httputils.Flags(``)
-	alcotestConfig := alcotest.Flags(``)
-	prometheusConfig := prometheus.Flags(`prometheus`)
-	opentracingConfig := opentracing.Flags(`tracing`)
-	owaspConfig := owasp.Flags(``)
-	corsConfig := cors.Flags(`cors`)
+	fs := flag.NewFlagSet("auth", flag.ExitOnError)
 
-	handlerConfig := handler.Flags(``)
-	basicConfig := basic.Flags(`basic`)
-	githubConfig := github.Flags(`github`)
+	serverConfig := httputils.Flags(fs, ``)
+	alcotestConfig := alcotest.Flags(fs, ``)
+	prometheusConfig := prometheus.Flags(fs, `prometheus`)
+	opentracingConfig := opentracing.Flags(fs, `tracing`)
+	owaspConfig := owasp.Flags(fs, ``)
+	corsConfig := cors.Flags(fs, `cors`)
+
+	handlerConfig := handler.Flags(fs, ``)
+	basicConfig := basic.Flags(fs, `basic`)
+	githubConfig := github.Flags(fs, `github`)
 
 	flag.Parse()
 
 	alcotest.DoAndExit(alcotestConfig)
 
-	serverApp := httputils.NewApp(serverConfig)
-	healthcheckApp := healthcheck.NewApp()
-	prometheusApp := prometheus.NewApp(prometheusConfig)
-	opentracingApp := opentracing.NewApp(opentracingConfig)
-	gzipApp := gzip.NewApp()
-	owaspApp := owasp.NewApp(owaspConfig)
-	corsApp := cors.NewApp(corsConfig)
+	serverApp := httputils.New(serverConfig)
+	healthcheckApp := healthcheck.New()
+	prometheusApp := prometheus.New(prometheusConfig)
+	opentracingApp := opentracing.New(opentracingConfig)
+	gzipApp := gzip.New()
+	owaspApp := owasp.New(owaspConfig)
+	corsApp := cors.New(corsConfig)
 
-	basicApp, err := basic.NewAuth(basicConfig, nil)
+	basicApp, err := basic.New(basicConfig, nil)
 	if err != nil {
 		logger.Warn(`%+v`, err)
 	}
 
-	githubApp, err := github.NewAuth(githubConfig)
+	githubApp, err := github.New(githubConfig)
 	if err != nil {
 		logger.Warn(`%+v`, err)
 	}
 
-	identApp := handler.NewApp(handlerConfig, []ident.Auth{basicApp, githubApp})
+	identApp := handler.New(handlerConfig, []ident.Auth{basicApp, githubApp})
 	identHandler := server.ChainMiddlewares(identApp.Handler(), prometheusApp, opentracingApp, gzipApp, owaspApp, corsApp)
 
 	serverApp.ListenAndServe(identHandler, nil, healthcheckApp)

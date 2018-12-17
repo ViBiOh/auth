@@ -17,15 +17,29 @@ const (
 	redirectPrefix = `/redirect`
 )
 
-// App stores informations and secret of API
-type App struct {
-	providers    []ident.Auth
-	redirect     string
-	cookieDomain string
+// Config of package
+type Config struct {
+	cookieDomain *string
+	redirect     *string
 }
 
-// NewApp creates new App from Flags' config
-func NewApp(config map[string]*string, providers []ident.Auth) *App {
+// App of package
+type App struct {
+	cookieDomain string
+	providers    []ident.Auth
+	redirect     string
+}
+
+// Flags adds flags for configuring package
+func Flags(fs *flag.FlagSet, prefix string) Config {
+	return Config{
+		cookieDomain: fs.String(tools.ToCamel(fmt.Sprintf(`%sCookieDomain`, prefix)), ``, `[auth] Cookie Domain to Store Authentification`),
+		redirect:     fs.String(tools.ToCamel(fmt.Sprintf(`%sAuthRedirect`, prefix)), ``, `[auth] Redirect URL on Auth Success`),
+	}
+}
+
+// New creates new App from Config
+func New(config Config, providers []ident.Auth) *App {
 	usedProviders := make([]ident.Auth, 0)
 	for _, provider := range providers {
 		if provider != nil {
@@ -35,17 +49,9 @@ func NewApp(config map[string]*string, providers []ident.Auth) *App {
 	}
 
 	return &App{
-		redirect:     *config[`redirect`],
-		cookieDomain: *config[`cookieDomain`],
+		redirect:     *config.redirect,
+		cookieDomain: *config.cookieDomain,
 		providers:    usedProviders,
-	}
-}
-
-// Flags add flags for given prefix
-func Flags(prefix string) map[string]*string {
-	return map[string]*string{
-		`redirect`:     flag.String(tools.ToCamel(fmt.Sprintf(`%sAuthRedirect`, prefix)), ``, `[auth] Redirect URL on Auth Success`),
-		`cookieDomain`: flag.String(tools.ToCamel(fmt.Sprintf(`%sCookieDomain`, prefix)), ``, `[auth] Cookie Domain to Store Authentification`),
 	}
 }
 

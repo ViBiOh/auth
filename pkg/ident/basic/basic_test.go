@@ -3,7 +3,6 @@ package basic
 import (
 	"encoding/base64"
 	"errors"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -12,32 +11,6 @@ import (
 	"github.com/ViBiOh/auth/pkg/model"
 	"golang.org/x/crypto/bcrypt"
 )
-
-func Test_Flags(t *testing.T) {
-	var cases = []struct {
-		intention string
-		want      string
-		wantType  string
-	}{
-		{
-			`should add string users param to flags`,
-			`users`,
-			`*string`,
-		},
-	}
-
-	for _, testCase := range cases {
-		result := Flags(testCase.intention)[testCase.want]
-
-		if result == nil {
-			t.Errorf("%s\nFlags() = %+v, want `%s`", testCase.intention, result, testCase.want)
-		}
-
-		if fmt.Sprintf(`%T`, result) != testCase.wantType {
-			t.Errorf("%s\nFlags() = `%T`, want `%s`", testCase.intention, result, testCase.wantType)
-		}
-	}
-}
 
 func Test_loadUsers(t *testing.T) {
 	var cases = []struct {
@@ -90,7 +63,7 @@ func Test_loadUsers(t *testing.T) {
 	}
 }
 
-func Test_NewAuth(t *testing.T) {
+func Test_New(t *testing.T) {
 	var cases = []struct {
 		intention string
 		users     string
@@ -114,10 +87,10 @@ func Test_NewAuth(t *testing.T) {
 	var failed bool
 
 	for _, testCase := range cases {
-		auth, err := NewAuth(map[string]interface{}{`users`: &testCase.users}, nil)
-		var authClient *Auth
+		auth, err := New(Config{users: &testCase.users}, nil)
+		var authClient *App
 		if auth != nil {
-			authClient = auth.(*Auth)
+			authClient = auth.(*App)
 		}
 
 		failed = false
@@ -133,7 +106,7 @@ func Test_NewAuth(t *testing.T) {
 		}
 
 		if failed {
-			t.Errorf("%s\nNewAuth(%+v) = (%+v, %+v), want (%+v, %+v)", testCase.intention, testCase.users, authClient.users, err, testCase.want, testCase.wantErr)
+			t.Errorf("%s\nNew(%+v) = (%+v, %+v), want (%+v, %+v)", testCase.intention, testCase.users, authClient.users, err, testCase.want, testCase.wantErr)
 		}
 	}
 }
@@ -150,7 +123,7 @@ func Test_GetName(t *testing.T) {
 	}
 
 	for _, testCase := range cases {
-		if result := (&Auth{}).GetName(); result != testCase.want {
+		if result := (&App{}).GetName(); result != testCase.want {
 			t.Errorf("%s\nGetName() = %+v, want %+v", testCase.intention, result, testCase.want)
 		}
 	}
@@ -158,7 +131,7 @@ func Test_GetName(t *testing.T) {
 
 func Test_GetUser(t *testing.T) {
 	password, _ := bcrypt.GenerateFromPassword([]byte(`password`), 12)
-	authClient := Auth{}
+	authClient := App{}
 	authClient.users = map[string]*basicUser{`admin`: {model.NewUser(`0`, `admin`, ``, ``), password}}
 
 	var cases = []struct {
@@ -236,7 +209,7 @@ func Test_Redirect(t *testing.T) {
 	for _, testCase := range cases {
 		writer := httptest.NewRecorder()
 
-		(&Auth{}).Redirect(writer, httptest.NewRequest(http.MethodGet, `/`, nil))
+		(&App{}).Redirect(writer, httptest.NewRequest(http.MethodGet, `/`, nil))
 		result := writer.Header().Get(`location`)
 		if result != testCase.want {
 			t.Errorf("%s\nRedirect() = (%+v), want (%+v)", testCase.intention, result, testCase.want)

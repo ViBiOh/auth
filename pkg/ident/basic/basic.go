@@ -22,11 +22,35 @@ type basicUser struct {
 	password []byte
 }
 
-// Flags add flags for given prefix
-func Flags(prefix string) map[string]interface{} {
-	return map[string]interface{}{
-		`users`: flag.String(tools.ToCamel(fmt.Sprintf(`%s%s`, prefix, `Users`)), ``, `[Basic] Users in the form "id:username:password,id2:username2:password2"`),
+// Config of package
+type Config struct {
+	users *string
+}
+
+// App of package
+type App struct {
+	users map[string]*basicUser
+	db    *sql.DB
+}
+
+// Flags adds flags for configuring package
+func Flags(fs *flag.FlagSet, prefix string) Config {
+	return Config{
+		users: fs.String(tools.ToCamel(fmt.Sprintf(`%sUsers`, prefix)), ``, `[basic] Users in the form "id:username:password,id2:username2:password2"`),
 	}
+}
+
+// New creates new App from Config
+func New(config Config, db *sql.DB) (ident.Auth, error) {
+	users, err := loadUsers(*config.users)
+	if err != nil {
+		return nil, err
+	}
+
+	return &App{
+		users: users,
+		db:    db,
+	}, nil
 }
 
 func loadUsers(authUsers string) (map[string]*basicUser, error) {
@@ -49,32 +73,13 @@ func loadUsers(authUsers string) (map[string]*basicUser, error) {
 	return users, nil
 }
 
-// Auth with login/pass
-type Auth struct {
-	users map[string]*basicUser
-	db    *sql.DB
-}
-
-// NewAuth creates new auth
-func NewAuth(config map[string]interface{}, db *sql.DB) (ident.Auth, error) {
-	users, err := loadUsers(*(config[`users`].(*string)))
-	if err != nil {
-		return nil, err
-	}
-
-	return &Auth{
-		users: users,
-		db:    db,
-	}, nil
-}
-
 // GetName returns Authorization header prefix
-func (Auth) GetName() string {
+func (App) GetName() string {
 	return `Basic`
 }
 
 // GetUser returns User associated to header
-func (a Auth) GetUser(ctx context.Context, header string) (*model.User, error) {
+func (a App) GetUser(ctx context.Context, header string) (*model.User, error) {
 	data, err := base64.StdEncoding.DecodeString(header)
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -113,12 +118,12 @@ func (a Auth) GetUser(ctx context.Context, header string) (*model.User, error) {
 }
 
 // Redirect redirects user to login endpoint
-func (Auth) Redirect(w http.ResponseWriter, r *http.Request) {
+func (App) Redirect(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, `/login/basic`, http.StatusFound)
 }
 
 // Login exchange state to token
-func (a Auth) Login(r *http.Request) (string, error) {
+func (a App) Login(r *http.Request) (string, error) {
 	authContent := strings.TrimSpace(strings.TrimPrefix(r.Header.Get(`Authorization`), a.GetName()))
 
 	if _, err := a.GetUser(r.Context(), authContent); err != nil {
@@ -128,7 +133,7 @@ func (a Auth) Login(r *http.Request) (string, error) {
 }
 
 // OnLoginError handle action when login fails
-func (Auth) OnLoginError(w http.ResponseWriter, _ *http.Request, err error) {
+func (App) OnLoginError(w http.ResponseWriter, _ *http.Request, err error) {
 	w.Header().Add(`WWW-Authenticate`, `Basic charset="UTF-8"`)
 	httperror.Unauthorized(w, err)
 }

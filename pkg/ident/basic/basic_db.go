@@ -20,7 +20,7 @@ WHERE
   username = $1
 `
 
-func (a Auth) dbLoginUser(login string) *basicUser {
+func (a App) dbLoginUser(login string) *basicUser {
 	var (
 		id       string
 		username string

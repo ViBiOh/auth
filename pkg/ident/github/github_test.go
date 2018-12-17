@@ -2,7 +2,6 @@ package github
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -16,68 +15,32 @@ import (
 	"golang.org/x/oauth2"
 )
 
-func Test_Flags(t *testing.T) {
-	var cases = []struct {
-		intention string
-		want      string
-		wantType  string
-	}{
-		{
-			`should add string clientID param to flags`,
-			`clientID`,
-			`*string`,
-		},
-		{
-			`should add string clientSecret param to flags`,
-			`clientSecret`,
-			`*string`,
-		},
-		{
-			`should add string scopes param to flags`,
-			`scopes`,
-			`*string`,
-		},
-	}
-
-	for _, testCase := range cases {
-		result := Flags(testCase.intention)[testCase.want]
-
-		if result == nil {
-			t.Errorf("%s\nFlags() = %+v, want `%s`", testCase.intention, result, testCase.want)
-		}
-
-		if fmt.Sprintf(`%T`, result) != testCase.wantType {
-			t.Errorf("%s\nFlags() = `%T`, want `%s`", testCase.intention, result, testCase.wantType)
-		}
-	}
-}
-
 func Test_NewAuth(t *testing.T) {
 	empty := ``
 	name := `GitHub`
 
 	var cases = []struct {
 		intention string
-		config    map[string]interface{}
+		config    Config
 		want      bool
 	}{
 		{
 			`should not initialize config if not client ID`,
-			map[string]interface{}{`clientID`: &empty, `clientSecret`: &empty, `scopes`: &empty},
+			Config{clientID: &empty, clientSecret: &empty, scopes: &empty},
 			false,
 		},
 		{
 			`should init oauth config`,
-			map[string]interface{}{`clientID`: &name, `clientSecret`: &name, `scopes`: &empty},
+			Config{clientID: &name, clientSecret: &name, scopes: &empty},
 			true,
 		},
 	}
 
 	for _, testCase := range cases {
-		auth, _ := NewAuth(testCase.config)
-		var authClient *Auth
+		auth, _ := New(testCase.config)
+		var authClient *App
 		if auth != nil {
-			authClient = auth.(*Auth)
+			authClient = auth.(*App)
 		}
 
 		if authClient != nil {
@@ -102,7 +65,7 @@ func Test_GetName(t *testing.T) {
 	}
 
 	for _, testCase := range cases {
-		if result := (&Auth{}).GetName(); result != testCase.want {
+		if result := (&App{}).GetName(); result != testCase.want {
 			t.Errorf("%s\nGetName() = %+v, want %+v", testCase.intention, result, testCase.want)
 		}
 	}
@@ -148,7 +111,7 @@ func Test_GetUser(t *testing.T) {
 
 	for _, testCase := range cases {
 		userURL = testServer.URL
-		result, err := (&Auth{
+		result, err := (&App{
 			oauthConf:  &oauth2.Config{},
 			usersCache: cache.New(),
 		}).GetUser(nil, testCase.header)
@@ -188,12 +151,12 @@ func Test_Login(t *testing.T) {
 	}
 
 	configValue := `test`
-	auth, _ := NewAuth(map[string]interface{}{
-		`clientID`:     &configValue,
-		`clientSecret`: &configValue,
-		`scopes`:       &configValue,
+	auth, _ := New(Config{
+		clientID:     &configValue,
+		clientSecret: &configValue,
+		scopes:       &configValue,
 	})
-	authClient := auth.(*Auth)
+	authClient := auth.(*App)
 
 	var cases = []struct {
 		intention string

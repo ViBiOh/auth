@@ -17,9 +17,9 @@ type App struct {
 	provider ident.Auth
 }
 
-// NewBasicApp creates new App from Flags' config only for basic auth wrapper
-func NewBasicApp(basicConfig map[string]interface{}, db *sql.DB) *App {
-	provider, err := basic.NewAuth(basicConfig, db)
+// NewBasic creates new App from Flags' config only for basic auth wrapper
+func NewBasic(basicConfig basic.Config, db *sql.DB) *App {
+	provider, err := basic.New(basicConfig, db)
 	if err != nil {
 		logger.Fatal(`%+v`, err)
 	}

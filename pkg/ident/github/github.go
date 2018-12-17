@@ -32,39 +32,46 @@ var (
 	userCacheDuration = time.Minute * 5
 )
 
-// Flags add flags for given prefix
-func Flags(prefix string) map[string]interface{} {
-	return map[string]interface{}{
-		`clientID`:     flag.String(tools.ToCamel(fmt.Sprintf(`%sClientId`, prefix)), ``, `[GitHub] OAuth Client ID`),
-		`clientSecret`: flag.String(tools.ToCamel(fmt.Sprintf(`%sClientSecret`, prefix)), ``, `[GitHub] OAuth Client Secret`),
-		`scopes`:       flag.String(tools.ToCamel(fmt.Sprintf(`%sScopes`, prefix)), ``, `[GitHub] OAuth Scopes, comma separated`),
+// Config of package
+type Config struct {
+	clientID     *string
+	clientSecret *string
+	scopes       *string
+}
+
+// App of package
+type App struct {
+	oauthConf  *oauth2.Config
+	states     sync.Map
+	usersCache cache.TimeMap
+}
+
+// Flags adds flags for configuring package
+func Flags(fs *flag.FlagSet, prefix string) Config {
+	return Config{
+		clientID:     fs.String(tools.ToCamel(fmt.Sprintf(`%sClientId`, prefix)), ``, `[github] OAuth Client ID`),
+		clientSecret: fs.String(tools.ToCamel(fmt.Sprintf(`%sClientSecret`, prefix)), ``, `[github] OAuth Client Secret`),
+		scopes:       fs.String(tools.ToCamel(fmt.Sprintf(`%sScopes`, prefix)), ``, `[github] OAuth Scopes, comma separated`),
 	}
 }
 
-// Auth auth with GitHub OAuth
-type Auth struct {
-	oauthConf  *oauth2.Config
-	usersCache cache.TimeMap
-	states     sync.Map
-}
-
-// NewAuth creates new auth
-func NewAuth(config map[string]interface{}) (ident.Auth, error) {
-	clientID := strings.TrimSpace(*(config[`clientID`].(*string)))
+// New creates new App from Config
+func New(config Config) (ident.Auth, error) {
+	clientID := strings.TrimSpace(*config.clientID)
 	if clientID == `` {
 		return nil, nil
 	}
 
 	var scopes []string
-	rawScopes := strings.TrimSpace(*(config[`scopes`].(*string)))
+	rawScopes := strings.TrimSpace(*config.scopes)
 	if rawScopes != `` {
 		scopes = strings.Split(rawScopes, `,`)
 	}
 
-	return &Auth{
+	return &App{
 		oauthConf: &oauth2.Config{
 			ClientID:     clientID,
-			ClientSecret: strings.TrimSpace(*(config[`clientSecret`].(*string))),
+			ClientSecret: strings.TrimSpace(*config.clientSecret),
 			Endpoint:     endpoint,
 			Scopes:       scopes,
 		},
@@ -74,11 +81,11 @@ func NewAuth(config map[string]interface{}) (ident.Auth, error) {
 }
 
 // GetName returns Authorization header prefix
-func (*Auth) GetName() string {
+func (*App) GetName() string {
 	return `GitHub`
 }
 
-func (a *Auth) hasEmailAccess() bool {
+func (a *App) hasEmailAccess() bool {
 	if len(a.oauthConf.Scopes) == 0 {
 		return false
 	}
@@ -92,7 +99,7 @@ func (a *Auth) hasEmailAccess() bool {
 	return false
 }
 
-func (a *Auth) getUserEmail(ctx context.Context, header string) string {
+func (a *App) getUserEmail(ctx context.Context, header string) string {
 	if !a.hasEmailAccess() {
 		return ``
 	}
@@ -119,7 +126,7 @@ func (a *Auth) getUserEmail(ctx context.Context, header string) string {
 }
 
 // GetUser returns User associated to header
-func (a *Auth) GetUser(ctx context.Context, header string) (*model.User, error) {
+func (a *App) GetUser(ctx context.Context, header string) (*model.User, error) {
 	if user, ok := a.usersCache.Load(header); ok {
 		return user.(*model.User), nil
 	}
@@ -141,7 +148,7 @@ func (a *Auth) GetUser(ctx context.Context, header string) (*model.User, error) 
 }
 
 // Redirect redirects user to GitHub endpoint
-func (a *Auth) Redirect(w http.ResponseWriter, r *http.Request) {
+func (a *App) Redirect(w http.ResponseWriter, r *http.Request) {
 	state, err := uuid.New()
 	if err != nil {
 		httperror.InternalServerError(w, err)
@@ -153,7 +160,7 @@ func (a *Auth) Redirect(w http.ResponseWriter, r *http.Request) {
 }
 
 // Login exchanges code for token
-func (a *Auth) Login(r *http.Request) (string, error) {
+func (a *App) Login(r *http.Request) (string, error) {
 	state := r.FormValue(`state`)
 	code := r.FormValue(`code`)
 
@@ -171,6 +178,6 @@ func (a *Auth) Login(r *http.Request) (string, error) {
 }
 
 // OnLoginError handle action when login fails
-func (*Auth) OnLoginError(w http.ResponseWriter, r *http.Request, _ error) {
+func (*App) OnLoginError(w http.ResponseWriter, r *http.Request, _ error) {
 	http.Redirect(w, r, `/redirect/github`, http.StatusFound)
 }
