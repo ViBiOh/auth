@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"os"
 
 	"github.com/ViBiOh/auth/pkg/ident"
 	"github.com/ViBiOh/auth/pkg/ident/basic"
@@ -33,7 +34,9 @@ func main() {
 	basicConfig := basic.Flags(fs, `basic`)
 	githubConfig := github.Flags(fs, `github`)
 
-	flag.Parse()
+	if err := fs.Parse(os.Args[1:]); err != nil {
+		logger.Fatal(`%+v`, err)
+	}
 
 	alcotest.DoAndExit(alcotestConfig)
 

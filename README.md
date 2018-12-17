@@ -44,7 +44,7 @@ Usage of auth:
   -authRedirect string
       [auth] Redirect URL on Auth Success
   -basicUsers string
-      [Basic] Users in the form "id:username:password,id2:username2:password2"
+      [basic] Users in the form "id:username:password,id2:username2:password2"
   -cookieDomain string
       [auth] Cookie Domain to Store Authentification
   -corsCredentials
@@ -62,21 +62,17 @@ Usage of auth:
   -frameOptions string
       [owasp] X-Frame-Options (default "deny")
   -githubClientId string
-      [GitHub] OAuth Client ID
+      [github] OAuth Client ID
   -githubClientSecret string
-      [GitHub] OAuth Client Secret
+      [github] OAuth Client Secret
   -githubScopes string
-      [GitHub] OAuth Scopes, comma separated
+      [github] OAuth Scopes, comma separated
   -hsts
       [owasp] Indicate Strict Transport Security (default true)
   -port int
       Listen port (default 1080)
-  -rollbarEnv string
-      [rollbar] Environment (default "prod")
-  -rollbarServerRoot string
-      [rollbar] Server Root
-  -rollbarToken string
-      [rollbar] Token
+  -prometheusPath string
+      [prometheus] Path for exposing metrics (default "/metrics")
   -tls
       Serve TLS content (default true)
   -tlsCert string
@@ -94,7 +90,7 @@ Usage of auth:
   -url string
       [health] URL to check
   -userAgent string
-      [health] User-Agent used (default "Golang alcotest")
+      [health] User-Agent for check (default "Golang alcotest")
 ```
 
 Password encrypter accepts one argument, the password, and output the bcrypted one.
