@@ -11,7 +11,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:dccfc0707d45bf138caa1b93e7c00e428d2d593e6d4bfe4d680f445e92951716"
+  digest = "1:f5b4847aa0c3c1d825d9bb1a6ab5b8f1a415e2c1d74085d849551ec5d26cf1e8"
   name = "github.com/ViBiOh/httputils"
   packages = [
     "pkg",
@@ -38,7 +38,7 @@
     "pkg/uuid",
   ]
   pruneopts = "UT"
-  revision = "b569bdfdbf9036f8f2026fc7203db165decc61ec"
+  revision = "f34a4b0c6f552c687db14b15c1a88111f8c40419"
 
 [[projects]]
   digest = "1:666e546c77c8a4eb7a77fcbd5c9bc4a367e8ec2e4fb74dcd74d2e218751567ad"
@@ -247,7 +247,7 @@
   name = "github.com/prometheus/client_model"
   packages = ["go"]
   pruneopts = "UT"
-  revision = "5c3871d89910bfb32f5fcab2aa4b9ec68e65a99f"
+  revision = "56726106282f1985ea77d5305743db7231b0c0a8"
 
 [[projects]]
   branch = "master"
@@ -259,11 +259,11 @@
     "model",
   ]
   pruneopts = "UT"
-  revision = "b1c43a6df3aedba268353d940b5974f05037ed5c"
+  revision = "2998b132700a7d019ff618c06a234b47c1f3f681"
 
 [[projects]]
   branch = "master"
-  digest = "1:08eb8b60450efe841e37512d66ce366a87d187505d7c67b99307a6c1803483a2"
+  digest = "1:f532f2cdb9e9e4a8fad5a7e944482f4dd12650228e4a7a6c8492a0d069ce0690"
   name = "github.com/prometheus/procfs"
   packages = [
     ".",
@@ -272,7 +272,7 @@
     "xfs",
   ]
   pruneopts = "UT"
-  revision = "b1a0a9a36d7453ba0f62578b99712f3a6c5f82d1"
+  revision = "bf6a532e95b1f7a62adf0ab5050a5bb2237ad2f4"
 
 [[projects]]
   branch = "master"
@@ -336,11 +336,11 @@
     "context/ctxhttp",
   ]
   pruneopts = "UT"
-  revision = "927f97764cc334a6575f4b7a1584a147864d5723"
+  revision = "ed066c81e75eba56dd9bd2139ade88125b855585"
 
 [[projects]]
   branch = "master"
-  digest = "1:932aea8a7acd301484058f913d4b209bc8c9dc64ea99fd3fbbb2f75c02e3cd46"
+  digest = "1:4802b60951715b689a573642079ca20b7f4a5af913cf474fee052b4633d10ddf"
   name = "golang.org/x/oauth2"
   packages = [
     ".",
@@ -348,15 +348,15 @@
     "internal",
   ]
   pruneopts = "UT"
-  revision = "d668ce993890a79bda886613ee587a69dd5da7a6"
+  revision = "5dab4167f31cbd76b407f1486c86b40748bc5073"
 
 [[projects]]
   branch = "master"
-  digest = "1:ab01052262e2ef935fdec4632b4029e56e7efbc96a569feebdcdc67fd84a9b5b"
+  digest = "1:f6f6d9d6f80c9e32acc0f4f3b904e0b9f5b18a7757c2ef941121bd79a10e7bdf"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "1775db3f06b568179d273425900dd09125831dd5"
+  revision = "11f53e03133963fb11ae0588e08b5e0b85be8be5"
 
 [[projects]]
   branch = "master"
@@ -369,7 +369,7 @@
     "go/types/typeutil",
   ]
   pruneopts = "UT"
-  revision = "3ef68632349c4eab68426d81d981d131b625cafc"
+  revision = "16909d206f00da7d0d5ba28cd9dc7fb223648ecf"
 
 [[projects]]
   digest = "1:6f3bd49ddf2e104e52062774d797714371fac1b8bddfd8e124ce78e6b2264a10"
