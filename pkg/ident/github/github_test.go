@@ -137,7 +137,7 @@ func Test_GetUser(t *testing.T) {
 func Test_Login(t *testing.T) {
 	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, _ := request.ReadBodyRequest(r)
-		if strings.HasPrefix(string(body), `code=invalid`) {
+		if strings.Contains(string(body), `code=invalidcode`) {
 			w.WriteHeader(http.StatusInternalServerError)
 		} else {
 			w.Write([]byte(`access_token=github_token`))
