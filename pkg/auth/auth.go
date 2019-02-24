@@ -144,13 +144,18 @@ func (a App) IsAuthenticatedByAuth(ctx context.Context, authContent string) (*mo
 		headers := http.Header{}
 		headers.Set(authorizationHeader, authContent)
 
-		userBytes, status, _, err := request.Get(ctx, fmt.Sprintf(`%s/user`, a.URL), headers)
+		body, status, _, err := request.Get(ctx, fmt.Sprintf(`%s/user`, a.URL), headers)
 		if err != nil {
 			if status == http.StatusUnauthorized {
 				return nil, ident.ErrEmptyAuth
 			}
 
 			return nil, errors.New(`authentication failed: %v`, err)
+		}
+
+		userBytes, err := request.ReadBody(body)
+		if err != nil {
+			return nil, err
 		}
 
 		retrievedUser = &model.User{}

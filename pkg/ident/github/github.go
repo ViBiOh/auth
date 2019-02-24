@@ -104,7 +104,13 @@ func (a *App) getUserEmail(ctx context.Context, header string) string {
 		return ``
 	}
 
-	mailResponse, _, _, err := request.Get(ctx, emailURL, http.Header{`Authorization`: []string{fmt.Sprintf(`token %s`, header)}})
+	mailBody, _, _, err := request.Get(ctx, emailURL, http.Header{`Authorization`: []string{fmt.Sprintf(`token %s`, header)}})
+	if err != nil {
+		logger.Error(`%+v`, err)
+		return ``
+	}
+
+	mailResponse, err := request.ReadBody(mailBody)
 	if err != nil {
 		logger.Error(`%+v`, err)
 		return ``
@@ -131,7 +137,12 @@ func (a *App) GetUser(ctx context.Context, header string) (*model.User, error) {
 		return user.(*model.User), nil
 	}
 
-	userResponse, _, _, err := request.Get(ctx, userURL, http.Header{`Authorization`: []string{fmt.Sprintf(`token %s`, header)}})
+	userBody, _, _, err := request.Get(ctx, userURL, http.Header{`Authorization`: []string{fmt.Sprintf(`token %s`, header)}})
+	if err != nil {
+		return nil, err
+	}
+
+	userResponse, err := request.ReadBody(userBody)
 	if err != nil {
 		return nil, err
 	}
