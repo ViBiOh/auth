@@ -38,7 +38,7 @@
     "pkg/uuid",
   ]
   pruneopts = "UT"
-  revision = "fe6853cdcbced4fb6193f8634a4530c97aaf947a"
+  revision = "7cbf1759de457453c3522c4205b0dd678fa6dc42"
 
 [[projects]]
   digest = "1:9afc639ef88d907f2e87ab68cbc63117b88d0d84238fd6b08224515d00a8136a"
