@@ -6,6 +6,12 @@ PACKAGES ?= ./...
 GOBIN=bin
 BINARY_PATH=$(GOBIN)/$(APP_NAME)
 
+SERVER_SOURCE = cmd/auth/auth.go
+SERVER_RUNNER = go run $(SERVER_SOURCE)
+ifeq ($(DEBUG), true)
+	SERVER_RUNNER = dlv debug $(SERVER_SOURCE) --
+endif
+
 ## help: Display list of commands
 .PHONY: help
 help: Makefile
@@ -80,6 +86,6 @@ build:
 ## start: Start app
 .PHONY: start
 start:
-	go run cmd/auth/auth.go \
+	$(SERVER_RUNNER) \
 		-tls=false \
 		-basicUsers "1:admin:`go run cmd/bcrypt/bcrypt.go admin`"
