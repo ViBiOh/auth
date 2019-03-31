@@ -92,4 +92,4 @@ build:
 start:
 	$(SERVER_RUNNER) \
 		-tls=false \
-		-basicUsers "1:admin:`go run cmd/bcrypt/bcrypt.go admin`"
+		-basicUsers "1:admin:$(go run cmd/bcrypt/bcrypt.go admin)"
