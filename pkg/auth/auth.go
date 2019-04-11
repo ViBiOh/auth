@@ -21,13 +21,13 @@ import (
 type key int
 
 const (
-	authorizationHeader     = `Authorization`
+	authorizationHeader     = "Authorization"
 	ctxUserName         key = iota
 )
 
 var (
 	// ErrForbidden occurs when user is identified but not authorized
-	ErrForbidden = errors.New(`forbidden access`)
+	ErrForbidden = errors.New("forbidden access")
 
 	_ http_model.Middleware = &App{}
 )
@@ -50,9 +50,9 @@ type App struct {
 // Flags adds flags for configuring package
 func Flags(fs *flag.FlagSet, prefix string) Config {
 	return Config{
-		disable: fs.Bool(tools.ToCamel(fmt.Sprintf(`%sDisable`, prefix)), false, `[auth] Disable auth`),
-		url:     fs.String(tools.ToCamel(fmt.Sprintf(`%sUrl`, prefix)), ``, `[auth] Auth URL, if remote`),
-		users:   fs.String(tools.ToCamel(fmt.Sprintf(`%sUsers`, prefix)), ``, `[auth] Allowed users and profiles (e.g. user:profile1|profile2,user2:profile3). Empty allow any identified user`),
+		disable: fs.Bool(tools.ToCamel(fmt.Sprintf("%sDisable", prefix)), false, "[auth] Disable auth"),
+		url:     fs.String(tools.ToCamel(fmt.Sprintf("%sUrl", prefix)), "", "[auth] Auth URL, if remote"),
+		users:   fs.String(tools.ToCamel(fmt.Sprintf("%sUsers", prefix)), "", "[auth] Allowed users and profiles (e.g. user:profile1|profile2,user2:profile3). Empty allow any identified user"),
 	}
 }
 
@@ -75,17 +75,17 @@ func NewService(config Config, identService ident.Service) *App {
 }
 
 func loadUsersProfiles(usersAndProfiles string) map[string]string {
-	if usersAndProfiles == `` {
+	if usersAndProfiles == "" {
 		return nil
 	}
 
 	users := make(map[string]string, 0)
 
-	for _, user := range strings.Split(usersAndProfiles, `,`) {
+	for _, user := range strings.Split(usersAndProfiles, ",") {
 		username := user
-		profiles := ``
+		profiles := ""
 
-		if parts := strings.Split(user, `:`); len(parts) == 2 {
+		if parts := strings.Split(user, ":"); len(parts) == 2 {
 			username = parts[0]
 			profiles = parts[1]
 		}
@@ -112,11 +112,11 @@ func UserFromContext(ctx context.Context) *model.User {
 // ReadAuthContent from Header or Cookie
 func ReadAuthContent(r *http.Request) string {
 	authContent := strings.TrimSpace(r.Header.Get(authorizationHeader))
-	if authContent != `` {
+	if authContent != "" {
 		return authContent
 	}
 
-	return cookie.GetCookieValue(r, `auth`)
+	return cookie.GetCookieValue(r, "auth")
 }
 
 // IsAuthenticated check if request has correct headers for authentification
@@ -129,8 +129,8 @@ func (a App) IsAuthenticatedByAuth(ctx context.Context, authContent string) (*mo
 	var retrievedUser *model.User
 	var err error
 
-	if a.identService == nil && a.URL == `` {
-		return nil, errors.New(`no authentification target configured`)
+	if a.identService == nil && a.URL == "" {
+		return nil, errors.New("no authentification target configured")
 	}
 
 	if a.identService != nil {
@@ -140,17 +140,17 @@ func (a App) IsAuthenticatedByAuth(ctx context.Context, authContent string) (*mo
 		}
 	}
 
-	if a.URL != `` {
+	if a.URL != "" {
 		headers := http.Header{}
 		headers.Set(authorizationHeader, authContent)
 
-		body, status, _, err := request.Get(ctx, fmt.Sprintf(`%s/user`, a.URL), headers)
+		body, status, _, err := request.Get(ctx, fmt.Sprintf("%s/user", a.URL), headers)
 		if err != nil {
 			if status == http.StatusUnauthorized {
 				return nil, ident.ErrEmptyAuth
 			}
 
-			return nil, errors.New(`authentication failed: %v`, err)
+			return nil, errors.New("authentication failed: %v", err)
 		}
 
 		userBytes, err := request.ReadBody(body)
@@ -166,7 +166,7 @@ func (a App) IsAuthenticatedByAuth(ctx context.Context, authContent string) (*mo
 
 	username := strings.ToLower(retrievedUser.Username)
 	if a.users == nil {
-		return model.NewUser(retrievedUser.ID, username, retrievedUser.Email, ``), nil
+		return model.NewUser(retrievedUser.ID, username, retrievedUser.Email, ""), nil
 	} else if profiles, ok := a.users[username]; ok {
 		return model.NewUser(retrievedUser.ID, username, retrievedUser.Email, profiles), nil
 	}

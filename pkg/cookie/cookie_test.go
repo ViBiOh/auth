@@ -9,10 +9,10 @@ import (
 )
 
 func Test_GetCookieValue(t *testing.T) {
-	reqWithCookie := httptest.NewRequest(http.MethodGet, `/`, nil)
+	reqWithCookie := httptest.NewRequest(http.MethodGet, "/", nil)
 	reqWithCookie.AddCookie(&http.Cookie{
-		Name:  `test_cookie`,
-		Value: `cookie_content`,
+		Name:  "test_cookie",
+		Value: "cookie_content",
 	})
 
 	var cases = []struct {
@@ -21,19 +21,19 @@ func Test_GetCookieValue(t *testing.T) {
 		want      string
 	}{
 		{
-			`should return empty value when no cookie`,
-			httptest.NewRequest(http.MethodGet, `/`, nil),
-			``,
+			"should return empty value when no cookie",
+			httptest.NewRequest(http.MethodGet, "/", nil),
+			"",
 		},
 		{
-			`should return existing cookie`,
+			"should return existing cookie",
 			reqWithCookie,
-			`cookie_content`,
+			"cookie_content",
 		},
 	}
 
 	for _, testCase := range cases {
-		if result := GetCookieValue(testCase.request, `test_cookie`); result != testCase.want {
+		if result := GetCookieValue(testCase.request, "test_cookie"); result != testCase.want {
 			t.Errorf("%s\nGetCookieValue(%+v) = %+v, want %+v", testCase.intention, testCase.request, result, testCase.want)
 		}
 	}
@@ -51,16 +51,16 @@ func Test_SetCookieAndRedirect(t *testing.T) {
 		wantCookie    string
 	}{
 		{
-			`should redirect with cookie of given content`,
-			httptest.NewRequest(http.MethodGet, `/`, nil),
-			`/redirect_with_cookie`,
-			`vibioh.fr`,
-			`secret_token`,
+			"should redirect with cookie of given content",
+			httptest.NewRequest(http.MethodGet, "/", nil),
+			"/redirect_with_cookie",
+			"vibioh.fr",
+			"secret_token",
 			`<a href="/redirect_with_cookie">Found</a>.
 
 `,
 			http.StatusFound,
-			`auth=secret_token; Path=/; Domain=vibioh.fr; HttpOnly; Secure`,
+			"auth=secret_token; Path=/; Domain=vibioh.fr; HttpOnly; Secure",
 		},
 	}
 
@@ -77,7 +77,7 @@ func Test_SetCookieAndRedirect(t *testing.T) {
 			t.Errorf("%s\nSetCookieAndRedirect(%+v) = %+v, want %+v", testCase.intention, testCase.request, string(result), testCase.want)
 		}
 
-		if result := writer.Header().Get(`Set-Cookie`); result != testCase.wantCookie {
+		if result := writer.Header().Get("Set-Cookie"); result != testCase.wantCookie {
 			t.Errorf("%s\nSetCookieAndRedirect(%+v) = %+v, want %+v", testCase.intention, testCase.request, result, testCase.wantCookie)
 		}
 	}
@@ -94,15 +94,15 @@ func Test_ClearCookieAndRedirect(t *testing.T) {
 		wantCookie   string
 	}{
 		{
-			`should redirect with cookie of given content`,
-			httptest.NewRequest(http.MethodGet, `/`, nil),
-			`/redirect_with_cookie`,
-			`vibioh.fr`,
+			"should redirect with cookie of given content",
+			httptest.NewRequest(http.MethodGet, "/", nil),
+			"/redirect_with_cookie",
+			"vibioh.fr",
 			`<a href="/redirect_with_cookie">Found</a>.
 
 `,
 			http.StatusFound,
-			`auth=none; Path=/; Domain=vibioh.fr; Max-Age=0; HttpOnly; Secure`,
+			"auth=none; Path=/; Domain=vibioh.fr; Max-Age=0; HttpOnly; Secure",
 		},
 	}
 
@@ -119,7 +119,7 @@ func Test_ClearCookieAndRedirect(t *testing.T) {
 			t.Errorf("%s\nClearCookieAndRedirect(%+v) = %+v, want %+v", testCase.intention, testCase.request, string(result), testCase.want)
 		}
 
-		if result := writer.Header().Get(`Set-Cookie`); result != testCase.wantCookie {
+		if result := writer.Header().Get("Set-Cookie"); result != testCase.wantCookie {
 			t.Errorf("%s\nClearCookieAndRedirect(%+v) = %+v, want %+v", testCase.intention, testCase.request, result, testCase.wantCookie)
 		}
 	}

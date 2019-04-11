@@ -23,19 +23,19 @@ import (
 func main() {
 	fs := flag.NewFlagSet("auth", flag.ExitOnError)
 
-	serverConfig := httputils.Flags(fs, ``)
-	alcotestConfig := alcotest.Flags(fs, ``)
-	prometheusConfig := prometheus.Flags(fs, `prometheus`)
-	opentracingConfig := opentracing.Flags(fs, `tracing`)
-	owaspConfig := owasp.Flags(fs, ``)
-	corsConfig := cors.Flags(fs, `cors`)
+	serverConfig := httputils.Flags(fs, "")
+	alcotestConfig := alcotest.Flags(fs, "")
+	prometheusConfig := prometheus.Flags(fs, "prometheus")
+	opentracingConfig := opentracing.Flags(fs, "tracing")
+	owaspConfig := owasp.Flags(fs, "")
+	corsConfig := cors.Flags(fs, "cors")
 
-	handlerConfig := handler.Flags(fs, ``)
-	basicConfig := basic.Flags(fs, `basic`)
-	githubConfig := github.Flags(fs, `github`)
+	handlerConfig := handler.Flags(fs, "")
+	basicConfig := basic.Flags(fs, "basic")
+	githubConfig := github.Flags(fs, "github")
 
 	if err := fs.Parse(os.Args[1:]); err != nil {
-		logger.Fatal(`%+v`, err)
+		logger.Fatal("%+v", err)
 	}
 
 	alcotest.DoAndExit(alcotestConfig)
@@ -50,12 +50,12 @@ func main() {
 
 	basicApp, err := basic.New(basicConfig, nil)
 	if err != nil {
-		logger.Warn(`%+v`, err)
+		logger.Warn("%+v", err)
 	}
 
 	githubApp, err := github.New(githubConfig)
 	if err != nil {
-		logger.Warn(`%+v`, err)
+		logger.Warn("%+v", err)
 	}
 
 	identApp := handler.New(handlerConfig, []ident.Auth{basicApp, githubApp})

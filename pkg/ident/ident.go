@@ -10,19 +10,19 @@ import (
 
 var (
 	// ErrUnknownIdentType occurs when identification type in unknown
-	ErrUnknownIdentType = errors.New(`unknown identification type`)
+	ErrUnknownIdentType = errors.New("unknown identification type")
 
 	// ErrEmptyAuth occurs when authorization content is not found
-	ErrEmptyAuth = errors.New(`empty authorization content`)
+	ErrEmptyAuth = errors.New("empty authorization content")
 
 	// ErrMalformedAuth occurs when authorization content is malformed
-	ErrMalformedAuth = errors.New(`malformed authorization content`)
+	ErrMalformedAuth = errors.New("malformed authorization content")
 
 	// ErrInvalidState occurs when state is not consistent
-	ErrInvalidState = errors.New(`invalid state provided for oauth`)
+	ErrInvalidState = errors.New("invalid state provided for oauth")
 
 	// ErrInvalidCode occurs when code is no valid
-	ErrInvalidCode = errors.New(`invalid code provided for oauth`)
+	ErrInvalidCode = errors.New("invalid code provided for oauth")
 )
 
 // Service provide methods for dealing with identification

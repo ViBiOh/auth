@@ -25,8 +25,8 @@ import (
 )
 
 var (
-	userURL  = `https://api.github.com/user`
-	emailURL = `https://api.github.com/user/emails`
+	userURL  = "https://api.github.com/user"
+	emailURL = "https://api.github.com/user/emails"
 	endpoint = github.Endpoint
 
 	userCacheDuration = time.Minute * 5
@@ -49,23 +49,23 @@ type App struct {
 // Flags adds flags for configuring package
 func Flags(fs *flag.FlagSet, prefix string) Config {
 	return Config{
-		clientID:     fs.String(tools.ToCamel(fmt.Sprintf(`%sClientId`, prefix)), ``, `[github] OAuth Client ID`),
-		clientSecret: fs.String(tools.ToCamel(fmt.Sprintf(`%sClientSecret`, prefix)), ``, `[github] OAuth Client Secret`),
-		scopes:       fs.String(tools.ToCamel(fmt.Sprintf(`%sScopes`, prefix)), ``, `[github] OAuth Scopes, comma separated`),
+		clientID:     fs.String(tools.ToCamel(fmt.Sprintf("%sClientId", prefix)), "", "[github] OAuth Client ID"),
+		clientSecret: fs.String(tools.ToCamel(fmt.Sprintf("%sClientSecret", prefix)), "", "[github] OAuth Client Secret"),
+		scopes:       fs.String(tools.ToCamel(fmt.Sprintf("%sScopes", prefix)), "", "[github] OAuth Scopes, comma separated"),
 	}
 }
 
 // New creates new App from Config
 func New(config Config) (ident.Auth, error) {
 	clientID := strings.TrimSpace(*config.clientID)
-	if clientID == `` {
+	if clientID == "" {
 		return nil, nil
 	}
 
 	var scopes []string
 	rawScopes := strings.TrimSpace(*config.scopes)
-	if rawScopes != `` {
-		scopes = strings.Split(rawScopes, `,`)
+	if rawScopes != "" {
+		scopes = strings.Split(rawScopes, ",")
 	}
 
 	return &App{
@@ -82,7 +82,7 @@ func New(config Config) (ident.Auth, error) {
 
 // GetName returns Authorization header prefix
 func (*App) GetName() string {
-	return `GitHub`
+	return "GitHub"
 }
 
 func (a *App) hasEmailAccess() bool {
@@ -91,7 +91,7 @@ func (a *App) hasEmailAccess() bool {
 	}
 
 	for _, scope := range a.oauthConf.Scopes {
-		if scope == `user:email` || scope == `user` {
+		if scope == "user:email" || scope == "user" {
 			return true
 		}
 	}
@@ -101,25 +101,25 @@ func (a *App) hasEmailAccess() bool {
 
 func (a *App) getUserEmail(ctx context.Context, header string) string {
 	if !a.hasEmailAccess() {
-		return ``
+		return ""
 	}
 
-	mailBody, _, _, err := request.Get(ctx, emailURL, http.Header{`Authorization`: []string{fmt.Sprintf(`token %s`, header)}})
+	mailBody, _, _, err := request.Get(ctx, emailURL, http.Header{"Authorization": []string{fmt.Sprintf("token %s", header)}})
 	if err != nil {
-		logger.Error(`%+v`, err)
-		return ``
+		logger.Error("%+v", err)
+		return ""
 	}
 
 	mailResponse, err := request.ReadBody(mailBody)
 	if err != nil {
-		logger.Error(`%+v`, err)
-		return ``
+		logger.Error("%+v", err)
+		return ""
 	}
 
 	emails := make([]githubEmail, 0)
 	if err := json.Unmarshal(mailResponse, &emails); err != nil {
-		logger.Error(`%+v`, errors.WithStack(err))
-		return ``
+		logger.Error("%+v", errors.WithStack(err))
+		return ""
 	}
 
 	for _, email := range emails {
@@ -128,7 +128,7 @@ func (a *App) getUserEmail(ctx context.Context, header string) string {
 		}
 	}
 
-	return ``
+	return ""
 }
 
 // GetUser returns User associated to header
@@ -137,7 +137,7 @@ func (a *App) GetUser(ctx context.Context, header string) (*model.User, error) {
 		return user.(*model.User), nil
 	}
 
-	userBody, _, _, err := request.Get(ctx, userURL, http.Header{`Authorization`: []string{fmt.Sprintf(`token %s`, header)}})
+	userBody, _, _, err := request.Get(ctx, userURL, http.Header{"Authorization": []string{fmt.Sprintf("token %s", header)}})
 	if err != nil {
 		return nil, err
 	}
@@ -172,17 +172,17 @@ func (a *App) Redirect(w http.ResponseWriter, r *http.Request) {
 
 // Login exchanges code for token
 func (a *App) Login(r *http.Request) (string, error) {
-	state := r.FormValue(`state`)
-	code := r.FormValue(`code`)
+	state := r.FormValue("state")
+	code := r.FormValue("code")
 
 	if _, ok := a.states.Load(state); !ok {
-		return ``, ident.ErrInvalidState
+		return "", ident.ErrInvalidState
 	}
 	a.states.Delete(state)
 
 	token, err := a.oauthConf.Exchange(oauth2.NoContext, code)
 	if err != nil {
-		return ``, ident.ErrInvalidCode
+		return "", ident.ErrInvalidCode
 	}
 
 	return token.AccessToken, nil
@@ -190,5 +190,5 @@ func (a *App) Login(r *http.Request) (string, error) {
 
 // OnLoginError handle action when login fails
 func (*App) OnLoginError(w http.ResponseWriter, r *http.Request, _ error) {
-	http.Redirect(w, r, `/redirect/github`, http.StatusFound)
+	http.Redirect(w, r, "/redirect/github", http.StatusFound)
 }

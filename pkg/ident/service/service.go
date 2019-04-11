@@ -21,7 +21,7 @@ type App struct {
 func NewBasic(basicConfig basic.Config, db *sql.DB) *App {
 	provider, err := basic.New(basicConfig, db)
 	if err != nil {
-		logger.Fatal(`%+v`, err)
+		logger.Fatal("%+v", err)
 	}
 
 	return &App{
@@ -31,11 +31,11 @@ func NewBasic(basicConfig basic.Config, db *sql.DB) *App {
 
 // GetUser get user from given auth content
 func (a App) GetUser(ctx context.Context, authContent string) (*model.User, error) {
-	if authContent == `` {
+	if authContent == "" {
 		return nil, ident.ErrEmptyAuth
 	}
 
-	parts := strings.SplitN(authContent, ` `, 2)
+	parts := strings.SplitN(authContent, " ", 2)
 	if len(parts) != 2 {
 		return nil, ident.ErrMalformedAuth
 	}

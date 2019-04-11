@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	loginPrefix    = `/login`
-	redirectPrefix = `/redirect`
+	loginPrefix    = "/login"
+	redirectPrefix = "/redirect"
 )
 
 // Config of package
@@ -33,8 +33,8 @@ type App struct {
 // Flags adds flags for configuring package
 func Flags(fs *flag.FlagSet, prefix string) Config {
 	return Config{
-		cookieDomain: fs.String(tools.ToCamel(fmt.Sprintf(`%sCookieDomain`, prefix)), ``, `[auth] Cookie Domain to Store Authentification`),
-		redirect:     fs.String(tools.ToCamel(fmt.Sprintf(`%sAuthRedirect`, prefix)), ``, `[auth] Redirect URL on Auth Success`),
+		cookieDomain: fs.String(tools.ToCamel(fmt.Sprintf("%sCookieDomain", prefix)), "", "[auth] Cookie Domain to Store Authentification"),
+		redirect:     fs.String(tools.ToCamel(fmt.Sprintf("%sAuthRedirect", prefix)), "", "[auth] Redirect URL on Auth Success"),
 	}
 }
 
@@ -44,7 +44,7 @@ func New(config Config, providers []ident.Auth) *App {
 	for _, provider := range providers {
 		if provider != nil {
 			usedProviders = append(usedProviders, provider)
-			logger.Info(`Provider for %s`, provider.GetName())
+			logger.Info("Provider for %s", provider.GetName())
 		}
 	}
 
@@ -67,9 +67,9 @@ func (a App) Handler() http.Handler {
 			break
 
 		case http.MethodGet:
-			if r.URL.Path == `/user` {
+			if r.URL.Path == "/user" {
 				a.userHandler(w, r)
-			} else if r.URL.Path == `/logout` {
+			} else if r.URL.Path == "/logout" {
 				a.logoutHandler(w, r)
 			} else if strings.HasPrefix(r.URL.Path, loginPrefix) {
 				a.loginHandler(w, r)
@@ -81,7 +81,7 @@ func (a App) Handler() http.Handler {
 			break
 
 		default:
-			http.Error(w, fmt.Sprintf(`%d Method not allowed`, http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+			http.Error(w, fmt.Sprintf("%d Method not allowed", http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 		}
 	})
 }

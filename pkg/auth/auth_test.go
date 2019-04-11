@@ -10,12 +10,12 @@ import (
 
 func authTestServer() *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get(`Authorization`) == `` {
+		if r.Header.Get("Authorization") == "" {
 			http.Error(w, ident.ErrEmptyAuth.Error(), http.StatusUnauthorized)
-		} else if r.Header.Get(`Authorization`) == `unauthorized` {
+		} else if r.Header.Get("Authorization") == "unauthorized" {
 			w.WriteHeader(http.StatusUnauthorized)
 		} else {
-			w.Write([]byte(r.Header.Get(`Authorization`)))
+			w.Write([]byte(r.Header.Get("Authorization")))
 		}
 	}))
 }
@@ -27,18 +27,18 @@ func Test_loadUsersProfiles(t *testing.T) {
 		want             int
 	}{
 		{
-			`should handle empty string`,
-			``,
+			"should handle empty string",
+			"",
 			0,
 		},
 		{
-			`should handle one user`,
-			`admin:admin`,
+			"should handle one user",
+			"admin:admin",
 			1,
 		},
 		{
-			`should handle multiples users`,
-			`admin:admin|multi,guest:,visitor:visitor`,
+			"should handle multiples users",
+			"admin:admin|multi,guest:,visitor:visitor",
 			3,
 		},
 	}

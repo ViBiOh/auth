@@ -15,12 +15,12 @@ func Test_NewUser(t *testing.T) {
 		want      *User
 	}{
 		{
-			`should work with given params`,
-			`1`,
-			`vibioh`,
-			`nobody@localhost`,
-			`admin|multi`,
-			&User{`1`, `vibioh`, `nobody@localhost`, `admin|multi`},
+			"should work with given params",
+			"1",
+			"vibioh",
+			"nobody@localhost",
+			"admin|multi",
+			&User{"1", "vibioh", "nobody@localhost", "admin|multi"},
 		},
 	}
 
@@ -39,27 +39,27 @@ func Test_HasProfile(t *testing.T) {
 		want      bool
 	}{
 		{
-			`should handle nil profiles`,
+			"should handle nil profiles",
 			User{},
-			`admin`,
+			"admin",
 			false,
 		},
 		{
-			`should find simple match`,
-			User{profiles: `admin`},
-			`admin`,
+			"should find simple match",
+			User{profiles: "admin"},
+			"admin",
 			true,
 		},
 		{
-			`should find match when multiples values`,
-			User{profiles: `admin|multi`},
-			`multi`,
+			"should find match when multiples values",
+			User{profiles: "admin|multi"},
+			"multi",
 			true,
 		},
 		{
-			`should find no match`,
-			User{profiles: `multi`},
-			`admin`,
+			"should find no match",
+			User{profiles: "multi"},
+			"admin",
 			false,
 		},
 	}

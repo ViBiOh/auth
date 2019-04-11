@@ -14,12 +14,12 @@ import (
 
 func (a App) userHandler(w http.ResponseWriter, r *http.Request) {
 	authContent := auth.ReadAuthContent(r)
-	if authContent == `` {
+	if authContent == "" {
 		httperror.Unauthorized(w, ident.ErrEmptyAuth)
 		return
 	}
 
-	parts := strings.SplitN(authContent, ` `, 2)
+	parts := strings.SplitN(authContent, " ", 2)
 	if len(parts) != 2 {
 		httperror.BadRequest(w, ident.ErrMalformedAuth)
 		return
@@ -67,8 +67,8 @@ func (a App) loginHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			if a.redirect != `` {
-				cookie.SetCookieAndRedirect(w, r, a.redirect, a.cookieDomain, fmt.Sprintf(`%s %s`, providerName, token))
+			if a.redirect != "" {
+				cookie.SetCookieAndRedirect(w, r, a.redirect, a.cookieDomain, fmt.Sprintf("%s %s", providerName, token))
 				return
 			}
 

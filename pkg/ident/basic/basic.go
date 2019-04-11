@@ -36,7 +36,7 @@ type App struct {
 // Flags adds flags for configuring package
 func Flags(fs *flag.FlagSet, prefix string) Config {
 	return Config{
-		users: fs.String(tools.ToCamel(fmt.Sprintf(`%sUsers`, prefix)), ``, `[basic] Users in the form "id:username:password,id2:username2:password2"`),
+		users: fs.String(tools.ToCamel(fmt.Sprintf("%sUsers", prefix)), "", "[basic] Users in the form `id:username:password,id2:username2:password2`"),
 	}
 }
 
@@ -54,16 +54,16 @@ func New(config Config, db *sql.DB) (ident.Auth, error) {
 }
 
 func loadUsers(authUsers string) (map[string]*basicUser, error) {
-	if authUsers == `` {
+	if authUsers == "" {
 		return nil, nil
 	}
 
 	users := make(map[string]*basicUser)
 
-	for _, authUser := range strings.Split(authUsers, `,`) {
-		parts := strings.Split(authUser, `:`)
+	for _, authUser := range strings.Split(authUsers, ",") {
+		parts := strings.Split(authUser, ":")
 		if len(parts) != 3 {
-			return nil, errors.New(`invalid format of user for %s`, authUser)
+			return nil, errors.New("invalid format of user for %s", authUser)
 		}
 
 		user := basicUser{&model.User{ID: parts[0], Username: strings.ToLower(parts[1])}, []byte(parts[2])}
@@ -75,7 +75,7 @@ func loadUsers(authUsers string) (map[string]*basicUser, error) {
 
 // GetName returns Authorization header prefix
 func (App) GetName() string {
-	return `Basic`
+	return "Basic"
 }
 
 // GetUser returns User associated to header
@@ -87,16 +87,16 @@ func (a App) GetUser(ctx context.Context, header string) (*model.User, error) {
 
 	dataStr := string(data)
 
-	sepIndex := strings.Index(dataStr, `:`)
+	sepIndex := strings.Index(dataStr, ":")
 	if sepIndex < 0 {
-		return nil, errors.New(`invalid format for basic auth`)
+		return nil, errors.New("invalid format for basic auth")
 	}
 
 	username := strings.ToLower(dataStr[:sepIndex])
 	password := dataStr[sepIndex+1:]
 
 	if a.users == nil && a.db == nil {
-		return nil, errors.New(`no basic source provided`)
+		return nil, errors.New("no basic source provided")
 	}
 
 	var user *basicUser
@@ -107,11 +107,11 @@ func (a App) GetUser(ctx context.Context, header string) (*model.User, error) {
 	}
 
 	if user == nil {
-		return nil, errors.New(`invalid credentials`)
+		return nil, errors.New("invalid credentials")
 	}
 
 	if err := bcrypt.CompareHashAndPassword(user.password, []byte(password)); err != nil {
-		return nil, errors.New(`invalid credentials`)
+		return nil, errors.New("invalid credentials")
 	}
 
 	return user.User, nil
@@ -119,21 +119,21 @@ func (a App) GetUser(ctx context.Context, header string) (*model.User, error) {
 
 // Redirect redirects user to login endpoint
 func (App) Redirect(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, `/login/basic`, http.StatusFound)
+	http.Redirect(w, r, "/login/basic", http.StatusFound)
 }
 
 // Login exchange state to token
 func (a App) Login(r *http.Request) (string, error) {
-	authContent := strings.TrimSpace(strings.TrimPrefix(r.Header.Get(`Authorization`), a.GetName()))
+	authContent := strings.TrimSpace(strings.TrimPrefix(r.Header.Get("Authorization"), a.GetName()))
 
 	if _, err := a.GetUser(r.Context(), authContent); err != nil {
-		return ``, err
+		return "", err
 	}
 	return authContent, nil
 }
 
 // OnLoginError handle action when login fails
 func (App) OnLoginError(w http.ResponseWriter, _ *http.Request, err error) {
-	w.Header().Add(`WWW-Authenticate`, `Basic charset="UTF-8"`)
+	w.Header().Add("WWW-Authenticate", "Basic charset=\"UTF-8\"")
 	httperror.Unauthorized(w, err)
 }

@@ -20,20 +20,20 @@ func Test_loadUsers(t *testing.T) {
 		wantErr   error
 	}{
 		{
-			`should handle empty string`,
-			``,
+			"should handle empty string",
+			"",
 			0,
 			nil,
 		},
 		{
-			`should handle invalid format`,
-			`invalid_username`,
+			"should handle invalid format",
+			"invalid_username",
 			0,
-			errors.New(`invalid format of user for invalid_username`),
+			errors.New("invalid format of user for invalid_username"),
 		},
 		{
-			`should handle valid format`,
-			`anc:admin:admin,1:guest:guest`,
+			"should handle valid format",
+			"anc:admin:admin,1:guest:guest",
 			2,
 			nil,
 		},
@@ -71,14 +71,14 @@ func Test_New(t *testing.T) {
 		wantErr   error
 	}{
 		{
-			`should handle load error`,
-			`invalid format`,
+			"should handle load error",
+			"invalid format",
 			0,
-			errors.New(`invalid format of user for invalid format`),
+			errors.New("invalid format of user for invalid format"),
 		},
 		{
-			`should load users from given args`,
-			`1:admin:admin`,
+			"should load users from given args",
+			"1:admin:admin",
 			1,
 			nil,
 		},
@@ -117,8 +117,8 @@ func Test_GetName(t *testing.T) {
 		want      string
 	}{
 		{
-			`should return constant`,
-			`Basic`,
+			"should return constant",
+			"Basic",
 		},
 	}
 
@@ -130,9 +130,9 @@ func Test_GetName(t *testing.T) {
 }
 
 func Test_GetUser(t *testing.T) {
-	password, _ := bcrypt.GenerateFromPassword([]byte(`password`), 12)
+	password, _ := bcrypt.GenerateFromPassword([]byte("password"), 12)
 	authClient := App{}
-	authClient.users = map[string]*basicUser{`admin`: {model.NewUser(`0`, `admin`, ``, ``), password}}
+	authClient.users = map[string]*basicUser{"admin": {model.NewUser("0", "admin", "", ""), password}}
 
 	var cases = []struct {
 		intention string
@@ -141,33 +141,33 @@ func Test_GetUser(t *testing.T) {
 		wantErr   error
 	}{
 		{
-			`should handle malformed header`,
-			`admin`,
+			"should handle malformed header",
+			"admin",
 			nil,
-			errors.New(`illegal base64 data at input byte 4`),
+			errors.New("illegal base64 data at input byte 4"),
 		},
 		{
-			`should handle malformed content`,
-			base64.StdEncoding.EncodeToString([]byte(`AdMiN`)),
+			"should handle malformed content",
+			base64.StdEncoding.EncodeToString([]byte("AdMiN")),
 			nil,
-			errors.New(`invalid format for basic auth`),
+			errors.New("invalid format for basic auth"),
 		},
 		{
-			`should handle not found user`,
-			base64.StdEncoding.EncodeToString([]byte(`guest:password`)),
+			"should handle not found user",
+			base64.StdEncoding.EncodeToString([]byte("guest:password")),
 			nil,
-			errors.New(`invalid credentials`),
+			errors.New("invalid credentials"),
 		},
 		{
-			`should handle invalid credentials`,
-			base64.StdEncoding.EncodeToString([]byte(`AdMiN:admin`)),
+			"should handle invalid credentials",
+			base64.StdEncoding.EncodeToString([]byte("AdMiN:admin")),
 			nil,
-			errors.New(`invalid credentials`),
+			errors.New("invalid credentials"),
 		},
 		{
-			`should handle valid auth`,
-			base64.StdEncoding.EncodeToString([]byte(`AdMiN:password`)),
-			&model.User{ID: `0`, Username: `admin`},
+			"should handle valid auth",
+			base64.StdEncoding.EncodeToString([]byte("AdMiN:password")),
+			&model.User{ID: "0", Username: "admin"},
 			nil,
 		},
 	}
@@ -201,16 +201,16 @@ func Test_Redirect(t *testing.T) {
 		want      string
 	}{
 		{
-			`should return Basic redirection`,
-			`/login/basic`,
+			"should return Basic redirection",
+			"/login/basic",
 		},
 	}
 
 	for _, testCase := range cases {
 		writer := httptest.NewRecorder()
 
-		(&App{}).Redirect(writer, httptest.NewRequest(http.MethodGet, `/`, nil))
-		result := writer.Header().Get(`location`)
+		(&App{}).Redirect(writer, httptest.NewRequest(http.MethodGet, "/", nil))
+		result := writer.Header().Get("location")
 		if result != testCase.want {
 			t.Errorf("%s\nRedirect() = (%+v), want (%+v)", testCase.intention, result, testCase.want)
 		}

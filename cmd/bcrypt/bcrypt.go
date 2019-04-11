@@ -17,7 +17,7 @@ func getPromptPassword() string {
 
 	result, err := prompt.Run()
 	if err != nil {
-		fmt.Printf(`invalid prompt: %v`, err)
+		fmt.Printf("invalid prompt: %v", err)
 		os.Exit(1)
 	}
 
@@ -26,7 +26,7 @@ func getPromptPassword() string {
 
 func getArgsPassword() string {
 	if len(os.Args) != 2 {
-		fmt.Println(`Usage is bcrypt [password]`)
+		fmt.Println("Usage is bcrypt [password]")
 		os.Exit(1)
 	}
 
@@ -34,7 +34,7 @@ func getArgsPassword() string {
 }
 
 func main() {
-	prompt := flag.Bool(`prompt`, false, `Prompt for password rather than reading CLI args`)
+	prompt := flag.Bool("prompt", false, "Prompt for password rather than reading CLI args")
 	flag.Parse()
 
 	var password string
@@ -47,7 +47,7 @@ func main() {
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), 12)
 	if err != nil {
-		fmt.Printf(`generate password: %v`, err)
+		fmt.Printf("generate password: %v", err)
 	}
 	fmt.Print(string(hash))
 }

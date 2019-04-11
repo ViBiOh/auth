@@ -33,12 +33,12 @@ func (a App) dbLoginUser(login string) *basicUser {
 			return nil
 		}
 
-		logger.Error(`%+v`, errors.WithStack(err))
+		logger.Error("%+v", errors.WithStack(err))
 		return nil
 	}
 
 	return &basicUser{
-		model.NewUser(id, username, email, ``),
+		model.NewUser(id, username, email, ""),
 		[]byte(password),
 	}
 }

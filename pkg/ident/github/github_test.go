@@ -16,8 +16,8 @@ import (
 )
 
 func Test_NewAuth(t *testing.T) {
-	empty := ``
-	name := `GitHub`
+	empty := ""
+	name := "GitHub"
 
 	var cases = []struct {
 		intention string
@@ -25,12 +25,12 @@ func Test_NewAuth(t *testing.T) {
 		want      bool
 	}{
 		{
-			`should not initialize config if not client ID`,
+			"should not initialize config if not client ID",
 			Config{clientID: &empty, clientSecret: &empty, scopes: &empty},
 			false,
 		},
 		{
-			`should init oauth config`,
+			"should init oauth config",
 			Config{clientID: &name, clientSecret: &name, scopes: &empty},
 			true,
 		},
@@ -59,8 +59,8 @@ func Test_GetName(t *testing.T) {
 		want      string
 	}{
 		{
-			`should return constant`,
-			`GitHub`,
+			"should return constant",
+			"GitHub",
 		},
 	}
 
@@ -73,10 +73,10 @@ func Test_GetName(t *testing.T) {
 
 func Test_GetUser(t *testing.T) {
 	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get(`Authorization`) == `token unauthorized` {
+		if r.Header.Get("Authorization") == "token unauthorized" {
 			w.WriteHeader(http.StatusUnauthorized)
 		} else {
-			w.Write([]byte(strings.TrimPrefix(r.Header.Get(`Authorization`), `token `)))
+			w.Write([]byte(strings.TrimPrefix(r.Header.Get("Authorization"), "token ")))
 		}
 	}))
 	defer testServer.Close()
@@ -88,21 +88,21 @@ func Test_GetUser(t *testing.T) {
 		wantErr   error
 	}{
 		{
-			`should handle fetching error`,
-			`unauthorized`,
+			"should handle fetching error",
+			"unauthorized",
 			nil,
-			errors.New(`error status 401`),
+			errors.New("error status 401"),
 		},
 		{
-			`should handle malformed json`,
+			"should handle malformed json",
 			`{"id":1,"login":"vibioh"`,
 			nil,
-			errors.New(`unexpected end of JSON input`),
+			errors.New("unexpected end of JSON input"),
 		},
 		{
-			`should handle valid request`,
+			"should handle valid request",
 			`{"id":1,"login":"vibioh"}`,
-			&model.User{ID: `1`, Username: `vibioh`},
+			&model.User{ID: "1", Username: "vibioh"},
 			nil,
 		},
 	}
@@ -137,10 +137,10 @@ func Test_GetUser(t *testing.T) {
 func Test_Login(t *testing.T) {
 	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, _ := request.ReadBodyRequest(r)
-		if strings.Contains(string(body), `code=invalidcode`) {
+		if strings.Contains(string(body), "code=invalidcode") {
 			w.WriteHeader(http.StatusInternalServerError)
 		} else {
-			w.Write([]byte(`access_token=github_token`))
+			w.Write([]byte("access_token=github_token"))
 		}
 	}))
 	defer testServer.Close()
@@ -150,7 +150,7 @@ func Test_Login(t *testing.T) {
 		TokenURL: testServer.URL,
 	}
 
-	configValue := `test`
+	configValue := "test"
 	auth, _ := New(Config{
 		clientID:     &configValue,
 		clientSecret: &configValue,
@@ -165,21 +165,21 @@ func Test_Login(t *testing.T) {
 		wantErr   error
 	}{
 		{
-			`should identify invalid state`,
-			httptest.NewRequest(http.MethodGet, `/?state=state`, nil),
-			``,
+			"should identify invalid state",
+			httptest.NewRequest(http.MethodGet, "/?state=state", nil),
+			"",
 			ident.ErrInvalidState,
 		},
 		{
-			`should identify invalid code`,
-			httptest.NewRequest(http.MethodGet, `/?state=test&code=invalidcode`, nil),
-			``,
+			"should identify invalid code",
+			httptest.NewRequest(http.MethodGet, "/?state=test&code=invalidcode", nil),
+			"",
 			ident.ErrInvalidCode,
 		},
 		{
-			`should return given token`,
-			httptest.NewRequest(http.MethodGet, `/?state=test&code=validcode`, nil),
-			`github_token`,
+			"should return given token",
+			httptest.NewRequest(http.MethodGet, "/?state=test&code=validcode", nil),
+			"github_token",
 			nil,
 		},
 	}
