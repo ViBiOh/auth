@@ -38,7 +38,7 @@
     "pkg/uuid",
   ]
   pruneopts = "UT"
-  revision = "c191236038f12c99cd630821c708457637cba3ce"
+  revision = "62297f2e814369e4226a4ebd7a7b524275888e9d"
 
 [[projects]]
   digest = "1:9afc639ef88d907f2e87ab68cbc63117b88d0d84238fd6b08224515d00a8136a"
@@ -62,7 +62,7 @@
   name = "github.com/beorn7/perks"
   packages = ["quantile"]
   pruneopts = "UT"
-  revision = "3a771d992973f24aa725d07868b467d1ddfceafb"
+  revision = "234731a4f01687625231ac651d6b2776e3f3142e"
 
 [[projects]]
   branch = "master"
@@ -256,11 +256,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:f806b417865e83457c3659232926203f5b0d39aa741b71d9e3e4c0c774e71a5c"
+  digest = "1:5e412e2a03bd0cfdb102db97212be2e625df74fa8b2d4a8a51f107b1456e256b"
   name = "github.com/prometheus/procfs"
   packages = ["."]
   pruneopts = "UT"
-  revision = "ea9eea63887261e4d8ed8315f4078e88d540c725"
+  revision = "e22ddced71425e65e388b17b7d0289c5ea77d06e"
 
 [[projects]]
   branch = "master"
@@ -313,7 +313,7 @@
     "blowfish",
   ]
   pruneopts = "UT"
-  revision = "38d8ce5564a5b71b2e3a00553993f1b9a7ae852f"
+  revision = "88737f569e3a9c7ab309cdc09a07fe7fc87233c3"
 
 [[projects]]
   branch = "master"
@@ -340,11 +340,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:e2e51bf73862610e548f3acd292f447b500e53d792aa55260a8cb605dfd8ba09"
+  digest = "1:3e01c69b34e7c3fa4b7a118ca95a6beaecea00f7f4fb701545d83eacd3badb3c"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "0ad05ae3009d6413d3363aa09b350b2ec37daf09"
+  revision = "97732733099d6a942a73b889770774366de963ed"
 
 [[projects]]
   branch = "master"
@@ -357,7 +357,7 @@
     "go/types/typeutil",
   ]
   pruneopts = "UT"
-  revision = "2538eef75904eff384a2551359968e40c207d9d2"
+  revision = "681f9ce8ac52c4ba431539a515ecb7f2ab72eca0"
 
 [[projects]]
   digest = "1:6eb6e3b6d9fffb62958cf7f7d88dbbe1dd6839436b0802e194c590667a40412a"
