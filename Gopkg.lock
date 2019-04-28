@@ -11,13 +11,12 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:12dfe966ed71e08eb25204d791b012f8917f943f9a85994a8e77c8bec9b74f40"
+  digest = "1:2aff75575fb8b88074a9d50af33fd642ad60416c052165116305696af304e9d8"
   name = "github.com/ViBiOh/httputils"
   packages = [
     "pkg",
     "pkg/alcotest",
     "pkg/cache",
-    "pkg/cert",
     "pkg/cors",
     "pkg/crud",
     "pkg/errors",
@@ -38,7 +37,7 @@
     "pkg/uuid",
   ]
   pruneopts = "UT"
-  revision = "751b4f2862d35d785f73bef12e38733e610e3b56"
+  revision = "7f155d4514001316eedafe5a74a3a52659a2fb5c"
 
 [[projects]]
   digest = "1:9afc639ef88d907f2e87ab68cbc63117b88d0d84238fd6b08224515d00a8136a"
@@ -256,11 +255,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:49b09905e781d7775c086604cc00083e1832d0783f1f421b79f42657c457d029"
+  digest = "1:2ea45e71e0198d6b989ed6302cc4f72a83be1e7d6469d08a59e56a2c447aea55"
   name = "github.com/prometheus/procfs"
   packages = ["."]
   pruneopts = "UT"
-  revision = "8368d24ba045f26503eb745b624d930cbe214c79"
+  revision = "87a4384529e0652f5035fb5cc8095faf73ea9b0b"
 
 [[projects]]
   branch = "master"
@@ -313,7 +312,7 @@
     "blowfish",
   ]
   pruneopts = "UT"
-  revision = "df01cb2cc480549d72034218dd98bf97671450ac"
+  revision = "a29dc8fdc73485234dbef99ebedb95d2eced08de"
 
 [[projects]]
   branch = "master"
@@ -324,7 +323,7 @@
     "context/ctxhttp",
   ]
   pruneopts = "UT"
-  revision = "1f3472d942ba824034fb77cab6a6cfc1bc8a2c3c"
+  revision = "4829fb13d2c62012c17688fa7f629f371014946d"
 
 [[projects]]
   branch = "master"
@@ -340,11 +339,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:dbe12489f5cb00d492e275a29528c9e336dbe5af75ce366f81c1911faf10733e"
+  digest = "1:157e5158a7f29d6633eed502880463aa43de3c36d451c7051591efd12f455ac8"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "e8e3143a4f4a00f1fafef0dd82ba78223281b01b"
+  revision = "a129542de9ae0895210abff9c95d67a1f33cb93d"
 
 [[projects]]
   branch = "master"
@@ -357,7 +356,7 @@
     "go/types/typeutil",
   ]
   pruneopts = "UT"
-  revision = "4796d4bd3df0a291c397154cd7d68f1290cf7deb"
+  revision = "550556f78a900afacb9e8b22219f5e5b5c6106db"
 
 [[projects]]
   digest = "1:6eb6e3b6d9fffb62958cf7f7d88dbbe1dd6839436b0802e194c590667a40412a"

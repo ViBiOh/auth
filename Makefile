@@ -83,13 +83,12 @@ bench:
 ## build: Build binary
 .PHONY: build
 build:
-	CGO_ENABLED=0 go build -ldflags="-s -w" -installsuffix nocgo -o $(BINARY_PATH) cmd/auth/auth.go
+	CGO_ENABLED=0 go build -ldflags="-s -w" -installsuffix nocgo ./...
+	CGO_ENABLED=0 go build -ldflags="-s -w" -installsuffix nocgo -o $(BINARY_PATH) $(SERVER_SOURCE)
 	CGO_ENABLED=0 go build -ldflags="-s -w" -installsuffix nocgo -o $(GOBIN)/bcrypt cmd/bcrypt/bcrypt.go
-	CGO_ENABLED=0 go build -ldflags="-s -w" -installsuffix nocgo pkg/auth/auth.go
 
 ## start: Start app
 .PHONY: start
 start:
 	$(SERVER_RUNNER) \
-		-tls=false \
 		-basicUsers "1:admin:$(go run cmd/bcrypt/bcrypt.go admin)"

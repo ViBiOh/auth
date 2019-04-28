@@ -42,55 +42,49 @@ It will compile both auth API server and password encrypter.
 ```bash
 Usage of auth:
   -authRedirect string
-      [auth] Redirect URL on Auth Success
-  -basicUsers string
-      [basic] Users in the form "id:username:password,id2:username2:password2"
+        [auth] Redirect URL on Auth Success
+  -basicUsers id:username:password,id2:username2:password2
+        [basic] Users in the form id:username:password,id2:username2:password2
+  -cert string
+        [http] Certificate file
   -cookieDomain string
-      [auth] Cookie Domain to Store Authentification
+        [auth] Cookie Domain to Store Authentification
   -corsCredentials
-      [cors] Access-Control-Allow-Credentials
+        [cors] Access-Control-Allow-Credentials
   -corsExpose string
-      [cors] Access-Control-Expose-Headers
+        [cors] Access-Control-Expose-Headers
   -corsHeaders string
-      [cors] Access-Control-Allow-Headers (default "Content-Type")
+        [cors] Access-Control-Allow-Headers (default "Content-Type")
   -corsMethods string
-      [cors] Access-Control-Allow-Methods (default "GET")
+        [cors] Access-Control-Allow-Methods (default "GET")
   -corsOrigin string
-      [cors] Access-Control-Allow-Origin (default "*")
+        [cors] Access-Control-Allow-Origin (default "*")
   -csp string
-      [owasp] Content-Security-Policy (default "default-src 'self'; base-uri 'self'")
+        [owasp] Content-Security-Policy (default "default-src 'self'; base-uri 'self'")
   -frameOptions string
-      [owasp] X-Frame-Options (default "deny")
+        [owasp] X-Frame-Options (default "deny")
   -githubClientId string
-      [github] OAuth Client ID
+        [github] OAuth Client ID
   -githubClientSecret string
-      [github] OAuth Client Secret
+        [github] OAuth Client Secret
   -githubScopes string
-      [github] OAuth Scopes, comma separated
+        [github] OAuth Scopes, comma separated
   -hsts
-      [owasp] Indicate Strict Transport Security (default true)
+        [owasp] Indicate Strict Transport Security (default true)
+  -key string
+        [http] Key file
   -port int
-      Listen port (default 1080)
+        [http] Listen port (default 1080)
   -prometheusPath string
-      [prometheus] Path for exposing metrics (default "/metrics")
-  -tls
-      Serve TLS content (default true)
-  -tlsCert string
-      [tls] PEM Certificate file
-  -tlsHosts string
-      [tls] Self-signed certificate hosts, comma separated (default "localhost")
-  -tlsKey string
-      [tls] PEM Key file
-  -tlsOrganization string
-      [tls] Self-signed certificate organization (default "ViBiOh")
+        [prometheus] Path for exposing metrics (default "/metrics")
   -tracingAgent string
-      [opentracing] Jaeger Agent (e.g. host:port) (default "jaeger:6831")
+        [tracing] Jaeger Agent (e.g. host:port) (default "jaeger:6831")
   -tracingName string
-      [opentracing] Service name
+        [tracing] Service name
   -url string
-      [health] URL to check
+        [alcotest] URL to check
   -userAgent string
-      [health] User-Agent for check (default "Golang alcotest")
+        [alcotest] User-Agent for check (default "Golang alcotest")
 ```
 
 Password encrypter accepts one argument, the password, and output the bcrypted one.
