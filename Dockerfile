@@ -14,7 +14,7 @@ RUN make ${APP_NAME} \
 FROM scratch
 
 ENV APP_NAME auth
-HEALTHCHECK --retries=10 CMD [ "/auth", "-url", "https://localhost:1080/health" ]
+HEALTHCHECK --retries=10 CMD [ "/auth", "-url", "http://localhost:1080/health" ]
 
 EXPOSE 1080
 ENTRYPOINT [ "/auth" ]
