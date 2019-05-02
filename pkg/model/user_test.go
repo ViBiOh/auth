@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func Test_NewUser(t *testing.T) {
+func TestNewUser(t *testing.T) {
 	var cases = []struct {
 		intention string
 		id        string
@@ -31,7 +31,7 @@ func Test_NewUser(t *testing.T) {
 	}
 }
 
-func Test_HasProfile(t *testing.T) {
+func TestHasProfile(t *testing.T) {
 	var cases = []struct {
 		intention string
 		instance  User

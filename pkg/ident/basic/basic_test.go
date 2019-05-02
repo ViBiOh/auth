@@ -12,7 +12,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func Test_loadUsers(t *testing.T) {
+func TestLoadUsers(t *testing.T) {
 	var cases = []struct {
 		intention string
 		input     string
@@ -63,7 +63,7 @@ func Test_loadUsers(t *testing.T) {
 	}
 }
 
-func Test_New(t *testing.T) {
+func TestNew(t *testing.T) {
 	var cases = []struct {
 		intention string
 		users     string
@@ -111,7 +111,7 @@ func Test_New(t *testing.T) {
 	}
 }
 
-func Test_GetName(t *testing.T) {
+func TestGetName(t *testing.T) {
 	var cases = []struct {
 		intention string
 		want      string
@@ -129,7 +129,7 @@ func Test_GetName(t *testing.T) {
 	}
 }
 
-func Test_GetUser(t *testing.T) {
+func TestGetUser(t *testing.T) {
 	password, _ := bcrypt.GenerateFromPassword([]byte("password"), 12)
 	authClient := App{}
 	authClient.users = map[string]*basicUser{"admin": {model.NewUser("0", "admin", "", ""), password}}
@@ -195,7 +195,7 @@ func Test_GetUser(t *testing.T) {
 	}
 }
 
-func Test_Redirect(t *testing.T) {
+func TestRedirect(t *testing.T) {
 	var cases = []struct {
 		intention string
 		want      string

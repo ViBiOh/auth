@@ -20,7 +20,7 @@ func authTestServer() *httptest.Server {
 	}))
 }
 
-func Test_loadUsersProfiles(t *testing.T) {
+func TestLoadUsersProfiles(t *testing.T) {
 	var cases = []struct {
 		intention        string
 		usersAndProfiles string

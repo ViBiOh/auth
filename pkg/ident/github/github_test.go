@@ -15,7 +15,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
-func Test_NewAuth(t *testing.T) {
+func TestNewAuth(t *testing.T) {
 	empty := ""
 	name := "GitHub"
 
@@ -53,7 +53,7 @@ func Test_NewAuth(t *testing.T) {
 	}
 }
 
-func Test_GetName(t *testing.T) {
+func TestGetName(t *testing.T) {
 	var cases = []struct {
 		intention string
 		want      string
@@ -71,7 +71,7 @@ func Test_GetName(t *testing.T) {
 	}
 }
 
-func Test_GetUser(t *testing.T) {
+func TestGetUser(t *testing.T) {
 	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("Authorization") == "token unauthorized" {
 			w.WriteHeader(http.StatusUnauthorized)
@@ -134,7 +134,7 @@ func Test_GetUser(t *testing.T) {
 	}
 }
 
-func Test_Login(t *testing.T) {
+func TestLogin(t *testing.T) {
 	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, _ := request.ReadBodyRequest(r)
 		if strings.Contains(string(body), "code=invalidcode") {

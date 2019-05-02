@@ -8,10 +8,10 @@ import (
 	"github.com/ViBiOh/httputils/pkg/request"
 )
 
-func Test_GetCookieValue(t *testing.T) {
+func TestGetCookieValue(t *testing.T) {
 	reqWithCookie := httptest.NewRequest(http.MethodGet, "/", nil)
 	reqWithCookie.AddCookie(&http.Cookie{
-		Name:  "test_cookie",
+		Name:  "Testcookie",
 		Value: "cookie_content",
 	})
 
@@ -33,13 +33,13 @@ func Test_GetCookieValue(t *testing.T) {
 	}
 
 	for _, testCase := range cases {
-		if result := GetCookieValue(testCase.request, "test_cookie"); result != testCase.want {
+		if result := GetCookieValue(testCase.request, "Testcookie"); result != testCase.want {
 			t.Errorf("%s\nGetCookieValue(%+v) = %+v, want %+v", testCase.intention, testCase.request, result, testCase.want)
 		}
 	}
 }
 
-func Test_SetCookieAndRedirect(t *testing.T) {
+func TestSetCookieAndRedirect(t *testing.T) {
 	var cases = []struct {
 		intention     string
 		request       *http.Request
@@ -83,7 +83,7 @@ func Test_SetCookieAndRedirect(t *testing.T) {
 	}
 }
 
-func Test_ClearCookieAndRedirect(t *testing.T) {
+func TestClearCookieAndRedirect(t *testing.T) {
 	var cases = []struct {
 		intention    string
 		request      *http.Request
