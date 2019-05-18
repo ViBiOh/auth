@@ -12,6 +12,8 @@ ifeq ($(DEBUG), true)
 	SERVER_RUNNER = dlv debug $(SERVER_SOURCE) --
 endif
 
+.DEFAULT_GOAL := app
+
 ## help: Display list of commands
 .PHONY: help
 help: Makefile

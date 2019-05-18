@@ -3,9 +3,9 @@ module github.com/ViBiOh/auth
 go 1.12
 
 require (
-	github.com/ViBiOh/httputils v0.0.0-20190512081826-0a4a3178f171
-	golang.org/x/crypto v0.0.0-20190510104115-cbcb75029529
-	golang.org/x/net v0.0.0-20190509222800-a4d6f7feada5 // indirect
-	golang.org/x/oauth2 v0.0.0-20190402181905-9f3314589c9a
-	google.golang.org/appengine v1.5.0 // indirect
+	github.com/ViBiOh/httputils v0.0.0-20190518112116-317faff255c8
+	golang.org/x/crypto v0.0.0-20190513172903-22d7a77e9e5f
+	golang.org/x/net v0.0.0-20190514140710-3ec191127204 // indirect
+	golang.org/x/oauth2 v0.0.0-20190517181255-950ef44c6e07
+	google.golang.org/appengine v1.6.0 // indirect
 )
