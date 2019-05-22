@@ -8,6 +8,7 @@ import (
 	"github.com/ViBiOh/auth/pkg/auth"
 	"github.com/ViBiOh/auth/pkg/cookie"
 	"github.com/ViBiOh/auth/pkg/ident"
+	"github.com/ViBiOh/httputils/pkg/errors"
 	"github.com/ViBiOh/httputils/pkg/httperror"
 	"github.com/ViBiOh/httputils/pkg/httpjson"
 )
@@ -73,7 +74,7 @@ func (a App) loginHandler(w http.ResponseWriter, r *http.Request) {
 			}
 
 			if _, err := w.Write([]byte(token)); err != nil {
-				httperror.InternalServerError(w, err)
+				httperror.InternalServerError(w, errors.WithStack(err))
 				return
 			}
 

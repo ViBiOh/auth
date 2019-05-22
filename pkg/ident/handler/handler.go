@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/ViBiOh/auth/pkg/ident"
+	"github.com/ViBiOh/httputils/pkg/errors"
 	"github.com/ViBiOh/httputils/pkg/httperror"
 	"github.com/ViBiOh/httputils/pkg/logger"
 	"github.com/ViBiOh/httputils/pkg/tools"
@@ -61,7 +62,7 @@ func (a App) Handler() http.Handler {
 		switch r.Method {
 		case http.MethodOptions:
 			if _, err := w.Write(nil); err != nil {
-				httperror.InternalServerError(w, err)
+				httperror.InternalServerError(w, errors.WithStack(err))
 				return
 			}
 			break
