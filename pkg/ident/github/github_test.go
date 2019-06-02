@@ -45,10 +45,10 @@ func TestNewAuth(t *testing.T) {
 
 		if authClient != nil {
 			if result := authClient.oauthConf != nil; result != testCase.want {
-				t.Errorf("%s\nNewAuth(%+v) = %+v, want %+v", testCase.intention, testCase.config, authClient.oauthConf, testCase.want)
+				t.Errorf("%s\nNewAuth(%#v) = %#v, want %#v", testCase.intention, testCase.config, authClient.oauthConf, testCase.want)
 			}
 		} else if testCase.want {
-			t.Errorf("%s\nNewAuth(%+v) = %+v, want %+v", testCase.intention, testCase.config, nil, testCase.want)
+			t.Errorf("%s\nNewAuth(%#v) = %#v, want %#v", testCase.intention, testCase.config, nil, testCase.want)
 		}
 	}
 }
@@ -66,7 +66,7 @@ func TestGetName(t *testing.T) {
 
 	for _, testCase := range cases {
 		if result := (&App{}).GetName(); result != testCase.want {
-			t.Errorf("%s\nGetName() = %+v, want %+v", testCase.intention, result, testCase.want)
+			t.Errorf("%s\nGetName() = %#v, want %#v", testCase.intention, result, testCase.want)
 		}
 	}
 }
@@ -129,7 +129,7 @@ func TestGetUser(t *testing.T) {
 		}
 
 		if failed {
-			t.Errorf("%s\nGetUser(%+v) = (%+v, %+v), want (%+v, %+v)", testCase.intention, testCase.header, result, err, testCase.want, testCase.wantErr)
+			t.Errorf("%s\nGetUser(%#v) = (%#v, %#v), want (%#v, %#v)", testCase.intention, testCase.header, result, err, testCase.want, testCase.wantErr)
 		}
 	}
 }
@@ -203,7 +203,7 @@ func TestLogin(t *testing.T) {
 		}
 
 		if failed {
-			t.Errorf("%s\nLogin(%+v) = (%+v, %+v), want (%+v, %+v)", testCase.intention, testCase.request, result, err, testCase.want, testCase.wantErr)
+			t.Errorf("%s\nLogin(%#v) = (%#v, %#v), want (%#v, %#v)", testCase.intention, testCase.request, result, err, testCase.want, testCase.wantErr)
 		}
 	}
 }

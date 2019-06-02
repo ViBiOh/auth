@@ -33,7 +33,7 @@ func (a App) dbLoginUser(login string) *basicUser {
 			return nil
 		}
 
-		logger.Error("%+v", errors.WithStack(err))
+		logger.Error("%#v", errors.WithStack(err))
 		return nil
 	}
 

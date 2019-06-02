@@ -45,7 +45,7 @@ func TestLoadUsersProfiles(t *testing.T) {
 
 	for _, testCase := range cases {
 		if result := len(loadUsersProfiles(testCase.usersAndProfiles)); result != testCase.want {
-			t.Errorf("%s\nloadUsersProfiles(%+v) = %+v, want %+v", testCase.intention, testCase.usersAndProfiles, result, testCase.want)
+			t.Errorf("%s\nloadUsersProfiles(%#v) = %#v, want %#v", testCase.intention, testCase.usersAndProfiles, result, testCase.want)
 		}
 	}
 }

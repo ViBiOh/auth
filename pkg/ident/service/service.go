@@ -21,7 +21,7 @@ type App struct {
 func NewBasic(basicConfig basic.Config, db *sql.DB) *App {
 	provider, err := basic.New(basicConfig, db)
 	if err != nil {
-		logger.Fatal("%+v", err)
+		logger.Fatal("%#v", err)
 	}
 
 	return &App{

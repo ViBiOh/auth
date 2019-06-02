@@ -58,7 +58,7 @@ func TestLoadUsers(t *testing.T) {
 		}
 
 		if failed {
-			t.Errorf("%s\nLoadUsers(%+v) = (%+v, %+v), want (%+v, %+v)", testCase.intention, testCase.input, result, err, testCase.want, testCase.wantErr)
+			t.Errorf("%s\nLoadUsers(%#v) = (%#v, %#v), want (%#v, %#v)", testCase.intention, testCase.input, result, err, testCase.want, testCase.wantErr)
 		}
 	}
 }
@@ -106,7 +106,7 @@ func TestNew(t *testing.T) {
 		}
 
 		if failed {
-			t.Errorf("%s\nNew(%+v) = (%+v, %+v), want (%+v, %+v)", testCase.intention, testCase.users, authClient.users, err, testCase.want, testCase.wantErr)
+			t.Errorf("%s\nNew(%#v) = (%#v, %#v), want (%#v, %#v)", testCase.intention, testCase.users, authClient.users, err, testCase.want, testCase.wantErr)
 		}
 	}
 }
@@ -124,7 +124,7 @@ func TestGetName(t *testing.T) {
 
 	for _, testCase := range cases {
 		if result := (&App{}).GetName(); result != testCase.want {
-			t.Errorf("%s\nGetName() = %+v, want %+v", testCase.intention, result, testCase.want)
+			t.Errorf("%s\nGetName() = %#v, want %#v", testCase.intention, result, testCase.want)
 		}
 	}
 }
@@ -190,7 +190,7 @@ func TestGetUser(t *testing.T) {
 		}
 
 		if failed {
-			t.Errorf("%s\nGetUser(%+v) = (%+v, %+v) want (%+v, %+v)", testCase.intention, testCase.auth, result, err, testCase.want, testCase.wantErr)
+			t.Errorf("%s\nGetUser(%#v) = (%#v, %#v) want (%#v, %#v)", testCase.intention, testCase.auth, result, err, testCase.want, testCase.wantErr)
 		}
 	}
 }
@@ -212,7 +212,7 @@ func TestRedirect(t *testing.T) {
 		(&App{}).Redirect(writer, httptest.NewRequest(http.MethodGet, "/", nil))
 		result := writer.Header().Get("location")
 		if result != testCase.want {
-			t.Errorf("%s\nRedirect() = (%+v), want (%+v)", testCase.intention, result, testCase.want)
+			t.Errorf("%s\nRedirect() = (%#v), want (%#v)", testCase.intention, result, testCase.want)
 		}
 	}
 }

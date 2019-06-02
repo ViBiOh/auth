@@ -106,19 +106,19 @@ func (a *App) getUserEmail(ctx context.Context, header string) string {
 
 	mailBody, _, _, err := request.Get(ctx, emailURL, http.Header{"Authorization": []string{fmt.Sprintf("token %s", header)}})
 	if err != nil {
-		logger.Error("%+v", err)
+		logger.Error("%#v", err)
 		return ""
 	}
 
 	mailResponse, err := request.ReadBody(mailBody)
 	if err != nil {
-		logger.Error("%+v", err)
+		logger.Error("%#v", err)
 		return ""
 	}
 
 	emails := make([]githubEmail, 0)
 	if err := json.Unmarshal(mailResponse, &emails); err != nil {
-		logger.Error("%+v", errors.WithStack(err))
+		logger.Error("%#v", errors.WithStack(err))
 		return ""
 	}
 
