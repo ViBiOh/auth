@@ -107,8 +107,6 @@ func TestGetUser(t *testing.T) {
 		},
 	}
 
-	var failed bool
-
 	for _, testCase := range cases {
 		userURL = testServer.URL
 		result, err := (&App{
@@ -116,7 +114,7 @@ func TestGetUser(t *testing.T) {
 			usersCache: cache.New(),
 		}).GetUser(nil, testCase.header)
 
-		failed = false
+    failed := false
 
 		if err == nil && testCase.wantErr != nil {
 			failed = true
@@ -184,13 +182,11 @@ func TestLogin(t *testing.T) {
 		},
 	}
 
-	var failed bool
-
 	for _, testCase := range cases {
 		authClient.states.Store(configValue, true)
 		result, err := authClient.Login(testCase.request)
 
-		failed = false
+    failed := false
 
 		if err == nil && testCase.wantErr != nil {
 			failed = true

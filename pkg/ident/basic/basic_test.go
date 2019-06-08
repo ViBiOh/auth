@@ -39,13 +39,11 @@ func TestLoadUsers(t *testing.T) {
 		},
 	}
 
-	var failed bool
-
 	for _, testCase := range cases {
 		users, err := loadUsers(testCase.input)
 		result := len(users)
 
-		failed = false
+    failed := false
 
 		if err == nil && testCase.wantErr != nil {
 			failed = true
@@ -84,8 +82,6 @@ func TestNew(t *testing.T) {
 		},
 	}
 
-	var failed bool
-
 	for _, testCase := range cases {
 		auth, err := New(Config{users: &testCase.users}, nil)
 		var authClient *App
@@ -93,7 +89,7 @@ func TestNew(t *testing.T) {
 			authClient = auth.(*App)
 		}
 
-		failed = false
+    failed := false
 
 		if err == nil && testCase.wantErr != nil {
 			failed = true
@@ -172,12 +168,10 @@ func TestGetUser(t *testing.T) {
 		},
 	}
 
-	var failed bool
-
 	for _, testCase := range cases {
 		result, err := authClient.GetUser(nil, testCase.auth)
 
-		failed = false
+    failed := false
 
 		if err == nil && testCase.wantErr != nil {
 			failed = true
