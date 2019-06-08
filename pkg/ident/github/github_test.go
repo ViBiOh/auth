@@ -37,19 +37,21 @@ func TestNewAuth(t *testing.T) {
 	}
 
 	for _, testCase := range cases {
-		auth, _ := New(testCase.config)
-		var authClient *App
-		if auth != nil {
-			authClient = auth.(*App)
-		}
-
-		if authClient != nil {
-			if result := authClient.oauthConf != nil; result != testCase.want {
-				t.Errorf("%s\nNewAuth(%#v) = %#v, want %#v", testCase.intention, testCase.config, authClient.oauthConf, testCase.want)
+		t.Run(testCase.intention, func(t *testing.T) {
+			auth, _ := New(testCase.config)
+			var authClient *App
+			if auth != nil {
+				authClient = auth.(*App)
 			}
-		} else if testCase.want {
-			t.Errorf("%s\nNewAuth(%#v) = %#v, want %#v", testCase.intention, testCase.config, nil, testCase.want)
-		}
+
+			if authClient != nil {
+				if result := authClient.oauthConf != nil; result != testCase.want {
+					t.Errorf("NewAuth(%#v) = %#v, want %#v", testCase.config, authClient.oauthConf, testCase.want)
+				}
+			} else if testCase.want {
+				t.Errorf("NewAuth(%#v) = %#v, want %#v", testCase.config, nil, testCase.want)
+			}
+		})
 	}
 }
 
@@ -65,9 +67,11 @@ func TestGetName(t *testing.T) {
 	}
 
 	for _, testCase := range cases {
-		if result := (&App{}).GetName(); result != testCase.want {
-			t.Errorf("%s\nGetName() = %#v, want %#v", testCase.intention, result, testCase.want)
-		}
+		t.Run(testCase.intention, func(t *testing.T) {
+			if result := (&App{}).GetName(); result != testCase.want {
+				t.Errorf("GetName() = %#v, want %#v", result, testCase.want)
+			}
+		})
 	}
 }
 
@@ -108,27 +112,29 @@ func TestGetUser(t *testing.T) {
 	}
 
 	for _, testCase := range cases {
-		userURL = testServer.URL
-		result, err := (&App{
-			oauthConf:  &oauth2.Config{},
-			usersCache: cache.New(),
-		}).GetUser(nil, testCase.header)
+		t.Run(testCase.intention, func(t *testing.T) {
+			userURL = testServer.URL
+			result, err := (&App{
+				oauthConf:  &oauth2.Config{},
+				usersCache: cache.New(),
+			}).GetUser(nil, testCase.header)
 
-    failed := false
+			failed := false
 
-		if err == nil && testCase.wantErr != nil {
-			failed = true
-		} else if err != nil && testCase.wantErr == nil {
-			failed = true
-		} else if err != nil && !strings.Contains(err.Error(), testCase.wantErr.Error()) {
-			failed = true
-		} else if !reflect.DeepEqual(result, testCase.want) {
-			failed = true
-		}
+			if err == nil && testCase.wantErr != nil {
+				failed = true
+			} else if err != nil && testCase.wantErr == nil {
+				failed = true
+			} else if err != nil && !strings.Contains(err.Error(), testCase.wantErr.Error()) {
+				failed = true
+			} else if !reflect.DeepEqual(result, testCase.want) {
+				failed = true
+			}
 
-		if failed {
-			t.Errorf("%s\nGetUser(%#v) = (%#v, %#v), want (%#v, %#v)", testCase.intention, testCase.header, result, err, testCase.want, testCase.wantErr)
-		}
+			if failed {
+				t.Errorf("GetUser(%#v) = (%#v, %#v), want (%#v, %#v)", testCase.header, result, err, testCase.want, testCase.wantErr)
+			}
+		})
 	}
 }
 
@@ -183,23 +189,25 @@ func TestLogin(t *testing.T) {
 	}
 
 	for _, testCase := range cases {
-		authClient.states.Store(configValue, true)
-		result, err := authClient.Login(testCase.request)
+		t.Run(testCase.intention, func(t *testing.T) {
+			authClient.states.Store(configValue, true)
+			result, err := authClient.Login(testCase.request)
 
-    failed := false
+			failed := false
 
-		if err == nil && testCase.wantErr != nil {
-			failed = true
-		} else if err != nil && testCase.wantErr == nil {
-			failed = true
-		} else if err != nil && err.Error() != testCase.wantErr.Error() {
-			failed = true
-		} else if result != testCase.want {
-			failed = true
-		}
+			if err == nil && testCase.wantErr != nil {
+				failed = true
+			} else if err != nil && testCase.wantErr == nil {
+				failed = true
+			} else if err != nil && err.Error() != testCase.wantErr.Error() {
+				failed = true
+			} else if result != testCase.want {
+				failed = true
+			}
 
-		if failed {
-			t.Errorf("%s\nLogin(%#v) = (%#v, %#v), want (%#v, %#v)", testCase.intention, testCase.request, result, err, testCase.want, testCase.wantErr)
-		}
+			if failed {
+				t.Errorf("Login(%#v) = (%#v, %#v), want (%#v, %#v)", testCase.request, result, err, testCase.want, testCase.wantErr)
+			}
+		})
 	}
 }

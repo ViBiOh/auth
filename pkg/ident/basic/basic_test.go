@@ -40,24 +40,26 @@ func TestLoadUsers(t *testing.T) {
 	}
 
 	for _, testCase := range cases {
-		users, err := loadUsers(testCase.input)
-		result := len(users)
+		t.Run(testCase.intention, func(t *testing.T) {
+			users, err := loadUsers(testCase.input)
+			result := len(users)
 
-    failed := false
+			failed := false
 
-		if err == nil && testCase.wantErr != nil {
-			failed = true
-		} else if err != nil && testCase.wantErr == nil {
-			failed = true
-		} else if err != nil && err.Error() != testCase.wantErr.Error() {
-			failed = true
-		} else if result != testCase.want {
-			failed = true
-		}
+			if err == nil && testCase.wantErr != nil {
+				failed = true
+			} else if err != nil && testCase.wantErr == nil {
+				failed = true
+			} else if err != nil && err.Error() != testCase.wantErr.Error() {
+				failed = true
+			} else if result != testCase.want {
+				failed = true
+			}
 
-		if failed {
-			t.Errorf("%s\nLoadUsers(%#v) = (%#v, %#v), want (%#v, %#v)", testCase.intention, testCase.input, result, err, testCase.want, testCase.wantErr)
-		}
+			if failed {
+				t.Errorf("LoadUsers(%#v) = (%#v, %#v), want (%#v, %#v)", testCase.input, result, err, testCase.want, testCase.wantErr)
+			}
+		})
 	}
 }
 
@@ -83,27 +85,29 @@ func TestNew(t *testing.T) {
 	}
 
 	for _, testCase := range cases {
-		auth, err := New(Config{users: &testCase.users}, nil)
-		var authClient *App
-		if auth != nil {
-			authClient = auth.(*App)
-		}
+		t.Run(testCase.intention, func(t *testing.T) {
+			auth, err := New(Config{users: &testCase.users}, nil)
+			var authClient *App
+			if auth != nil {
+				authClient = auth.(*App)
+			}
 
-    failed := false
+			failed := false
 
-		if err == nil && testCase.wantErr != nil {
-			failed = true
-		} else if err != nil && testCase.wantErr == nil {
-			failed = true
-		} else if err != nil && err.Error() != testCase.wantErr.Error() {
-			failed = true
-		} else if authClient != nil && len(authClient.users) != testCase.want {
-			failed = true
-		}
+			if err == nil && testCase.wantErr != nil {
+				failed = true
+			} else if err != nil && testCase.wantErr == nil {
+				failed = true
+			} else if err != nil && err.Error() != testCase.wantErr.Error() {
+				failed = true
+			} else if authClient != nil && len(authClient.users) != testCase.want {
+				failed = true
+			}
 
-		if failed {
-			t.Errorf("%s\nNew(%#v) = (%#v, %#v), want (%#v, %#v)", testCase.intention, testCase.users, authClient.users, err, testCase.want, testCase.wantErr)
-		}
+			if failed {
+				t.Errorf("New(%#v) = (%#v, %#v), want (%#v, %#v)", testCase.users, authClient.users, err, testCase.want, testCase.wantErr)
+			}
+		})
 	}
 }
 
@@ -119,9 +123,11 @@ func TestGetName(t *testing.T) {
 	}
 
 	for _, testCase := range cases {
-		if result := (&App{}).GetName(); result != testCase.want {
-			t.Errorf("%s\nGetName() = %#v, want %#v", testCase.intention, result, testCase.want)
-		}
+		t.Run(testCase.intention, func(t *testing.T) {
+			if result := (&App{}).GetName(); result != testCase.want {
+				t.Errorf("GetName() = %#v, want %#v", result, testCase.want)
+			}
+		})
 	}
 }
 
@@ -169,23 +175,25 @@ func TestGetUser(t *testing.T) {
 	}
 
 	for _, testCase := range cases {
-		result, err := authClient.GetUser(nil, testCase.auth)
+		t.Run(testCase.intention, func(t *testing.T) {
+			result, err := authClient.GetUser(nil, testCase.auth)
 
-    failed := false
+			failed := false
 
-		if err == nil && testCase.wantErr != nil {
-			failed = true
-		} else if err != nil && testCase.wantErr == nil {
-			failed = true
-		} else if err != nil && err.Error() != testCase.wantErr.Error() {
-			failed = true
-		} else if !reflect.DeepEqual(result, testCase.want) {
-			failed = true
-		}
+			if err == nil && testCase.wantErr != nil {
+				failed = true
+			} else if err != nil && testCase.wantErr == nil {
+				failed = true
+			} else if err != nil && err.Error() != testCase.wantErr.Error() {
+				failed = true
+			} else if !reflect.DeepEqual(result, testCase.want) {
+				failed = true
+			}
 
-		if failed {
-			t.Errorf("%s\nGetUser(%#v) = (%#v, %#v) want (%#v, %#v)", testCase.intention, testCase.auth, result, err, testCase.want, testCase.wantErr)
-		}
+			if failed {
+				t.Errorf("GetUser(%#v) = (%#v, %#v) want (%#v, %#v)", testCase.auth, result, err, testCase.want, testCase.wantErr)
+			}
+		})
 	}
 }
 
@@ -201,12 +209,14 @@ func TestRedirect(t *testing.T) {
 	}
 
 	for _, testCase := range cases {
-		writer := httptest.NewRecorder()
+		t.Run(testCase.intention, func(t *testing.T) {
+			writer := httptest.NewRecorder()
 
-		(&App{}).Redirect(writer, httptest.NewRequest(http.MethodGet, "/", nil))
-		result := writer.Header().Get("location")
-		if result != testCase.want {
-			t.Errorf("%s\nRedirect() = (%#v), want (%#v)", testCase.intention, result, testCase.want)
-		}
+			(&App{}).Redirect(writer, httptest.NewRequest(http.MethodGet, "/", nil))
+			result := writer.Header().Get("location")
+			if result != testCase.want {
+				t.Errorf("Redirect() = (%#v), want (%#v)", result, testCase.want)
+			}
+		})
 	}
 }

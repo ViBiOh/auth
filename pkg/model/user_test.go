@@ -25,9 +25,11 @@ func TestNewUser(t *testing.T) {
 	}
 
 	for _, testCase := range cases {
-		if result := NewUser(testCase.id, testCase.username, testCase.email, testCase.profiles); !reflect.DeepEqual(result, testCase.want) {
-			t.Errorf("%s\nNewUser(%#v, %#v, %#v) = %#v, want %#v", testCase.intention, testCase.id, testCase.username, testCase.profiles, result, testCase.want)
-		}
+		t.Run(testCase.intention, func(t *testing.T) {
+			if result := NewUser(testCase.id, testCase.username, testCase.email, testCase.profiles); !reflect.DeepEqual(result, testCase.want) {
+				t.Errorf("NewUser(%#v, %#v, %#v) = %#v, want %#v", testCase.id, testCase.username, testCase.profiles, result, testCase.want)
+			}
+		})
 	}
 }
 
@@ -65,8 +67,10 @@ func TestHasProfile(t *testing.T) {
 	}
 
 	for _, testCase := range cases {
-		if result := testCase.instance.HasProfile(testCase.profile); result != testCase.want {
-			t.Errorf("%s\n%#v.HasProfile(%#v) = %#v, want %#v", testCase.intention, testCase.instance, testCase.profile, result, testCase.want)
-		}
+		t.Run(testCase.intention, func(t *testing.T) {
+			if result := testCase.instance.HasProfile(testCase.profile); result != testCase.want {
+				t.Errorf("%#v.HasProfile(%#v) = %#v, want %#v", testCase.instance, testCase.profile, result, testCase.want)
+			}
+		})
 	}
 }

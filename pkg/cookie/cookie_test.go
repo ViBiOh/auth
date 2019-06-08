@@ -33,9 +33,11 @@ func TestGetCookieValue(t *testing.T) {
 	}
 
 	for _, testCase := range cases {
-		if result := GetCookieValue(testCase.request, "Testcookie"); result != testCase.want {
-			t.Errorf("%s\nGetCookieValue(%#v) = %#v, want %#v", testCase.intention, testCase.request, result, testCase.want)
-		}
+		t.Run(testCase.intention, func(t *testing.T) {
+			if result := GetCookieValue(testCase.request, "Testcookie"); result != testCase.want {
+				t.Errorf("GetCookieValue(%#v) = %#v, want %#v", testCase.request, result, testCase.want)
+			}
+		})
 	}
 }
 
@@ -65,21 +67,23 @@ func TestSetCookieAndRedirect(t *testing.T) {
 	}
 
 	for _, testCase := range cases {
-		writer := httptest.NewRecorder()
+		t.Run(testCase.intention, func(t *testing.T) {
+			writer := httptest.NewRecorder()
 
-		SetCookieAndRedirect(writer, testCase.request, testCase.redirect, testCase.cookieDomain, testCase.cookieContent)
+			SetCookieAndRedirect(writer, testCase.request, testCase.redirect, testCase.cookieDomain, testCase.cookieContent)
 
-		if result := writer.Code; result != testCase.wantStatus {
-			t.Errorf("%s\nSetCookieAndRedirect(%#v) = %#v, want status %#v", testCase.intention, testCase.request, result, testCase.wantStatus)
-		}
+			if result := writer.Code; result != testCase.wantStatus {
+				t.Errorf("SetCookieAndRedirect(%#v) = %#v, want status %#v", testCase.request, result, testCase.wantStatus)
+			}
 
-		if result, _ := request.ReadBodyResponse(writer.Result()); string(result) != testCase.want {
-			t.Errorf("%s\nSetCookieAndRedirect(%#v) = %#v, want %#v", testCase.intention, testCase.request, string(result), testCase.want)
-		}
+			if result, _ := request.ReadBodyResponse(writer.Result()); string(result) != testCase.want {
+				t.Errorf("SetCookieAndRedirect(%#v) = %#v, want %#v", testCase.request, string(result), testCase.want)
+			}
 
-		if result := writer.Header().Get("Set-Cookie"); result != testCase.wantCookie {
-			t.Errorf("%s\nSetCookieAndRedirect(%#v) = %#v, want %#v", testCase.intention, testCase.request, result, testCase.wantCookie)
-		}
+			if result := writer.Header().Get("Set-Cookie"); result != testCase.wantCookie {
+				t.Errorf("SetCookieAndRedirect(%#v) = %#v, want %#v", testCase.request, result, testCase.wantCookie)
+			}
+		})
 	}
 }
 
@@ -107,20 +111,22 @@ func TestClearCookieAndRedirect(t *testing.T) {
 	}
 
 	for _, testCase := range cases {
-		writer := httptest.NewRecorder()
+		t.Run(testCase.intention, func(t *testing.T) {
+			writer := httptest.NewRecorder()
 
-		ClearCookieAndRedirect(writer, testCase.request, testCase.redirect, testCase.cookieDomain)
+			ClearCookieAndRedirect(writer, testCase.request, testCase.redirect, testCase.cookieDomain)
 
-		if result := writer.Code; result != testCase.wantStatus {
-			t.Errorf("%s\nClearCookieAndRedirect(%#v) = %#v, want status %#v", testCase.intention, testCase.request, result, testCase.wantStatus)
-		}
+			if result := writer.Code; result != testCase.wantStatus {
+				t.Errorf("ClearCookieAndRedirect(%#v) = %#v, want status %#v", testCase.request, result, testCase.wantStatus)
+			}
 
-		if result, _ := request.ReadBodyResponse(writer.Result()); string(result) != testCase.want {
-			t.Errorf("%s\nClearCookieAndRedirect(%#v) = %#v, want %#v", testCase.intention, testCase.request, string(result), testCase.want)
-		}
+			if result, _ := request.ReadBodyResponse(writer.Result()); string(result) != testCase.want {
+				t.Errorf("ClearCookieAndRedirect(%#v) = %#v, want %#v", testCase.request, string(result), testCase.want)
+			}
 
-		if result := writer.Header().Get("Set-Cookie"); result != testCase.wantCookie {
-			t.Errorf("%s\nClearCookieAndRedirect(%#v) = %#v, want %#v", testCase.intention, testCase.request, result, testCase.wantCookie)
-		}
+			if result := writer.Header().Get("Set-Cookie"); result != testCase.wantCookie {
+				t.Errorf("ClearCookieAndRedirect(%#v) = %#v, want %#v", testCase.request, result, testCase.wantCookie)
+			}
+		})
 	}
 }
