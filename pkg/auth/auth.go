@@ -29,8 +29,14 @@ var (
 	// ErrForbidden occurs when user is identified but not authorized
 	ErrForbidden = errors.New("forbidden access")
 
-	_ http_model.Middleware = &App{}
+	_ http_model.Middleware = &app{}
 )
+
+// App of package
+type App interface {
+	Handler(http.Handler) http.Handler
+	IsAuthenticated(*http.Request) (*model.User, error)
+}
 
 // Config of package
 type Config struct {
@@ -39,8 +45,7 @@ type Config struct {
 	users   *string
 }
 
-// App of package
-type App struct {
+type app struct {
 	disabled     bool
 	identService ident.Service
 	URL          string
@@ -57,8 +62,8 @@ func Flags(fs *flag.FlagSet, prefix string) Config {
 }
 
 // New creates new App from Config
-func New(config Config) *App {
-	return &App{
+func New(config Config) App {
+	return &app{
 		disabled: *config.disable,
 		URL:      strings.TrimSpace(*config.url),
 		users:    loadUsersProfiles(*config.users),
@@ -66,8 +71,8 @@ func New(config Config) *App {
 }
 
 // NewService creates new App from Flags' config with service
-func NewService(config Config, identService ident.Service) *App {
-	return &App{
+func NewService(config Config, identService ident.Service) App {
+	return &app{
 		disabled:     *config.disable,
 		identService: identService,
 		users:        loadUsersProfiles(*config.users),
@@ -120,12 +125,34 @@ func ReadAuthContent(r *http.Request) string {
 }
 
 // IsAuthenticated check if request has correct headers for authentification
-func (a App) IsAuthenticated(r *http.Request) (*model.User, error) {
-	return a.IsAuthenticatedByAuth(r.Context(), ReadAuthContent(r))
+func (a app) IsAuthenticated(r *http.Request) (*model.User, error) {
+	return a.isAuthenticatedByAuth(r.Context(), ReadAuthContent(r))
 }
 
-// IsAuthenticatedByAuth check if authorization is correct
-func (a App) IsAuthenticatedByAuth(ctx context.Context, authContent string) (*model.User, error) {
+// Handler wrap next authenticated handler
+func (a app) Handler(next http.Handler) http.Handler {
+	if a.disabled {
+		return next
+	}
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		user, err := a.IsAuthenticated(r)
+		if err != nil {
+			a.onHandlerFail(w, r, err)
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), ctxUserName, user)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+func (a app) isAuthenticatedByAuth(ctx context.Context, authContent string) (*model.User, error) {
 	var retrievedUser *model.User
 	var err error
 
@@ -174,30 +201,7 @@ func (a App) IsAuthenticatedByAuth(ctx context.Context, authContent string) (*mo
 	return nil, ErrForbidden
 }
 
-// Handler wrap next authenticated handler
-func (a App) Handler(next http.Handler) http.Handler {
-	if a.disabled {
-		return next
-	}
-
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodOptions {
-			w.WriteHeader(http.StatusNoContent)
-			return
-		}
-
-		user, err := a.IsAuthenticated(r)
-		if err != nil {
-			a.onHandlerFail(w, r, err)
-			return
-		}
-
-		ctx := context.WithValue(r.Context(), ctxUserName, user)
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
-}
-
-func (a App) onHandlerFail(w http.ResponseWriter, r *http.Request, err error) {
+func (a app) onHandlerFail(w http.ResponseWriter, r *http.Request, err error) {
 	if err == ident.ErrEmptyAuth && a.identService != nil {
 		a.identService.OnError(w, r, err)
 		return
