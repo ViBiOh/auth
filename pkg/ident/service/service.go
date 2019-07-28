@@ -20,9 +20,7 @@ type App struct {
 // NewBasic creates new App from Flags' config only for basic auth wrapper
 func NewBasic(basicConfig basic.Config, db *sql.DB) *App {
 	provider, err := basic.New(basicConfig, db)
-	if err != nil {
-		logger.Fatal("%#v", err)
-	}
+	logger.Fatal(err)
 
 	return &App{
 		provider: provider,
