@@ -11,7 +11,6 @@ import (
 	httputils "github.com/ViBiOh/httputils/pkg"
 	"github.com/ViBiOh/httputils/pkg/alcotest"
 	"github.com/ViBiOh/httputils/pkg/cors"
-	"github.com/ViBiOh/httputils/pkg/gzip"
 	"github.com/ViBiOh/httputils/pkg/logger"
 	"github.com/ViBiOh/httputils/pkg/opentracing"
 	"github.com/ViBiOh/httputils/pkg/owasp"
@@ -41,7 +40,6 @@ func main() {
 
 	prometheusApp := prometheus.New(prometheusConfig)
 	opentracingApp := opentracing.New(opentracingConfig)
-	gzipApp := gzip.New()
 	owaspApp := owasp.New(owaspConfig)
 	corsApp := cors.New(corsConfig)
 
@@ -56,7 +54,7 @@ func main() {
 	}
 
 	identApp := handler.New(handlerConfig, []ident.Auth{basicApp, githubApp})
-	identHandler := httputils.ChainMiddlewares(identApp.Handler(), prometheusApp, opentracingApp, gzipApp, owaspApp, corsApp)
+	identHandler := httputils.ChainMiddlewares(identApp.Handler(), prometheusApp, opentracingApp, owaspApp, corsApp)
 
 	serverApp.ListenAndServe(identHandler, httputils.HealthHandler(nil), nil)
 }
