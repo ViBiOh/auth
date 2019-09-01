@@ -26,7 +26,7 @@ jobs:
 stages:
   - Build
   - name: Publish
-    if: branch = master
+    if: branch = master && type = push
 
 notifications:
   email: false
