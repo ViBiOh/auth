@@ -35,9 +35,6 @@ func main() {
 
 	alcotest.DoAndExit(alcotestConfig)
 
-	serverApp, err := httputils.New(serverConfig)
-	logger.Fatal(err)
-
 	prometheusApp := prometheus.New(prometheusConfig)
 	opentracingApp := opentracing.New(opentracingConfig)
 	owaspApp := owasp.New(owaspConfig)
@@ -56,5 +53,5 @@ func main() {
 	identApp := handler.New(handlerConfig, []ident.Auth{basicApp, githubApp})
 	identHandler := httputils.ChainMiddlewares(identApp.Handler(), prometheusApp, opentracingApp, owaspApp, corsApp)
 
-	serverApp.ListenAndServe(identHandler, httputils.HealthHandler(nil), nil)
+	httputils.New(serverConfig).ListenAndServe(identHandler, httputils.HealthHandler(nil), nil)
 }
