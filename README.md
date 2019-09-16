@@ -41,6 +41,8 @@ It will compile both auth API server and password encrypter.
 
 ```bash
 Usage of auth:
+  -address string
+        [http] Listen address
   -authRedirect string
         [auth] Redirect URL on Auth Success
   -basicUsers id:username:password,id2:username2:password2
