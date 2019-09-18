@@ -10,8 +10,8 @@ import (
 
 	"github.com/ViBiOh/auth/pkg/ident"
 	"github.com/ViBiOh/auth/pkg/model"
-	"github.com/ViBiOh/httputils/pkg/cache"
-	"github.com/ViBiOh/httputils/pkg/request"
+	"github.com/ViBiOh/httputils/v2/pkg/cache"
+	"github.com/ViBiOh/httputils/v2/pkg/request"
 	"golang.org/x/oauth2"
 )
 

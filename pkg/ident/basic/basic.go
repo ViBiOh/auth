@@ -5,15 +5,14 @@ import (
 	"database/sql"
 	"encoding/base64"
 	"flag"
-	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/ViBiOh/auth/pkg/ident"
 	"github.com/ViBiOh/auth/pkg/model"
-	"github.com/ViBiOh/httputils/pkg/errors"
-	"github.com/ViBiOh/httputils/pkg/httperror"
-	"github.com/ViBiOh/httputils/pkg/tools"
+	"github.com/ViBiOh/httputils/v2/pkg/errors"
+	"github.com/ViBiOh/httputils/v2/pkg/httperror"
+	"github.com/ViBiOh/httputils/v2/pkg/tools"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -36,7 +35,7 @@ type App struct {
 // Flags adds flags for configuring package
 func Flags(fs *flag.FlagSet, prefix string) Config {
 	return Config{
-		users: fs.String(tools.ToCamel(fmt.Sprintf("%sUsers", prefix)), "", "[basic] Users in the form `id:username:password,id2:username2:password2`"),
+		users: tools.NewFlag(prefix, "basic").Name("Users").Default("").Label("Users in the form `id:username:password,id2:username2:password2`").ToString(fs),
 	}
 }
 

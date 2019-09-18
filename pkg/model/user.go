@@ -3,7 +3,7 @@ package model
 import (
 	"strings"
 
-	"github.com/ViBiOh/httputils/pkg/crud"
+	"github.com/ViBiOh/httputils/v2/pkg/crud"
 )
 
 var _ crud.Item = &User{}

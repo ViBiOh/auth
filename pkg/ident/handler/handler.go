@@ -7,10 +7,10 @@ import (
 	"strings"
 
 	"github.com/ViBiOh/auth/pkg/ident"
-	"github.com/ViBiOh/httputils/pkg/errors"
-	"github.com/ViBiOh/httputils/pkg/httperror"
-	"github.com/ViBiOh/httputils/pkg/logger"
-	"github.com/ViBiOh/httputils/pkg/tools"
+	"github.com/ViBiOh/httputils/v2/pkg/errors"
+	"github.com/ViBiOh/httputils/v2/pkg/httperror"
+	"github.com/ViBiOh/httputils/v2/pkg/logger"
+	"github.com/ViBiOh/httputils/v2/pkg/tools"
 )
 
 const (
@@ -34,8 +34,8 @@ type App struct {
 // Flags adds flags for configuring package
 func Flags(fs *flag.FlagSet, prefix string) Config {
 	return Config{
-		cookieDomain: fs.String(tools.ToCamel(fmt.Sprintf("%sCookieDomain", prefix)), "", "[auth] Cookie Domain to Store Authentification"),
-		redirect:     fs.String(tools.ToCamel(fmt.Sprintf("%sAuthRedirect", prefix)), "", "[auth] Redirect URL on Auth Success"),
+		cookieDomain: tools.NewFlag(prefix, "auth").Name("CookieDomain").Default("").Label("Cookie Domain to Store Authentification").ToString(fs),
+		redirect:     tools.NewFlag(prefix, "auth").Name("AuthRedirect").Default("").Label("Redirect URL on Auth Success").ToString(fs),
 	}
 }
 

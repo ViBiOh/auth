@@ -13,13 +13,13 @@ import (
 
 	"github.com/ViBiOh/auth/pkg/ident"
 	"github.com/ViBiOh/auth/pkg/model"
-	"github.com/ViBiOh/httputils/pkg/cache"
-	"github.com/ViBiOh/httputils/pkg/errors"
-	"github.com/ViBiOh/httputils/pkg/httperror"
-	"github.com/ViBiOh/httputils/pkg/logger"
-	"github.com/ViBiOh/httputils/pkg/request"
-	"github.com/ViBiOh/httputils/pkg/tools"
-	"github.com/ViBiOh/httputils/pkg/uuid"
+	"github.com/ViBiOh/httputils/v2/pkg/cache"
+	"github.com/ViBiOh/httputils/v2/pkg/errors"
+	"github.com/ViBiOh/httputils/v2/pkg/httperror"
+	"github.com/ViBiOh/httputils/v2/pkg/logger"
+	"github.com/ViBiOh/httputils/v2/pkg/request"
+	"github.com/ViBiOh/httputils/v2/pkg/tools"
+	"github.com/ViBiOh/httputils/v2/pkg/uuid"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
 )
@@ -49,9 +49,9 @@ type App struct {
 // Flags adds flags for configuring package
 func Flags(fs *flag.FlagSet, prefix string) Config {
 	return Config{
-		clientID:     fs.String(tools.ToCamel(fmt.Sprintf("%sClientId", prefix)), "", "[github] OAuth Client ID"),
-		clientSecret: fs.String(tools.ToCamel(fmt.Sprintf("%sClientSecret", prefix)), "", "[github] OAuth Client Secret"),
-		scopes:       fs.String(tools.ToCamel(fmt.Sprintf("%sScopes", prefix)), "", "[github] OAuth Scopes, comma separated"),
+		clientID:     tools.NewFlag(prefix, "github").Name("ClientId").Default("").Label("OAuth Client ID").ToString(fs),
+		clientSecret: tools.NewFlag(prefix, "github").Name("ClientSecret").Default("").Label("OAuth Client Secret").ToString(fs),
+		scopes:       tools.NewFlag(prefix, "github").Name("Scopes").Default("").Label("OAuth Scopes, comma separated").ToString(fs),
 	}
 }
 

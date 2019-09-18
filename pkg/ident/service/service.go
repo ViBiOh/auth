@@ -9,7 +9,7 @@ import (
 	"github.com/ViBiOh/auth/pkg/ident"
 	"github.com/ViBiOh/auth/pkg/ident/basic"
 	"github.com/ViBiOh/auth/pkg/model"
-	"github.com/ViBiOh/httputils/pkg/logger"
+	"github.com/ViBiOh/httputils/v2/pkg/logger"
 )
 
 // App stores informations and secret of API

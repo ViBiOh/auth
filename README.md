@@ -42,51 +42,51 @@ It will compile both auth API server and password encrypter.
 ```bash
 Usage of auth:
   -address string
-        [http] Listen address
+        [http] Listen address {AUTH_ADDRESS}
   -authRedirect string
-        [auth] Redirect URL on Auth Success
+        [auth] Redirect URL on Auth Success {AUTH_AUTH_REDIRECT}
   -basicUsers id:username:password,id2:username2:password2
-        [basic] Users in the form id:username:password,id2:username2:password2
+        [basic] Users in the form id:username:password,id2:username2:password2 {AUTH_BASIC_USERS}
   -cert string
-        [http] Certificate file
+        [http] Certificate file {AUTH_CERT}
   -cookieDomain string
-        [auth] Cookie Domain to Store Authentification
+        [auth] Cookie Domain to Store Authentification {AUTH_COOKIE_DOMAIN}
   -corsCredentials
-        [cors] Access-Control-Allow-Credentials
+        [cors] Access-Control-Allow-Credentials {AUTH_CORS_CREDENTIALS}
   -corsExpose string
-        [cors] Access-Control-Expose-Headers
+        [cors] Access-Control-Expose-Headers {AUTH_CORS_EXPOSE}
   -corsHeaders string
-        [cors] Access-Control-Allow-Headers (default "Content-Type")
+        [cors] Access-Control-Allow-Headers {AUTH_CORS_HEADERS} (default "Content-Type")
   -corsMethods string
-        [cors] Access-Control-Allow-Methods (default "GET")
+        [cors] Access-Control-Allow-Methods {AUTH_CORS_METHODS} (default "GET")
   -corsOrigin string
-        [cors] Access-Control-Allow-Origin (default "*")
+        [cors] Access-Control-Allow-Origin {AUTH_CORS_ORIGIN} (default "*")
   -csp string
-        [owasp] Content-Security-Policy (default "default-src 'self'; base-uri 'self'")
+        [owasp] Content-Security-Policy {AUTH_CSP} (default "default-src 'self'; base-uri 'self'")
   -frameOptions string
-        [owasp] X-Frame-Options (default "deny")
+        [owasp] X-Frame-Options {AUTH_FRAME_OPTIONS} (default "deny")
   -githubClientId string
-        [github] OAuth Client ID
+        [github] OAuth Client ID {AUTH_GITHUB_CLIENT_ID}
   -githubClientSecret string
-        [github] OAuth Client Secret
+        [github] OAuth Client Secret {AUTH_GITHUB_CLIENT_SECRET}
   -githubScopes string
-        [github] OAuth Scopes, comma separated
+        [github] OAuth Scopes, comma separated {AUTH_GITHUB_SCOPES}
   -hsts
-        [owasp] Indicate Strict Transport Security (default true)
+        [owasp] Indicate Strict Transport Security {AUTH_HSTS} (default true)
   -key string
-        [http] Key file
+        [http] Key file {AUTH_KEY}
   -port int
-        [http] Listen port (default 1080)
+        [http] Listen port {AUTH_PORT} (default 1080)
   -prometheusPath string
-        [prometheus] Path for exposing metrics (default "/metrics")
+        [prometheus] Path for exposing metrics {AUTH_PROMETHEUS_PATH} (default "/metrics")
   -tracingAgent string
-        [tracing] Jaeger Agent (e.g. host:port) (default "jaeger:6831")
+        [tracing] Jaeger Agent (e.g. host:port) {AUTH_TRACING_AGENT} (default "jaeger:6831")
   -tracingName string
-        [tracing] Service name
+        [tracing] Service name {AUTH_TRACING_NAME}
   -url string
-        [alcotest] URL to check
+        [alcotest] URL to check {AUTH_URL}
   -userAgent string
-        [alcotest] User-Agent for check (default "Golang alcotest")
+        [alcotest] User-Agent for check {AUTH_USER_AGENT} (default "Golang alcotest")
 ```
 
 Password encrypter accepts one argument, the password, and output the bcrypted one.

@@ -8,9 +8,9 @@ import (
 	"github.com/ViBiOh/auth/pkg/auth"
 	"github.com/ViBiOh/auth/pkg/cookie"
 	"github.com/ViBiOh/auth/pkg/ident"
-	"github.com/ViBiOh/httputils/pkg/errors"
-	"github.com/ViBiOh/httputils/pkg/httperror"
-	"github.com/ViBiOh/httputils/pkg/httpjson"
+	"github.com/ViBiOh/httputils/v2/pkg/errors"
+	"github.com/ViBiOh/httputils/v2/pkg/httperror"
+	"github.com/ViBiOh/httputils/v2/pkg/httpjson"
 )
 
 func (a App) userHandler(w http.ResponseWriter, r *http.Request) {

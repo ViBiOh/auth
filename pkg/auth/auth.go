@@ -11,11 +11,11 @@ import (
 	"github.com/ViBiOh/auth/pkg/cookie"
 	"github.com/ViBiOh/auth/pkg/ident"
 	"github.com/ViBiOh/auth/pkg/model"
-	"github.com/ViBiOh/httputils/pkg/errors"
-	"github.com/ViBiOh/httputils/pkg/httperror"
-	http_model "github.com/ViBiOh/httputils/pkg/model"
-	"github.com/ViBiOh/httputils/pkg/request"
-	"github.com/ViBiOh/httputils/pkg/tools"
+	"github.com/ViBiOh/httputils/v2/pkg/errors"
+	"github.com/ViBiOh/httputils/v2/pkg/httperror"
+	http_model "github.com/ViBiOh/httputils/v2/pkg/model"
+	"github.com/ViBiOh/httputils/v2/pkg/request"
+	"github.com/ViBiOh/httputils/v2/pkg/tools"
 )
 
 type key int
@@ -55,9 +55,9 @@ type app struct {
 // Flags adds flags for configuring package
 func Flags(fs *flag.FlagSet, prefix string) Config {
 	return Config{
-		disable: fs.Bool(tools.ToCamel(fmt.Sprintf("%sDisable", prefix)), false, "[auth] Disable auth"),
-		url:     fs.String(tools.ToCamel(fmt.Sprintf("%sUrl", prefix)), "", "[auth] Auth URL, if remote"),
-		users:   fs.String(tools.ToCamel(fmt.Sprintf("%sUsers", prefix)), "", "[auth] Allowed users and profiles (e.g. user:profile1|profile2,user2:profile3). Empty allow any identified user"),
+		disable: tools.NewFlag(prefix, "auth").Name("Disable").Default(false).Label("Disable auth").ToBool(fs),
+		url:     tools.NewFlag(prefix, "auth").Name("Url").Default("").Label("Auth URL, if remote").ToString(fs),
+		users:   tools.NewFlag(prefix, "auth").Name("Users").Default("").Label("Allowed users and profiles (e.g. user:profile1|profile2,user2:profile3). Empty allow any identified user").ToString(fs),
 	}
 }
 
