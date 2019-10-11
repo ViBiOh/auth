@@ -3,6 +3,7 @@
 [![Build Status](https://travis-ci.org/ViBiOh/auth.svg?branch=master)](https://travis-ci.org/ViBiOh/auth)
 [![codecov](https://codecov.io/gh/ViBiOh/auth/branch/master/graph/badge.svg)](https://codecov.io/gh/ViBiOh/auth)
 [![Go Report Card](https://goreportcard.com/badge/github.com/ViBiOh/auth)](https://goreportcard.com/report/github.com/ViBiOh/auth)
+[![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=ViBiOh/auth)](https://dependabot.com)
 
 Authentification for apps in microservices.
 
