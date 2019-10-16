@@ -9,8 +9,8 @@ APP_NAME = auth
 PACKAGES ?= ./...
 GO_FILES ?= */*/*.go
 
-GOBIN=bin
-BINARY_PATH=$(GOBIN)/$(APP_NAME)
+OUTPUR_DIR=bin
+BINARY_PATH=$(OUTPUR_DIR)/$(APP_NAME)
 
 SERVER_SOURCE = cmd/auth/auth.go
 SERVER_RUNNER = go run $(SERVER_SOURCE)
@@ -78,7 +78,7 @@ bench:
 build:
 	CGO_ENABLED=0 go build -ldflags="-s -w" -installsuffix nocgo $(PACKAGES)
 	CGO_ENABLED=0 go build -ldflags="-s -w" -installsuffix nocgo -o $(BINARY_PATH) $(SERVER_SOURCE)
-	CGO_ENABLED=0 go build -ldflags="-s -w" -installsuffix nocgo -o $(GOBIN)/bcrypt cmd/bcrypt/bcrypt.go
+	CGO_ENABLED=0 go build -ldflags="-s -w" -installsuffix nocgo -o $(OUTPUR_DIR)/bcrypt cmd/bcrypt/bcrypt.go
 
 ## start: Start app
 .PHONY: start
