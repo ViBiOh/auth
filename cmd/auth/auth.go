@@ -12,7 +12,6 @@ import (
 	"github.com/ViBiOh/httputils/v2/pkg/alcotest"
 	"github.com/ViBiOh/httputils/v2/pkg/cors"
 	"github.com/ViBiOh/httputils/v2/pkg/logger"
-	"github.com/ViBiOh/httputils/v2/pkg/opentracing"
 	"github.com/ViBiOh/httputils/v2/pkg/owasp"
 	"github.com/ViBiOh/httputils/v2/pkg/prometheus"
 )
@@ -23,7 +22,6 @@ func main() {
 	serverConfig := httputils.Flags(fs, "")
 	alcotestConfig := alcotest.Flags(fs, "")
 	prometheusConfig := prometheus.Flags(fs, "prometheus")
-	opentracingConfig := opentracing.Flags(fs, "tracing")
 	owaspConfig := owasp.Flags(fs, "")
 	corsConfig := cors.Flags(fs, "cors")
 
@@ -36,7 +34,6 @@ func main() {
 	alcotest.DoAndExit(alcotestConfig)
 
 	prometheusApp := prometheus.New(prometheusConfig)
-	opentracingApp := opentracing.New(opentracingConfig)
 	owaspApp := owasp.New(owaspConfig)
 	corsApp := cors.New(corsConfig)
 
@@ -51,7 +48,7 @@ func main() {
 	}
 
 	identApp := handler.New(handlerConfig, []ident.Auth{basicApp, githubApp})
-	identHandler := httputils.ChainMiddlewares(identApp.Handler(), prometheusApp, opentracingApp, owaspApp, corsApp)
+	identHandler := httputils.ChainMiddlewares(identApp.Handler(), prometheusApp, owaspApp, corsApp)
 
 	httputils.New(serverConfig).ListenAndServe(identHandler, httputils.HealthHandler(nil), nil)
 }
