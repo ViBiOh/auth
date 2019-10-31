@@ -4,15 +4,16 @@ import (
 	"context"
 	"database/sql"
 	"encoding/base64"
+	"errors"
 	"flag"
+	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/ViBiOh/auth/pkg/ident"
 	"github.com/ViBiOh/auth/pkg/model"
-	"github.com/ViBiOh/httputils/v2/pkg/errors"
-	"github.com/ViBiOh/httputils/v2/pkg/httperror"
-	"github.com/ViBiOh/httputils/v2/pkg/tools"
+	"github.com/ViBiOh/httputils/v3/pkg/flags"
+	"github.com/ViBiOh/httputils/v3/pkg/httperror"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -35,7 +36,7 @@ type App struct {
 // Flags adds flags for configuring package
 func Flags(fs *flag.FlagSet, prefix string) Config {
 	return Config{
-		users: tools.NewFlag(prefix, "basic").Name("Users").Default("").Label("Users in the form `id:username:password,id2:username2:password2`").ToString(fs),
+		users: flags.New(prefix, "basic").Name("Users").Default("").Label("Users in the form `id:username:password,id2:username2:password2`").ToString(fs),
 	}
 }
 
@@ -62,7 +63,7 @@ func loadUsers(authUsers string) (map[string]*basicUser, error) {
 	for _, authUser := range strings.Split(authUsers, ",") {
 		parts := strings.Split(authUser, ":")
 		if len(parts) != 3 {
-			return nil, errors.New("invalid format of user for %s", authUser)
+			return nil, fmt.Errorf("invalid format of user for %s", authUser)
 		}
 
 		user := basicUser{&model.User{ID: parts[0], Username: strings.ToLower(parts[1])}, []byte(parts[2])}
@@ -81,7 +82,7 @@ func (App) GetName() string {
 func (a App) GetUser(ctx context.Context, header string) (*model.User, error) {
 	data, err := base64.StdEncoding.DecodeString(header)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	dataStr := string(data)

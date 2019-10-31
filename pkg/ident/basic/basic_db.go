@@ -4,8 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/ViBiOh/auth/pkg/model"
-	"github.com/ViBiOh/httputils/v2/pkg/errors"
-	"github.com/ViBiOh/httputils/v2/pkg/logger"
+	"github.com/ViBiOh/httputils/v3/pkg/logger"
 )
 
 const readUserQuery = `
@@ -33,7 +32,7 @@ func (a App) dbLoginUser(login string) *basicUser {
 			return nil
 		}
 
-		logger.Error("%#v", errors.WithStack(err))
+		logger.Error("%s", err)
 		return nil
 	}
 

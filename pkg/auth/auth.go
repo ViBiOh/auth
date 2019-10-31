@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"net/http"
@@ -11,11 +12,10 @@ import (
 	"github.com/ViBiOh/auth/pkg/cookie"
 	"github.com/ViBiOh/auth/pkg/ident"
 	"github.com/ViBiOh/auth/pkg/model"
-	"github.com/ViBiOh/httputils/v2/pkg/errors"
-	"github.com/ViBiOh/httputils/v2/pkg/httperror"
-	http_model "github.com/ViBiOh/httputils/v2/pkg/model"
-	"github.com/ViBiOh/httputils/v2/pkg/request"
-	"github.com/ViBiOh/httputils/v2/pkg/tools"
+	"github.com/ViBiOh/httputils/v3/pkg/flags"
+	"github.com/ViBiOh/httputils/v3/pkg/httperror"
+	http_model "github.com/ViBiOh/httputils/v3/pkg/model"
+	"github.com/ViBiOh/httputils/v3/pkg/request"
 )
 
 type key int
@@ -55,9 +55,9 @@ type app struct {
 // Flags adds flags for configuring package
 func Flags(fs *flag.FlagSet, prefix string) Config {
 	return Config{
-		disable: tools.NewFlag(prefix, "auth").Name("Disable").Default(false).Label("Disable auth").ToBool(fs),
-		url:     tools.NewFlag(prefix, "auth").Name("Url").Default("").Label("Auth URL, if remote").ToString(fs),
-		users:   tools.NewFlag(prefix, "auth").Name("Users").Default("").Label("Allowed users and profiles (e.g. user:profile1|profile2,user2:profile3). Empty allow any identified user").ToString(fs),
+		disable: flags.New(prefix, "auth").Name("Disable").Default(false).Label("Disable auth").ToBool(fs),
+		url:     flags.New(prefix, "auth").Name("Url").Default("").Label("Auth URL, if remote").ToString(fs),
+		users:   flags.New(prefix, "auth").Name("Users").Default("").Label("Allowed users and profiles (e.g. user:profile1|profile2,user2:profile3). Empty allow any identified user").ToString(fs),
 	}
 }
 
@@ -177,17 +177,17 @@ func (a app) isAuthenticatedByAuth(ctx context.Context, authContent string) (*mo
 				return nil, ident.ErrEmptyAuth
 			}
 
-			return nil, errors.New("authentication failed: %v", err)
+			return nil, fmt.Errorf("authentication failed: %s", err)
 		}
 
-		userBytes, err := request.ReadBody(body)
+		userBytes, err := request.ReadContent(body)
 		if err != nil {
 			return nil, err
 		}
 
 		retrievedUser = &model.User{}
 		if err := json.Unmarshal(userBytes, retrievedUser); err != nil {
-			return nil, errors.WithStack(err)
+			return nil, err
 		}
 	}
 

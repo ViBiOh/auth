@@ -11,15 +11,14 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ViBiOh/auth/pkg/cache"
 	"github.com/ViBiOh/auth/pkg/ident"
 	"github.com/ViBiOh/auth/pkg/model"
-	"github.com/ViBiOh/httputils/v2/pkg/cache"
-	"github.com/ViBiOh/httputils/v2/pkg/errors"
-	"github.com/ViBiOh/httputils/v2/pkg/httperror"
-	"github.com/ViBiOh/httputils/v2/pkg/logger"
-	"github.com/ViBiOh/httputils/v2/pkg/request"
-	"github.com/ViBiOh/httputils/v2/pkg/tools"
-	"github.com/ViBiOh/httputils/v2/pkg/uuid"
+	"github.com/ViBiOh/httputils/v3/pkg/flags"
+	"github.com/ViBiOh/httputils/v3/pkg/httperror"
+	"github.com/ViBiOh/httputils/v3/pkg/logger"
+	"github.com/ViBiOh/httputils/v3/pkg/request"
+	"github.com/ViBiOh/httputils/v3/pkg/uuid"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
 )
@@ -49,9 +48,9 @@ type App struct {
 // Flags adds flags for configuring package
 func Flags(fs *flag.FlagSet, prefix string) Config {
 	return Config{
-		clientID:     tools.NewFlag(prefix, "github").Name("ClientId").Default("").Label("OAuth Client ID").ToString(fs),
-		clientSecret: tools.NewFlag(prefix, "github").Name("ClientSecret").Default("").Label("OAuth Client Secret").ToString(fs),
-		scopes:       tools.NewFlag(prefix, "github").Name("Scopes").Default("").Label("OAuth Scopes, comma separated").ToString(fs),
+		clientID:     flags.New(prefix, "github").Name("ClientId").Default("").Label("OAuth Client ID").ToString(fs),
+		clientSecret: flags.New(prefix, "github").Name("ClientSecret").Default("").Label("OAuth Client Secret").ToString(fs),
+		scopes:       flags.New(prefix, "github").Name("Scopes").Default("").Label("OAuth Scopes, comma separated").ToString(fs),
 	}
 }
 
@@ -110,15 +109,15 @@ func (a *App) getUserEmail(ctx context.Context, header string) string {
 		return ""
 	}
 
-	mailResponse, err := request.ReadBody(mailBody)
+	mailResponse, err := request.ReadContent(mailBody)
 	if err != nil {
-		logger.Error("%#v", err)
+		logger.Error("%s", err)
 		return ""
 	}
 
 	emails := make([]githubEmail, 0)
 	if err := json.Unmarshal(mailResponse, &emails); err != nil {
-		logger.Error("%#v", errors.WithStack(err))
+		logger.Error("%s", err)
 		return ""
 	}
 
@@ -142,14 +141,14 @@ func (a *App) GetUser(ctx context.Context, header string) (*model.User, error) {
 		return nil, err
 	}
 
-	userResponse, err := request.ReadBody(userBody)
+	userResponse, err := request.ReadContent(userBody)
 	if err != nil {
 		return nil, err
 	}
 
 	user := githubUser{}
 	if err := json.Unmarshal(userResponse, &user); err != nil {
-		return nil, errors.WithStack(err)
+		return nil, err
 	}
 
 	githubUser := &model.User{ID: strconv.Itoa(user.ID), Username: user.Login, Email: a.getUserEmail(ctx, header)}

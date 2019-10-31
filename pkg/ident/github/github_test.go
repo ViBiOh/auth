@@ -1,6 +1,7 @@
 package github
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -8,10 +9,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ViBiOh/auth/pkg/cache"
 	"github.com/ViBiOh/auth/pkg/ident"
 	"github.com/ViBiOh/auth/pkg/model"
-	"github.com/ViBiOh/httputils/v2/pkg/cache"
-	"github.com/ViBiOh/httputils/v2/pkg/request"
+	"github.com/ViBiOh/httputils/v3/pkg/request"
 	"golang.org/x/oauth2"
 )
 
@@ -95,7 +96,7 @@ func TestGetUser(t *testing.T) {
 			"should handle fetching error",
 			"unauthorized",
 			nil,
-			errors.New("error status 401"),
+			errors.New("HTTP/401"),
 		},
 		{
 			"should handle malformed json",
@@ -117,7 +118,7 @@ func TestGetUser(t *testing.T) {
 			result, err := (&App{
 				oauthConf:  &oauth2.Config{},
 				usersCache: cache.New(),
-			}).GetUser(nil, testCase.header)
+			}).GetUser(context.Background(), testCase.header)
 
 			failed := false
 

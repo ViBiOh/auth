@@ -8,12 +8,12 @@ import (
 	"github.com/ViBiOh/auth/pkg/ident/basic"
 	"github.com/ViBiOh/auth/pkg/ident/github"
 	"github.com/ViBiOh/auth/pkg/ident/handler"
-	httputils "github.com/ViBiOh/httputils/v2/pkg"
-	"github.com/ViBiOh/httputils/v2/pkg/alcotest"
-	"github.com/ViBiOh/httputils/v2/pkg/cors"
-	"github.com/ViBiOh/httputils/v2/pkg/logger"
-	"github.com/ViBiOh/httputils/v2/pkg/owasp"
-	"github.com/ViBiOh/httputils/v2/pkg/prometheus"
+	httputils "github.com/ViBiOh/httputils/v3/pkg"
+	"github.com/ViBiOh/httputils/v3/pkg/alcotest"
+	"github.com/ViBiOh/httputils/v3/pkg/cors"
+	"github.com/ViBiOh/httputils/v3/pkg/logger"
+	"github.com/ViBiOh/httputils/v3/pkg/owasp"
+	"github.com/ViBiOh/httputils/v3/pkg/prometheus"
 )
 
 func main() {

@@ -7,10 +7,9 @@ import (
 	"strings"
 
 	"github.com/ViBiOh/auth/pkg/ident"
-	"github.com/ViBiOh/httputils/v2/pkg/errors"
-	"github.com/ViBiOh/httputils/v2/pkg/httperror"
-	"github.com/ViBiOh/httputils/v2/pkg/logger"
-	"github.com/ViBiOh/httputils/v2/pkg/tools"
+	"github.com/ViBiOh/httputils/v3/pkg/flags"
+	"github.com/ViBiOh/httputils/v3/pkg/httperror"
+	"github.com/ViBiOh/httputils/v3/pkg/logger"
 )
 
 const (
@@ -34,8 +33,8 @@ type App struct {
 // Flags adds flags for configuring package
 func Flags(fs *flag.FlagSet, prefix string) Config {
 	return Config{
-		cookieDomain: tools.NewFlag(prefix, "auth").Name("CookieDomain").Default("").Label("Cookie Domain to Store Authentification").ToString(fs),
-		redirect:     tools.NewFlag(prefix, "auth").Name("AuthRedirect").Default("").Label("Redirect URL on Auth Success").ToString(fs),
+		cookieDomain: flags.New(prefix, "auth").Name("CookieDomain").Default("").Label("Cookie Domain to Store Authentification").ToString(fs),
+		redirect:     flags.New(prefix, "auth").Name("AuthRedirect").Default("").Label("Redirect URL on Auth Success").ToString(fs),
 	}
 }
 
@@ -62,7 +61,7 @@ func (a App) Handler() http.Handler {
 		switch r.Method {
 		case http.MethodOptions:
 			if _, err := w.Write(nil); err != nil {
-				httperror.InternalServerError(w, errors.WithStack(err))
+				httperror.InternalServerError(w, err)
 				return
 			}
 			break
