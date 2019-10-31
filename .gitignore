@@ -1,6 +1,6 @@
 # Golang
 bin/
+release/
 coverage.*
 
-# Docker
 cacert.pem
