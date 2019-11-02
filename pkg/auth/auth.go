@@ -171,16 +171,16 @@ func (a app) isAuthenticatedByAuth(ctx context.Context, authContent string) (*mo
 		headers := http.Header{}
 		headers.Set(authorizationHeader, authContent)
 
-		body, status, _, err := request.Get(ctx, fmt.Sprintf("%s/user", a.URL), headers)
+		resp, err := request.Get(ctx, fmt.Sprintf("%s/user", a.URL), headers)
 		if err != nil {
-			if status == http.StatusUnauthorized {
+			if resp != nil && resp.StatusCode == http.StatusUnauthorized {
 				return nil, ident.ErrEmptyAuth
 			}
 
 			return nil, fmt.Errorf("authentication failed: %s", err)
 		}
 
-		userBytes, err := request.ReadContent(body)
+		userBytes, err := request.ReadBodyResponse(resp)
 		if err != nil {
 			return nil, err
 		}
