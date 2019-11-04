@@ -171,7 +171,7 @@ func (a app) isAuthenticatedByAuth(ctx context.Context, authContent string) (*mo
 		headers := http.Header{}
 		headers.Set(authorizationHeader, authContent)
 
-		resp, err := request.Get(ctx, fmt.Sprintf("%s/user", a.URL), headers)
+		resp, err := request.New().Get(fmt.Sprintf("%s/user", a.URL)).Header(authorizationHeader, authContent).Send(ctx, nil)
 		if err != nil {
 			if resp != nil && resp.StatusCode == http.StatusUnauthorized {
 				return nil, ident.ErrEmptyAuth
