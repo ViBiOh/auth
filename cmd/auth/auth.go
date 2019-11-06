@@ -39,12 +39,12 @@ func main() {
 
 	basicApp, err := basic.New(basicConfig, nil)
 	if err != nil {
-		logger.Warn("%#v", err)
+		logger.Warn("%s", err)
 	}
 
 	githubApp, err := github.New(githubConfig)
 	if err != nil {
-		logger.Warn("%#v", err)
+		logger.Warn("%s", err)
 	}
 
 	identApp := handler.New(handlerConfig, []ident.Auth{basicApp, githubApp})

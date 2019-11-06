@@ -57,7 +57,7 @@ func TestLoadUsers(t *testing.T) {
 			}
 
 			if failed {
-				t.Errorf("LoadUsers(%#v) = (%#v, %#v), want (%#v, %#v)", testCase.input, result, err, testCase.want, testCase.wantErr)
+				t.Errorf("LoadUsers() = (%#v, %s), want (%#v, %s)", result, err, testCase.want, testCase.wantErr)
 			}
 		})
 	}
@@ -105,7 +105,7 @@ func TestNew(t *testing.T) {
 			}
 
 			if failed {
-				t.Errorf("New(%#v) = (%#v, %#v), want (%#v, %#v)", testCase.users, authClient.users, err, testCase.want, testCase.wantErr)
+				t.Errorf("New() = (%#v, %s), want (%#v, %s)", authClient.users, err, testCase.want, testCase.wantErr)
 			}
 		})
 	}
@@ -191,7 +191,7 @@ func TestGetUser(t *testing.T) {
 			}
 
 			if failed {
-				t.Errorf("GetUser(%#v) = (%#v, %#v) want (%#v, %#v)", testCase.auth, result, err, testCase.want, testCase.wantErr)
+				t.Errorf("GetUser() = (%#v, %s) want (%#v, %s)", result, err, testCase.want, testCase.wantErr)
 			}
 		})
 	}

@@ -133,7 +133,7 @@ func TestGetUser(t *testing.T) {
 			}
 
 			if failed {
-				t.Errorf("GetUser(%#v) = (%#v, %#v), want (%#v, %#v)", testCase.header, result, err, testCase.want, testCase.wantErr)
+				t.Errorf("GetUser() = (%#v, %s), want (%#v, %s)", result, err, testCase.want, testCase.wantErr)
 			}
 		})
 	}
@@ -207,7 +207,7 @@ func TestLogin(t *testing.T) {
 			}
 
 			if failed {
-				t.Errorf("Login(%#v) = (%#v, %#v), want (%#v, %#v)", testCase.request, result, err, testCase.want, testCase.wantErr)
+				t.Errorf("Login() = (%#v, %s), want (%#v, %s)", result, err, testCase.want, testCase.wantErr)
 			}
 		})
 	}
