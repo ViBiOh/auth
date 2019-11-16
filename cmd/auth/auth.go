@@ -8,9 +8,9 @@ import (
 	"github.com/ViBiOh/auth/pkg/ident/basic"
 	"github.com/ViBiOh/auth/pkg/ident/github"
 	"github.com/ViBiOh/auth/pkg/ident/handler"
-	httputils "github.com/ViBiOh/httputils/v3/pkg"
 	"github.com/ViBiOh/httputils/v3/pkg/alcotest"
 	"github.com/ViBiOh/httputils/v3/pkg/cors"
+	"github.com/ViBiOh/httputils/v3/pkg/httputils"
 	"github.com/ViBiOh/httputils/v3/pkg/logger"
 	"github.com/ViBiOh/httputils/v3/pkg/owasp"
 	"github.com/ViBiOh/httputils/v3/pkg/prometheus"
@@ -33,10 +33,6 @@ func main() {
 
 	alcotest.DoAndExit(alcotestConfig)
 
-	prometheusApp := prometheus.New(prometheusConfig)
-	owaspApp := owasp.New(owaspConfig)
-	corsApp := cors.New(corsConfig)
-
 	basicApp, err := basic.New(basicConfig, nil)
 	if err != nil {
 		logger.Warn("%s", err)
@@ -47,8 +43,9 @@ func main() {
 		logger.Warn("%s", err)
 	}
 
-	identApp := handler.New(handlerConfig, []ident.Auth{basicApp, githubApp})
-	identHandler := httputils.ChainMiddlewares(identApp.Handler(), prometheusApp, owaspApp, corsApp)
-
-	httputils.New(serverConfig).ListenAndServe(identHandler, httputils.HealthHandler(nil), nil)
+	server := httputils.New(serverConfig)
+	server.Middleware(prometheus.New(prometheusConfig))
+	server.Middleware(owasp.New(owaspConfig))
+	server.Middleware(cors.New(corsConfig))
+	server.ListenServeWait(handler.New(handlerConfig, []ident.Auth{basicApp, githubApp}).Handler())
 }

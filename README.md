@@ -83,7 +83,7 @@ Usage of auth:
   -url string
         [alcotest] URL to check {AUTH_URL}
   -userAgent string
-        [alcotest] User-Agent for check {AUTH_USER_AGENT} (default "Golang alcotest")
+        [alcotest] User-Agent for check {AUTH_USER_AGENT} (default "Alcotest")
 ```
 
 Password encrypter accepts one argument, the password, and output the bcrypted one.
