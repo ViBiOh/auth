@@ -33,7 +33,7 @@ func TestLoadUsers(t *testing.T) {
 		},
 		{
 			"should handle valid format",
-			"anc:admin:admin,1:guest:guest",
+			"12:admin:admin,1:guest:guest",
 			2,
 			nil,
 		},
@@ -134,7 +134,7 @@ func TestGetName(t *testing.T) {
 func TestGetUser(t *testing.T) {
 	password, _ := bcrypt.GenerateFromPassword([]byte("password"), 12)
 	authClient := App{}
-	authClient.users = map[string]*basicUser{"admin": {model.NewUser("0", "admin", "", ""), password}}
+	authClient.users = map[string]*basicUser{"admin": {model.NewUser(0, "admin", "", ""), password}}
 
 	var cases = []struct {
 		intention string
@@ -169,7 +169,7 @@ func TestGetUser(t *testing.T) {
 		{
 			"should handle valid auth",
 			base64.StdEncoding.EncodeToString([]byte("AdMiN:password")),
-			&model.User{ID: "0", Username: "admin"},
+			&model.User{ID: 0, Username: "admin"},
 			nil,
 		},
 	}

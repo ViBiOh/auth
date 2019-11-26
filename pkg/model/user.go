@@ -10,19 +10,19 @@ var _ crud.Item = &User{}
 
 // User of the app
 type User struct {
-	ID       string `json:"id"`
+	ID       uint64 `json:"id"`
 	Username string `json:"username"`
 	Email    string `json:"email"`
 	profiles string
 }
 
 // NewUser creates new user with given id, username and profiles
-func NewUser(id, username, email, profiles string) *User {
+func NewUser(id uint64, username, email, profiles string) *User {
 	return &User{ID: id, Username: username, Email: email, profiles: profiles}
 }
 
 // SetID defines new ID
-func (u *User) SetID(id string) {
+func (u *User) SetID(id uint64) {
 	u.ID = id
 }
 

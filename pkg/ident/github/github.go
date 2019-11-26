@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -15,10 +14,8 @@ import (
 	"github.com/ViBiOh/auth/pkg/ident"
 	"github.com/ViBiOh/auth/pkg/model"
 	"github.com/ViBiOh/httputils/v3/pkg/flags"
-	"github.com/ViBiOh/httputils/v3/pkg/httperror"
 	"github.com/ViBiOh/httputils/v3/pkg/logger"
 	"github.com/ViBiOh/httputils/v3/pkg/request"
-	"github.com/ViBiOh/httputils/v3/pkg/uuid"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
 )
@@ -151,7 +148,7 @@ func (a *App) GetUser(ctx context.Context, header string) (*model.User, error) {
 		return nil, err
 	}
 
-	githubUser := &model.User{ID: strconv.Itoa(user.ID), Username: user.Login, Email: a.getUserEmail(ctx, header)}
+	githubUser := &model.User{ID: uint64(user.ID), Username: user.Login, Email: a.getUserEmail(ctx, header)}
 	a.usersCache.Store(header, githubUser, userCacheDuration)
 
 	return githubUser, nil
@@ -159,11 +156,7 @@ func (a *App) GetUser(ctx context.Context, header string) (*model.User, error) {
 
 // Redirect redirects user to GitHub endpoint
 func (a *App) Redirect(w http.ResponseWriter, r *http.Request) {
-	state, err := uuid.New()
-	if err != nil {
-		httperror.InternalServerError(w, err)
-		return
-	}
+	state := string(time.Now().Nanosecond())
 
 	a.states.Store(state, true)
 	http.Redirect(w, r, a.oauthConf.AuthCodeURL(state), http.StatusFound)
