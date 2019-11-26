@@ -2,20 +2,16 @@ package auth
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"flag"
-	"fmt"
 	"net/http"
 	"strings"
 
-	"github.com/ViBiOh/auth/pkg/cookie"
 	"github.com/ViBiOh/auth/pkg/ident"
 	"github.com/ViBiOh/auth/pkg/model"
 	"github.com/ViBiOh/httputils/v3/pkg/flags"
 	"github.com/ViBiOh/httputils/v3/pkg/httperror"
-	http_model "github.com/ViBiOh/httputils/v3/pkg/model"
-	"github.com/ViBiOh/httputils/v3/pkg/request"
+	httpmodel "github.com/ViBiOh/httputils/v3/pkg/model"
 )
 
 type key int
@@ -29,35 +25,29 @@ var (
 	// ErrForbidden occurs when user is identified but not authorized
 	ErrForbidden = errors.New("forbidden access")
 
-	_ http_model.Middleware = &app{}
+	_ httpmodel.Middleware = &app{}
 )
 
 // App of package
 type App interface {
 	Handler(http.Handler) http.Handler
-	IsAuthenticated(*http.Request) (*model.User, error)
+	IsAuthenticated(*http.Request) (model.User, error)
 }
 
 // Config of package
 type Config struct {
 	disable *bool
-	url     *string
-	users   *string
 }
 
 type app struct {
-	disabled     bool
-	identService ident.Service
-	URL          string
-	users        map[string]string
+	disabled bool
+	provider ident.Provider
 }
 
 // Flags adds flags for configuring package
 func Flags(fs *flag.FlagSet, prefix string) Config {
 	return Config{
 		disable: flags.New(prefix, "auth").Name("Disable").Default(false).Label("Disable auth").ToBool(fs),
-		url:     flags.New(prefix, "auth").Name("Url").Default("").Label("Auth URL, if remote").ToString(fs),
-		users:   flags.New(prefix, "auth").Name("Users").Default("").Label("Allowed users and profiles (e.g. user:profile1|profile2,user2:profile3). Empty allow any identified user").ToString(fs),
 	}
 }
 
@@ -65,68 +55,30 @@ func Flags(fs *flag.FlagSet, prefix string) Config {
 func New(config Config) App {
 	return &app{
 		disabled: *config.disable,
-		URL:      strings.TrimSpace(*config.url),
-		users:    loadUsersProfiles(*config.users),
 	}
 }
 
 // NewService creates new App from Flags' config with service
-func NewService(config Config, identService ident.Service) App {
+func NewService(config Config, provider ident.Provider) App {
 	return &app{
-		disabled:     *config.disable,
-		identService: identService,
-		users:        loadUsersProfiles(*config.users),
+		disabled: *config.disable,
+		provider: provider,
 	}
-}
-
-func loadUsersProfiles(usersAndProfiles string) map[string]string {
-	if usersAndProfiles == "" {
-		return nil
-	}
-
-	users := make(map[string]string, 0)
-
-	for _, user := range strings.Split(usersAndProfiles, ",") {
-		username := user
-		profiles := ""
-
-		if parts := strings.Split(user, ":"); len(parts) == 2 {
-			username = parts[0]
-			profiles = parts[1]
-		}
-
-		users[strings.ToLower(username)] = profiles
-	}
-
-	return users
 }
 
 // UserFromContext retrieves user from context
-func UserFromContext(ctx context.Context) *model.User {
+func UserFromContext(ctx context.Context) model.User {
 	rawUser := ctx.Value(ctxUserName)
 	if rawUser == nil {
-		return nil
+		return model.NoneUser
+
 	}
 
-	if user, ok := rawUser.(*model.User); ok {
+	if user, ok := rawUser.(model.User); ok {
 		return user
 	}
-	return nil
-}
+	return model.NoneUser
 
-// ReadAuthContent from Header or Cookie
-func ReadAuthContent(r *http.Request) string {
-	authContent := strings.TrimSpace(r.Header.Get(authorizationHeader))
-	if authContent != "" {
-		return authContent
-	}
-
-	return cookie.GetCookieValue(r, "auth")
-}
-
-// IsAuthenticated check if request has correct headers for authentification
-func (a app) IsAuthenticated(r *http.Request) (*model.User, error) {
-	return a.isAuthenticatedByAuth(r.Context(), ReadAuthContent(r))
 }
 
 // Handler wrap next authenticated handler
@@ -147,70 +99,24 @@ func (a app) Handler(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), ctxUserName, user)
-		next.ServeHTTP(w, r.WithContext(ctx))
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ctxUserName, user)))
 	})
 }
 
-func (a app) isAuthenticatedByAuth(ctx context.Context, authContent string) (*model.User, error) {
-	var retrievedUser *model.User
-	var err error
-
-	if a.identService == nil && a.URL == "" {
-		return nil, errors.New("no authentification target configured")
+// IsAuthenticated check if request has correct headers for authentification
+func (a app) IsAuthenticated(r *http.Request) (model.User, error) {
+	authContent := strings.TrimSpace(r.Header.Get(authorizationHeader))
+	if len(strings.TrimSpace(authContent)) == 0 {
+		return model.NoneUser, ident.ErrEmptyAuth
 	}
 
-	if a.identService != nil {
-		retrievedUser, err = a.identService.GetUser(ctx, authContent)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	if a.URL != "" {
-		headers := http.Header{}
-		headers.Set(authorizationHeader, authContent)
-
-		resp, err := request.New().Get(fmt.Sprintf("%s/user", a.URL)).Header(authorizationHeader, authContent).Send(ctx, nil)
-		if err != nil {
-			if resp != nil && resp.StatusCode == http.StatusUnauthorized {
-				return nil, ident.ErrEmptyAuth
-			}
-
-			return nil, fmt.Errorf("authentication failed: %s", err)
-		}
-
-		userBytes, err := request.ReadBodyResponse(resp)
-		if err != nil {
-			return nil, err
-		}
-
-		retrievedUser = &model.User{}
-		if err := json.Unmarshal(userBytes, retrievedUser); err != nil {
-			return nil, err
-		}
-	}
-
-	username := strings.ToLower(retrievedUser.Username)
-	if a.users == nil {
-		return model.NewUser(retrievedUser.ID, username, retrievedUser.Email, ""), nil
-	} else if profiles, ok := a.users[username]; ok {
-		return model.NewUser(retrievedUser.ID, username, retrievedUser.Email, profiles), nil
-	}
-
-	return nil, ErrForbidden
+	return a.provider.GetUser(r.Context(), authContent)
 }
 
 func (a app) onHandlerFail(w http.ResponseWriter, r *http.Request, err error) {
-	if err == ident.ErrEmptyAuth && a.identService != nil {
-		a.identService.OnError(w, r, err)
-		return
-	}
-
 	if err == ErrForbidden {
 		httperror.Forbidden(w)
-		return
+	} else {
+		a.provider.OnError(w, r, err)
 	}
-
-	httperror.Unauthorized(w, err)
 }

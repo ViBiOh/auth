@@ -8,17 +8,23 @@ import (
 
 var _ crud.Item = &User{}
 
+// NoneUser is a dummy user
+var NoneUser User
+
 // User of the app
 type User struct {
 	ID       uint64 `json:"id"`
 	Username string `json:"username"`
-	Email    string `json:"email"`
 	profiles string
 }
 
 // NewUser creates new user with given id, username and profiles
-func NewUser(id uint64, username, email, profiles string) *User {
-	return &User{ID: id, Username: username, Email: email, profiles: profiles}
+func NewUser(id uint64, username, profiles string) User {
+	return User{
+		ID:       id,
+		Username: username,
+		profiles: profiles,
+	}
 }
 
 // SetID defines new ID

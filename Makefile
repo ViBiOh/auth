@@ -5,13 +5,13 @@ ifneq ("$(wildcard .env)","")
 	export
 endif
 
-APP_NAME = auth
+APP_NAME = bcrypt
 PACKAGES ?= ./...
 GO_FILES ?= $(shell find . -name "*.go")
 
 BINARY_PATH=bin/$(APP_NAME)
 
-MAIN_SOURCE = cmd/auth/auth.go
+MAIN_SOURCE = cmd/bcrypt/bcrypt.go
 MAIN_RUNNER = go run $(MAIN_SOURCE)
 ifeq ($(DEBUG), true)
 	MAIN_RUNNER = dlv debug $(MAIN_SOURCE) --
@@ -78,5 +78,4 @@ build:
 ## run: Run app
 .PHONY: run
 run:
-	$(MAIN_RUNNER) \
-		-basicUsers "1:admin:$(go run cmd/bcrypt/bcrypt.go admin)"
+	$(MAIN_RUNNER) "password"
