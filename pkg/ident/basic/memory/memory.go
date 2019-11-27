@@ -13,16 +13,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var _ basic.UserLogin = &app{}
+var _ basic.UserLogin = &App{}
 
 type basicUser struct {
 	model.User
 	password []byte
-}
-
-// App of package
-type App interface {
-	Login(string, string) (model.User, error)
 }
 
 // Config of package
@@ -30,7 +25,8 @@ type Config struct {
 	users *string
 }
 
-type app struct {
+// App of package
+type App struct {
 	users map[string]basicUser
 }
 
@@ -45,15 +41,16 @@ func Flags(fs *flag.FlagSet, prefix string) Config {
 func New(config Config) (App, error) {
 	users, err := loadInMemoryUsers(strings.TrimSpace(*config.users))
 	if err != nil {
-		return nil, err
+		return App{}, err
 	}
 
-	return &app{
+	return App{
 		users: users,
 	}, nil
 }
 
-func (a app) Login(login, password string) (model.User, error) {
+// Login user with its credentials
+func (a App) Login(login, password string) (model.User, error) {
 	user, ok := a.users[login]
 	if !ok {
 		return model.NoneUser, ident.ErrInvalidCredentials
@@ -66,17 +63,17 @@ func (a app) Login(login, password string) (model.User, error) {
 	return user.User, nil
 }
 
-func loadInMemoryUsers(authUsers string) (map[string]basicUser, error) {
-	if authUsers == "" {
+func loadInMemoryUsers(identUsers string) (map[string]basicUser, error) {
+	if identUsers == "" {
 		return nil, nil
 	}
 
 	users := make(map[string]basicUser)
 
-	for _, authUser := range strings.Split(authUsers, ",") {
-		parts := strings.Split(authUser, ":")
+	for _, identUser := range strings.Split(identUsers, ",") {
+		parts := strings.Split(identUser, ":")
 		if len(parts) != 3 {
-			return nil, fmt.Errorf("invalid format of user for %s", authUser)
+			return nil, fmt.Errorf("invalid format for user login `%s`", identUser)
 		}
 
 		userID, err := strconv.ParseUint(parts[0], 10, 64)

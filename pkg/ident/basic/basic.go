@@ -18,6 +18,7 @@ var _ ident.Provider = &App{}
 
 // UserLogin login user based on its credentials
 type UserLogin interface {
+	// Login user with its credentials
 	Login(string, string) (model.User, error)
 }
 

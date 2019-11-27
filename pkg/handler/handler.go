@@ -37,13 +37,13 @@ type App interface {
 }
 
 type app struct {
-	providers []ident.Provider
+	identProviders []ident.Provider
 }
 
 // New creates new App for given providers
-func New(providers []ident.Provider) App {
+func New(identProviders []ident.Provider) App {
 	return &app{
-		providers: providers,
+		identProviders: identProviders,
 	}
 }
 
@@ -64,7 +64,7 @@ func UserFromContext(ctx context.Context) model.User {
 
 // Handler wrap next authenticated handler
 func (a app) Handler(next http.Handler) http.Handler {
-	if len(a.providers) == 0 {
+	if len(a.identProviders) == 0 {
 		return next
 	}
 
@@ -94,7 +94,7 @@ func (a app) IsAuthenticated(r *http.Request) (ident.Provider, model.User, error
 		return nil, model.NoneUser, ErrEmptyAuth
 	}
 
-	for _, provider := range a.providers {
+	for _, provider := range a.identProviders {
 		if !provider.IsMatching(authContent) {
 			continue
 		}
