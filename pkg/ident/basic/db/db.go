@@ -7,7 +7,7 @@ import (
 	"github.com/ViBiOh/auth/pkg/model"
 )
 
-var _ basic.UserLogin = &app{}
+var _ basic.UserLogin = App{}
 
 const readUserQuery = `
 SELECT
@@ -21,22 +21,19 @@ WHERE
 `
 
 // App of package
-type App interface {
-	Login(string, string) (model.User, error)
-}
-
-type app struct {
+type App struct {
 	db *sql.DB
 }
 
 // New creates new App from dependencies
 func New(db *sql.DB) App {
-	return &app{
+	return App{
 		db: db,
 	}
 }
 
-func (a app) Login(login, password string) (model.User, error) {
+// Login user with its credentials
+func (a App) Login(login, password string) (model.User, error) {
 	var (
 		id      uint64
 		dbLogin string
@@ -50,5 +47,5 @@ func (a app) Login(login, password string) (model.User, error) {
 		return model.NoneUser, err
 	}
 
-	return model.NewUser(id, dbLogin, ""), nil
+	return model.NewUser(id, dbLogin), nil
 }

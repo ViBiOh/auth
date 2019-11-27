@@ -33,16 +33,19 @@ var (
 // App of package
 type App interface {
 	Handler(http.Handler) http.Handler
-	IsAuthenticated(*http.Request) (ident.Provider, model.User, error)
+	IsAuthenticated(*http.Request, string) (ident.Provider, model.User, error)
+	HasProfile(model.User, string) bool
 }
 
 type app struct {
+	authProvider   auth.Provider
 	identProviders []ident.Provider
 }
 
 // New creates new App for given providers
-func New(identProviders []ident.Provider) App {
+func New(authProvider auth.Provider, identProviders ...ident.Provider) App {
 	return &app{
+		authProvider:   authProvider,
 		identProviders: identProviders,
 	}
 }
@@ -74,7 +77,7 @@ func (a app) Handler(next http.Handler) http.Handler {
 			return
 		}
 
-		provider, user, err := a.IsAuthenticated(r)
+		provider, user, err := a.IsAuthenticated(r, "")
 		if err != nil {
 			onHandlerFail(w, r, err, provider)
 			return
@@ -88,7 +91,7 @@ func (a app) Handler(next http.Handler) http.Handler {
 }
 
 // IsAuthenticated check if request has correct headers for authentification
-func (a app) IsAuthenticated(r *http.Request) (ident.Provider, model.User, error) {
+func (a app) IsAuthenticated(r *http.Request, profile string) (ident.Provider, model.User, error) {
 	authContent := strings.TrimSpace(r.Header.Get(authorizationHeader))
 	if len(strings.TrimSpace(authContent)) == 0 {
 		return nil, model.NoneUser, ErrEmptyAuth
@@ -100,10 +103,22 @@ func (a app) IsAuthenticated(r *http.Request) (ident.Provider, model.User, error
 		}
 
 		user, err := provider.GetUser(authContent)
-		return provider, user, err
+		if err != nil {
+			return provider, user, err
+		}
+
+		if a.HasProfile(user, profile) {
+			return provider, user, nil
+		}
+		return provider, user, auth.ErrForbidden
 	}
 
 	return nil, model.NoneUser, ErrNoMatchingProvider
+}
+
+// HasProfile checks if User
+func (a app) HasProfile(user model.User, profile string) bool {
+	return a.authProvider.IsAuthorized(user, profile)
 }
 
 func onHandlerFail(w http.ResponseWriter, r *http.Request, err error, provider ident.Provider) {
