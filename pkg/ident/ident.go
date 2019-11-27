@@ -1,7 +1,6 @@
 package ident
 
 import (
-	"context"
 	"errors"
 	"net/http"
 
@@ -9,9 +8,6 @@ import (
 )
 
 var (
-	// ErrEmptyAuth occurs when authorization content is not found
-	ErrEmptyAuth = errors.New("empty authorization content")
-
 	// ErrMalformedAuth occurs when authorization content is malformed
 	ErrMalformedAuth = errors.New("malformed authorization content")
 
@@ -22,8 +18,14 @@ var (
 	ErrInvalidCredentials = errors.New("invalid credentials")
 )
 
-// Provider provide methods for dealing with identification
+// Provider provides methods for dealing with identification
 type Provider interface {
-	GetUser(context.Context, string) (model.User, error)
+	// IsMatching checks if header content match provider
+	IsMatching(string) bool
+
+	// GetUser returns User found in content header
+	GetUser(string) (model.User, error)
+
+	// OnError handles HTTP request when login fails
 	OnError(http.ResponseWriter, *http.Request, error)
 }

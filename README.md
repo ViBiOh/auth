@@ -9,14 +9,14 @@ Authentification for apps in microservices.
 
 # Getting Started
 
-You can use a simple username/password file for authentication.
+You can use a simple login/password file for authentication.
 
-## Basic Username/Password
+## Basic Login/Password
 
 Write user's credentials with the following format :
 
 ```bash
-[id]:[username]:[bcrypt password],[id2]:[username2]:[bcrypt password2]
+[id]:[login]:[bcrypt password],[id2]:[login2]:[bcrypt password2]
 ```
 
 You can generate bcrypted password using `go run cmd/bcrypt/bcrypt.go "password"`.

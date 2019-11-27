@@ -9,7 +9,7 @@ func TestNewUser(t *testing.T) {
 	var cases = []struct {
 		intention string
 		id        uint64
-		username  string
+		login     string
 		profiles  string
 		want      User
 	}{
@@ -18,13 +18,13 @@ func TestNewUser(t *testing.T) {
 			1,
 			"vibioh",
 			"admin|multi",
-			User{ID: 1, Username: "vibioh", profiles: "admin|multi"},
+			User{ID: 1, Login: "vibioh", profiles: "admin|multi"},
 		},
 	}
 
 	for _, testCase := range cases {
 		t.Run(testCase.intention, func(t *testing.T) {
-			if result := NewUser(testCase.id, testCase.username, testCase.profiles); !reflect.DeepEqual(result, testCase.want) {
+			if result := NewUser(testCase.id, testCase.login, testCase.profiles); !reflect.DeepEqual(result, testCase.want) {
 				t.Errorf("NewUser() = %#v, want %#v", result, testCase.want)
 			}
 		})

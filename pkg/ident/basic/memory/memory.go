@@ -1,21 +1,19 @@
 package memory
 
 import (
-	"context"
-	"encoding/base64"
-	"errors"
 	"flag"
 	"fmt"
-	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/ViBiOh/auth/pkg/ident"
+	"github.com/ViBiOh/auth/pkg/ident/basic"
 	"github.com/ViBiOh/auth/pkg/model"
-	"github.com/ViBiOh/httputils/pkg/httperror"
 	"github.com/ViBiOh/httputils/v3/pkg/flags"
 	"golang.org/x/crypto/bcrypt"
 )
+
+var _ basic.UserLogin = &app{}
 
 type basicUser struct {
 	model.User
@@ -24,7 +22,7 @@ type basicUser struct {
 
 // App of package
 type App interface {
-	GetUser(context.Context, string) (model.User, error)
+	Login(string, string) (model.User, error)
 }
 
 // Config of package
@@ -39,7 +37,7 @@ type app struct {
 // Flags adds flags for configuring package
 func Flags(fs *flag.FlagSet, prefix string) Config {
 	return Config{
-		users: flags.New(prefix, "basic").Name("Users").Default("").Label("Users in the form `id:username:password,id2:username2:password2`").ToString(fs),
+		users: flags.New(prefix, "basic").Name("Users").Default("").Label("Users in the form `id:login:password,id2:login2:password2`").ToString(fs),
 	}
 }
 
@@ -55,24 +53,8 @@ func New(config Config) (App, error) {
 	}, nil
 }
 
-// GetUser returns User associated to header
-func (a app) GetUser(ctx context.Context, header string) (model.User, error) {
-	data, err := base64.StdEncoding.DecodeString(header)
-	if err != nil {
-		return model.NoneUser, err
-	}
-
-	dataStr := string(data)
-
-	sepIndex := strings.Index(dataStr, ":")
-	if sepIndex < 0 {
-		return model.NoneUser, errors.New("invalid format for basic auth")
-	}
-
-	username := strings.ToLower(dataStr[:sepIndex])
-	password := dataStr[sepIndex+1:]
-
-	user, ok := a.users[username]
+func (a app) Login(login, password string) (model.User, error) {
+	user, ok := a.users[login]
 	if !ok {
 		return model.NoneUser, ident.ErrInvalidCredentials
 	}
@@ -82,12 +64,6 @@ func (a app) GetUser(ctx context.Context, header string) (model.User, error) {
 	}
 
 	return user.User, nil
-}
-
-// OnError handle action when login fails
-func (a app) OnError(w http.ResponseWriter, _ *http.Request, err error) {
-	w.Header().Add("WWW-Authenticate", "Basic charset=\"UTF-8\"")
-	httperror.Unauthorized(w, err)
 }
 
 func loadInMemoryUsers(authUsers string) (map[string]basicUser, error) {
@@ -110,12 +86,12 @@ func loadInMemoryUsers(authUsers string) (map[string]basicUser, error) {
 
 		user := basicUser{
 			User: model.User{
-				ID:       userID,
-				Username: strings.ToLower(parts[1]),
+				ID:    userID,
+				Login: strings.ToLower(parts[1]),
 			},
 			password: []byte(parts[2]),
 		}
-		users[strings.ToLower(user.Username)] = user
+		users[strings.ToLower(user.Login)] = user
 	}
 
 	return users, nil

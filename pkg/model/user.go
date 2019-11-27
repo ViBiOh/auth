@@ -14,15 +14,15 @@ var NoneUser User
 // User of the app
 type User struct {
 	ID       uint64 `json:"id"`
-	Username string `json:"username"`
+	Login    string `json:"login"`
 	profiles string
 }
 
-// NewUser creates new user with given id, username and profiles
-func NewUser(id uint64, username, profiles string) User {
+// NewUser creates new user with given id, login and profiles
+func NewUser(id uint64, login, profiles string) User {
 	return User{
 		ID:       id,
-		Username: username,
+		Login:    login,
 		profiles: profiles,
 	}
 }
