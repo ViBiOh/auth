@@ -4,10 +4,10 @@ import (
 	"flag"
 	"os"
 
-	auth "github.com/ViBiOh/auth/pkg/auth/memory"
-	"github.com/ViBiOh/auth/pkg/handler"
-	"github.com/ViBiOh/auth/pkg/ident/basic"
-	basicProvider "github.com/ViBiOh/auth/pkg/ident/basic/memory"
+	auth "github.com/ViBiOh/auth/v2/pkg/auth/memory"
+	"github.com/ViBiOh/auth/v2/pkg/handler"
+	"github.com/ViBiOh/auth/v2/pkg/ident/basic"
+	basicProvider "github.com/ViBiOh/auth/v2/pkg/ident/basic/memory"
 	"github.com/ViBiOh/httputils/v3/pkg/httputils"
 	"github.com/ViBiOh/httputils/v3/pkg/logger"
 )

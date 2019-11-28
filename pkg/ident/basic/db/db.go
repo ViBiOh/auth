@@ -3,9 +3,9 @@ package db
 import (
 	"database/sql"
 
-	"github.com/ViBiOh/auth/pkg/ident"
-	"github.com/ViBiOh/auth/pkg/ident/basic"
-	"github.com/ViBiOh/auth/pkg/model"
+	"github.com/ViBiOh/auth/v2/pkg/ident"
+	"github.com/ViBiOh/auth/v2/pkg/ident/basic"
+	"github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/httputils/v3/pkg/logger"
 )
 

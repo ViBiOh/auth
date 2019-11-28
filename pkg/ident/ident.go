@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/ViBiOh/auth/pkg/model"
+	"github.com/ViBiOh/auth/v2/pkg/model"
 )
 
 var (

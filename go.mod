@@ -1,4 +1,4 @@
-module github.com/ViBiOh/auth
+module github.com/ViBiOh/auth/v2
 
 go 1.13
 
