@@ -94,7 +94,7 @@ func (a app) Handler(next http.Handler) http.Handler {
 func (a app) IsAuthenticated(r *http.Request, profile string) (ident.Provider, model.User, error) {
 	authContent := strings.TrimSpace(r.Header.Get(authorizationHeader))
 	if len(strings.TrimSpace(authContent)) == 0 {
-		return nil, model.NoneUser, ErrEmptyAuth
+		return a.identProviders[0], model.NoneUser, ErrEmptyAuth
 	}
 
 	for _, provider := range a.identProviders {
@@ -123,9 +123,7 @@ func (a app) HasProfile(user model.User, profile string) bool {
 }
 
 func onHandlerFail(w http.ResponseWriter, r *http.Request, err error, provider ident.Provider) {
-	if err == ErrEmptyAuth {
-		httperror.Unauthorized(w, err)
-	} else if err == auth.ErrForbidden {
+	if err == auth.ErrForbidden {
 		httperror.Forbidden(w)
 	} else {
 		provider.OnError(w, r, err)
