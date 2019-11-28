@@ -5,7 +5,7 @@ import (
 
 	"github.com/ViBiOh/auth/pkg/auth"
 	"github.com/ViBiOh/auth/pkg/model"
-	"github.com/ViBiOh/httputils/pkg/logger"
+	"github.com/ViBiOh/httputils/v3/pkg/logger"
 )
 
 var _ auth.Provider = App{}

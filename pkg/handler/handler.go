@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"runtime"
 	"strings"
 
 	"github.com/ViBiOh/auth/pkg/auth"
@@ -107,8 +106,6 @@ func (a app) IsAuthenticated(r *http.Request, profile string) (ident.Provider, m
 		if err != nil {
 			return provider, user, err
 		}
-
-		runtime.Breakpoint()
 
 		if len(strings.TrimSpace(profile)) == 0 || a.HasProfile(user, profile) {
 			return provider, user, nil

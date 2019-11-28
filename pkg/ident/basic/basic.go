@@ -7,7 +7,7 @@ import (
 
 	"github.com/ViBiOh/auth/pkg/ident"
 	"github.com/ViBiOh/auth/pkg/model"
-	"github.com/ViBiOh/httputils/pkg/httperror"
+	"github.com/ViBiOh/httputils/v3/pkg/httperror"
 )
 
 const (
