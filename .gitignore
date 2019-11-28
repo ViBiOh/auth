@@ -6,4 +6,4 @@ bin/
 release/
 coverage.*
 
-cacert.pem
+.env

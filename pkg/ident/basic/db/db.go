@@ -3,8 +3,10 @@ package db
 import (
 	"database/sql"
 
+	"github.com/ViBiOh/auth/pkg/ident"
 	"github.com/ViBiOh/auth/pkg/ident/basic"
 	"github.com/ViBiOh/auth/pkg/model"
+	"github.com/ViBiOh/httputils/pkg/logger"
 )
 
 var _ basic.UserLogin = App{}
@@ -14,10 +16,21 @@ SELECT
   id,
   login
 FROM
-  "user"
+  login
 WHERE
   login = $1
-  AND password = crypt('$2', password)
+  AND password = crypt($2, password)
+`
+
+const insertUserQuery = `
+INSERT INTO login
+(
+  login,
+  password
+) VALUES (
+  $1,
+  crypt($2, gen_salt('bf',8))
+)
 `
 
 // App of package
@@ -41,10 +54,11 @@ func (a App) Login(login, password string) (model.User, error) {
 
 	if err := a.db.QueryRow(readUserQuery, login, password).Scan(&id, &dbLogin); err != nil {
 		if err == sql.ErrNoRows {
-			return model.NoneUser, nil
+			return model.NoneUser, ident.ErrInvalidCredentials
 		}
 
-		return model.NoneUser, err
+		logger.Error("%s", err.Error())
+		return model.NoneUser, ident.ErrUnavailableService
 	}
 
 	return model.NewUser(id, dbLogin), nil
