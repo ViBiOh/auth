@@ -17,6 +17,12 @@ ifeq ($(DEBUG), true)
 	MAIN_RUNNER = dlv debug $(MAIN_SOURCE) --
 endif
 
+DB_SOURCE = cmd/example_db/db.go
+DB_RUNNER = go run $(DB_SOURCE)
+ifeq ($(DEBUG), true)
+	DB_RUNNER = dlv debug $(DB_SOURCE) --
+endif
+
 .DEFAULT_GOAL := app
 
 ## help: Display list of commands
@@ -79,3 +85,8 @@ build:
 .PHONY: run
 run:
 	$(MAIN_RUNNER) "password"
+
+## run-db: Run db app
+.PHONY: run-db
+run-db:
+	$(DB_RUNNER)

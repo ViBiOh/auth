@@ -22,7 +22,7 @@ func scanUser(row RowScanner) (model.User, error) {
 	err := row.Scan(&id, &login)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return model.NoneUser, err
+			return model.NoneUser, nil
 		}
 
 		return model.NoneUser, err
@@ -61,12 +61,10 @@ SELECT
   login,
   count(*) OVER() AS full_count
 FROM
-  profile
-WHERE
-  id = $1
-ORDER BY $4
-LIMIT $2
-OFFSET $3
+  login
+ORDER BY $3
+LIMIT $1
+OFFSET $2
 `
 
 func (a app) list(page, pageSize uint, sortKey string, sortAsc bool) ([]model.User, uint, error) {
@@ -104,7 +102,7 @@ SELECT
   id,
   login
 FROM
-  profile
+  login
 WHERE
   id = $1
 `
@@ -117,11 +115,13 @@ func (a app) get(id uint64) (model.User, error) {
 
 const insertQuery = `
 INSERT INTO
-  profile
+  login
 (
   login,
+  password
 ) VALUES (
-  $1
+  $1,
+  crypt($2, gen_salt('bf',8))
 )
 `
 
@@ -137,7 +137,7 @@ func (a app) create(o model.User, tx *sql.Tx) (id uint64, err error) {
 		}()
 	}
 
-	result, insertErr := usedTx.Exec(insertQuery, o.Login)
+	result, insertErr := usedTx.Exec(insertQuery, o.Login, o.Password)
 	if insertErr != nil {
 		err = insertErr
 		return
@@ -156,7 +156,7 @@ func (a app) create(o model.User, tx *sql.Tx) (id uint64, err error) {
 
 const updateQuery = `
 UPDATE
-  profile
+  login
 SET
   login = $2
 WHERE
@@ -182,7 +182,7 @@ func (a app) update(o model.User, tx *sql.Tx) (err error) {
 
 const deleteQuery = `
 DELETE FROM
-  profile
+  login
 WHERE
   id = $1
 `

@@ -11,8 +11,9 @@ var NoneUser User
 
 // User of the app
 type User struct {
-	ID    uint64 `json:"id"`
-	Login string `json:"login"`
+	ID       uint64 `json:"id"`
+	Login    string `json:"login"`
+	Password string `json:"-"`
 }
 
 // NewUser creates new user with given id, login and profiles
@@ -26,4 +27,11 @@ func NewUser(id uint64, login string) User {
 // SetID defines new ID
 func (u *User) SetID(id uint64) {
 	u.ID = id
+}
+
+// SetPassword defines new password
+func (u *User) SetPassword(password string) *User {
+	u.Password = password
+
+	return u
 }

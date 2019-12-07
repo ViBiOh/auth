@@ -22,17 +22,6 @@ WHERE
   AND password = crypt($2, password)
 `
 
-const insertUserQuery = `
-INSERT INTO login
-(
-  login,
-  password
-) VALUES (
-  $1,
-  crypt($2, gen_salt('bf',8))
-)
-`
-
 // App of package
 type App struct {
 	db *sql.DB
