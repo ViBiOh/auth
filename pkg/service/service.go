@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	_ crud.ItemService = &app{}
+	_ crud.Service = &app{}
 
 	// ErrUnknownItemType occurs when item is unknown
 	ErrUnknownItemType = errors.New("unknown item type")
@@ -22,6 +22,7 @@ var (
 // App of package
 type App interface {
 	Unmarsall([]byte) (crud.Item, error)
+	Check(crud.Item) []error
 	List(ctx context.Context, page, pageSize uint, sortKey string, sortDesc bool, filters map[string][]string) ([]crud.Item, uint, error)
 	Get(ctx context.Context, ID uint64) (crud.Item, error)
 	Create(ctx context.Context, o crud.Item) (crud.Item, error)
@@ -80,10 +81,6 @@ func (a app) Get(ctx context.Context, ID uint64) (crud.Item, error) {
 func (a app) Create(ctx context.Context, o crud.Item) (crud.Item, error) {
 	user := o.(*model.User)
 
-	if err := a.check(*user); err != nil {
-		return nil, err
-	}
-
 	id, err := a.create(*user, nil)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create: %w", err)
@@ -97,10 +94,6 @@ func (a app) Create(ctx context.Context, o crud.Item) (crud.Item, error) {
 // Update User
 func (a app) Update(ctx context.Context, o crud.Item) (crud.Item, error) {
 	user := o.(*model.User)
-
-	if err := a.check(*user); err != nil {
-		return nil, err
-	}
 
 	if err := a.update(*user, nil); err != nil {
 		return nil, fmt.Errorf("unable to update: %w", err)
@@ -118,10 +111,13 @@ func (a app) Delete(ctx context.Context, o crud.Item) (err error) {
 	return
 }
 
-func (a app) check(o model.User) error {
-	if strings.TrimSpace(o.Login) == "" {
-		return fmt.Errorf("name is required: %w", crud.ErrInvalid)
+func (a app) Check(o crud.Item) []error {
+	user := o.(*model.User)
+	errors := make([]error, 0)
+
+	if strings.TrimSpace(user.Login) == "" {
+		errors = append(errors, fmt.Errorf("name is required: %w", crud.ErrInvalid))
 	}
 
-	return nil
+	return errors
 }

@@ -34,7 +34,8 @@ func main() {
 	basicProvider := basic.New(basicApp)
 	handlerApp := handler.New(authApp, basicProvider)
 
-	crudHandler := crud.New(crudConfig, service.New(appDB))
+	crudHandler, err := crud.New(crudConfig, service.New(appDB))
+	logger.Fatal(err)
 
 	server := httputils.New(serverConfig)
 	server.Middleware(handlerApp)
