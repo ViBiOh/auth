@@ -55,14 +55,12 @@ func UserFromContext(ctx context.Context) model.User {
 	rawUser := ctx.Value(ctxUserKey)
 	if rawUser == nil {
 		return model.NoneUser
-
 	}
 
 	if user, ok := rawUser.(model.User); ok {
 		return user
 	}
 	return model.NoneUser
-
 }
 
 // Handler wrap next authenticated handler
