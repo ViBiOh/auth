@@ -18,13 +18,13 @@ var _ crud.Service = &app{}
 
 // App of package
 type App interface {
-	Unmarsall(data []byte) (crud.Item, error)
-	Check(old, new crud.Item) []error
-	List(ctx context.Context, page, pageSize uint, sortKey string, sortDesc bool, filters map[string][]string) ([]crud.Item, uint, error)
-	Get(ctx context.Context, ID uint64) (crud.Item, error)
-	Create(ctx context.Context, o crud.Item) (crud.Item, uint64, error)
-	Update(ctx context.Context, o crud.Item) (crud.Item, error)
-	Delete(ctx context.Context, o crud.Item) error
+	Unmarsall(data []byte) (interface{}, error)
+	Check(old, new interface{}) []error
+	List(ctx context.Context, page, pageSize uint, sortKey string, sortDesc bool, filters map[string][]string) ([]interface{}, uint, error)
+	Get(ctx context.Context, ID uint64) (interface{}, error)
+	Create(ctx context.Context, o interface{}) (interface{}, error)
+	Update(ctx context.Context, o interface{}) (interface{}, error)
+	Delete(ctx context.Context, o interface{}) error
 }
 
 type app struct {
@@ -41,18 +41,18 @@ func New(db *sql.DB, auth auth.Provider) App {
 }
 
 // Unmarsall User
-func (a app) Unmarsall(data []byte) (crud.Item, error) {
+func (a app) Unmarsall(data []byte) (interface{}, error) {
 	var user model.User
 
 	if err := json.Unmarshal(data, &user); err != nil {
 		return nil, err
 	}
 
-	return &user, nil
+	return user, nil
 }
 
 // List Users
-func (a app) List(ctx context.Context, page, pageSize uint, sortKey string, sortAsc bool, filters map[string][]string) ([]crud.Item, uint, error) {
+func (a app) List(ctx context.Context, page, pageSize uint, sortKey string, sortAsc bool, filters map[string][]string) ([]interface{}, uint, error) {
 	if err := a.checkAdminOrSelfContext(ctx, 0); err != nil {
 		return nil, 0, err
 	}
@@ -62,16 +62,16 @@ func (a app) List(ctx context.Context, page, pageSize uint, sortKey string, sort
 		return nil, 0, fmt.Errorf("unable to list: %w", err)
 	}
 
-	itemsList := make([]crud.Item, len(list))
+	itemsList := make([]interface{}, len(list))
 	for index, item := range list {
-		itemsList[index] = &item
+		itemsList[index] = item
 	}
 
 	return itemsList, total, nil
 }
 
 // Get User
-func (a app) Get(ctx context.Context, ID uint64) (crud.Item, error) {
+func (a app) Get(ctx context.Context, ID uint64) (interface{}, error) {
 	if err := a.checkAdminOrSelfContext(ctx, ID); err != nil {
 		return nil, err
 	}
@@ -88,24 +88,28 @@ func (a app) Get(ctx context.Context, ID uint64) (crud.Item, error) {
 }
 
 // Create User
-func (a app) Create(ctx context.Context, o crud.Item) (crud.Item, uint64, error) {
-	id, err := a.create(*o.(*model.User), nil)
+func (a app) Create(ctx context.Context, o interface{}) (interface{}, error) {
+	user := o.(model.User)
+
+	id, err := a.create(user, nil)
 	if err != nil {
-		return nil, 0, fmt.Errorf("unable to create: %w", err)
+		return model.NoneUser, fmt.Errorf("unable to create: %w", err)
 	}
 
-	return o, id, nil
+	user.ID = id
+
+	return user, nil
 }
 
 // Update User
-func (a app) Update(ctx context.Context, o crud.Item) (crud.Item, error) {
-	user := o.(*model.User)
+func (a app) Update(ctx context.Context, o interface{}) (interface{}, error) {
+	user := o.(model.User)
 
 	if err := a.checkAdminOrSelfContext(ctx, user.ID); err != nil {
 		return nil, err
 	}
 
-	if err := a.update(*user, nil); err != nil {
+	if err := a.update(user, nil); err != nil {
 		return nil, fmt.Errorf("unable to update: %w", err)
 	}
 
@@ -113,30 +117,34 @@ func (a app) Update(ctx context.Context, o crud.Item) (crud.Item, error) {
 }
 
 // Delete User
-func (a app) Delete(ctx context.Context, o crud.Item) (err error) {
-	user := o.(*model.User)
+func (a app) Delete(ctx context.Context, o interface{}) (err error) {
+	user := o.(model.User)
 
 	if err := a.checkAdminOrSelfContext(ctx, user.ID); err != nil {
 		return err
 	}
 
-	if err := a.delete(*user, nil); err != nil {
+	if err := a.delete(user, nil); err != nil {
 		err = fmt.Errorf("unable to delete: %w", err)
 	}
 
 	return
 }
 
-func (a app) Check(old, new crud.Item) []error {
+func (a app) Check(old, new interface{}) []error {
 	if new == nil {
 		return nil
 	}
 
-	user := old.(*model.User)
+	user := new.(model.User)
 	errors := make([]error, 0)
 
 	if strings.TrimSpace(user.Login) == "" {
 		errors = append(errors, fmt.Errorf("name is required: %w", crud.ErrInvalid))
+	}
+
+	if old == nil && new != nil && strings.TrimSpace(user.Password) == "" {
+		errors = append(errors, fmt.Errorf("password is required: %w", crud.ErrInvalid))
 	}
 
 	return errors

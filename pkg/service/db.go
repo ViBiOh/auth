@@ -32,13 +32,12 @@ func scanUser(row RowScanner) (model.User, error) {
 }
 
 func scanUsers(rows *sql.Rows) ([]model.User, uint, error) {
+	list := make([]model.User, 0)
 	var (
 		id         uint64
 		login      string
 		totalCount uint
 	)
-
-	list := make([]model.User, 0)
 
 	for rows.Next() {
 		if err := rows.Scan(&id, &login, &totalCount); err != nil {
@@ -122,7 +121,7 @@ INSERT INTO
 ) VALUES (
   $1,
   crypt($2, gen_salt('bf',8))
-)
+) RETURNING id
 `
 
 func (a app) create(o model.User, tx *sql.Tx) (id uint64, err error) {
@@ -137,20 +136,7 @@ func (a app) create(o model.User, tx *sql.Tx) (id uint64, err error) {
 		}()
 	}
 
-	result, insertErr := usedTx.Exec(insertQuery, o.Login, o.Password)
-	if insertErr != nil {
-		err = insertErr
-		return
-	}
-
-	newID, idErr := result.LastInsertId()
-	if idErr != nil {
-		err = idErr
-		return
-	}
-
-	id = uint64(newID)
-
+	err = usedTx.QueryRow(insertQuery, o.Login, o.Password).Scan(&id)
 	return
 }
 

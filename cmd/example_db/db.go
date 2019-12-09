@@ -2,7 +2,9 @@ package main
 
 import (
 	"flag"
+	"net/http"
 	"os"
+	"strings"
 
 	auth "github.com/ViBiOh/auth/v2/pkg/auth/db"
 	"github.com/ViBiOh/auth/v2/pkg/handler"
@@ -37,7 +39,17 @@ func main() {
 	crudHandler, err := crud.New(crudConfig, service.New(appDB, authApp))
 	logger.Fatal(err)
 
+	rawHandler := http.StripPrefix("/signup", crudHandler.Handler())
+	protectedHandler := httputils.ChainMiddlewares(crudHandler.Handler(), handlerApp)
+
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, "/signup") && r.Method == http.MethodPost {
+			rawHandler.ServeHTTP(w, r)
+		} else {
+			protectedHandler.ServeHTTP(w, r)
+		}
+	})
+
 	server := httputils.New(serverConfig)
-	server.Middleware(handlerApp)
-	server.ListenServeWait(crudHandler.Handler())
+	server.ListenServeWait(handler)
 }
