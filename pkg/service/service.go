@@ -19,7 +19,7 @@ var _ crud.Service = &app{}
 // App of package
 type App interface {
 	Unmarsall(data []byte) (interface{}, error)
-	Check(old, new interface{}) []error
+	Check(ctx context.Context, old, new interface{}) []error
 	List(ctx context.Context, page, pageSize uint, sortKey string, sortDesc bool, filters map[string][]string) ([]interface{}, uint, error)
 	Get(ctx context.Context, ID uint64) (interface{}, error)
 	Create(ctx context.Context, o interface{}) (interface{}, error)
@@ -131,19 +131,19 @@ func (a app) Delete(ctx context.Context, o interface{}) (err error) {
 	return
 }
 
-func (a app) Check(old, new interface{}) []error {
+func (a app) Check(_ context.Context, old, new interface{}) []error {
 	if new == nil {
 		return nil
 	}
 
-	user := new.(model.User)
+	newUser := new.(model.User)
 	errors := make([]error, 0)
 
-	if strings.TrimSpace(user.Login) == "" {
+	if strings.TrimSpace(newUser.Login) == "" {
 		errors = append(errors, fmt.Errorf("name is required: %w", crud.ErrInvalid))
 	}
 
-	if old == nil && new != nil && strings.TrimSpace(user.Password) == "" {
+	if old == nil && new != nil && strings.TrimSpace(newUser.Password) == "" {
 		errors = append(errors, fmt.Errorf("password is required: %w", crud.ErrInvalid))
 	}
 
