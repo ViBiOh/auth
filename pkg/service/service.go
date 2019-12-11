@@ -131,23 +131,28 @@ func (a app) Delete(ctx context.Context, o interface{}) (err error) {
 	return
 }
 
-func (a app) Check(_ context.Context, old, new interface{}) []error {
+func (a app) Check(ctx context.Context, old, new interface{}) []error {
+	output := make([]error, 0)
+
+	if new == nil && a.auth.IsAuthorized(handler.UserFromContext(ctx), "admin") {
+		output = append(output, errors.New("you must be an admin to delete user"))
+	}
+
 	if new == nil {
-		return nil
+		return output
 	}
 
 	newUser := new.(model.User)
-	errors := make([]error, 0)
 
 	if strings.TrimSpace(newUser.Login) == "" {
-		errors = append(errors, fmt.Errorf("name is required: %w", crud.ErrInvalid))
+		output = append(output, fmt.Errorf("name is required: %w", crud.ErrInvalid))
 	}
 
 	if old == nil && new != nil && strings.TrimSpace(newUser.Password) == "" {
-		errors = append(errors, fmt.Errorf("password is required: %w", crud.ErrInvalid))
+		output = append(output, fmt.Errorf("password is required: %w", crud.ErrInvalid))
 	}
 
-	return errors
+	return output
 }
 
 func (a app) checkAdminOrSelfContext(ctx context.Context, id uint64) error {
