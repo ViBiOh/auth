@@ -18,8 +18,8 @@ var _ crud.Service = &app{}
 
 // App of package
 type App interface {
-	Unmarsall(data []byte) (interface{}, error)
-	Check(ctx context.Context, old, new interface{}) []error
+	Unmarshal(data []byte) (interface{}, error)
+	Check(ctx context.Context, old, new interface{}) []crud.Error
 	List(ctx context.Context, page, pageSize uint, sortKey string, sortDesc bool, filters map[string][]string) ([]interface{}, uint, error)
 	Get(ctx context.Context, ID uint64) (interface{}, error)
 	Create(ctx context.Context, o interface{}) (interface{}, error)
@@ -40,8 +40,8 @@ func New(db *sql.DB, auth auth.Provider) App {
 	}
 }
 
-// Unmarsall User
-func (a app) Unmarsall(data []byte) (interface{}, error) {
+// Unmarshal User
+func (a app) Unmarshal(data []byte) (interface{}, error) {
 	var user model.User
 
 	if err := json.Unmarshal(data, &user); err != nil {
@@ -131,11 +131,11 @@ func (a app) Delete(ctx context.Context, o interface{}) (err error) {
 	return
 }
 
-func (a app) Check(ctx context.Context, old, new interface{}) []error {
-	output := make([]error, 0)
+func (a app) Check(ctx context.Context, old, new interface{}) []crud.Error {
+	output := make([]crud.Error, 0)
 
 	if new == nil && a.auth.IsAuthorized(handler.UserFromContext(ctx), "admin") {
-		output = append(output, errors.New("you must be an admin to delete user"))
+		output = append(output, crud.NewError("profile", "you must be an admin to delete user"))
 	}
 
 	if new == nil {
@@ -145,11 +145,11 @@ func (a app) Check(ctx context.Context, old, new interface{}) []error {
 	newUser := new.(model.User)
 
 	if strings.TrimSpace(newUser.Login) == "" {
-		output = append(output, fmt.Errorf("name is required: %w", crud.ErrInvalid))
+		output = append(output, crud.NewError("name", "name is required"))
 	}
 
 	if old == nil && new != nil && strings.TrimSpace(newUser.Password) == "" {
-		output = append(output, fmt.Errorf("password is required: %w", crud.ErrInvalid))
+		output = append(output, crud.NewError("password", "password is required"))
 	}
 
 	return output
