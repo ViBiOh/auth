@@ -26,7 +26,7 @@ var (
 	ErrEmptyAuth = errors.New("empty authorization content")
 
 	// ErrNoMatchingProvider occurs no provider is found for given auth
-	ErrNoMatchingProvider = errors.New("no matching provider for Authrization content")
+	ErrNoMatchingProvider = errors.New("no matching provider for Authorization content")
 )
 
 // App of package
@@ -89,8 +89,12 @@ func (a app) Handler(next http.Handler) http.Handler {
 
 // IsAuthenticated check if request has correct headers for authentification
 func (a app) IsAuthenticated(r *http.Request, profile string) (ident.Provider, model.User, error) {
+	if len(a.identProviders) == 0 {
+		return nil, model.NoneUser, ErrNoMatchingProvider
+	}
+
 	authContent := strings.TrimSpace(r.Header.Get("Authorization"))
-	if len(strings.TrimSpace(authContent)) == 0 {
+	if len(authContent) == 0 {
 		return a.identProviders[0], model.NoneUser, ErrEmptyAuth
 	}
 

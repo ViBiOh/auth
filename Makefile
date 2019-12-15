@@ -17,6 +17,12 @@ ifeq ($(DEBUG), true)
 	MAIN_RUNNER = dlv debug $(MAIN_SOURCE) --
 endif
 
+MEMORY_SOURCE = cmd/example_memory/memory.go
+MEMORY_RUNNER = go run $(MEMORY_SOURCE)
+ifeq ($(DEBUG), true)
+	MEMORY_RUNNER = dlv debug $(MEMORY_SOURCE) --
+endif
+
 DB_SOURCE = cmd/example_db/db.go
 DB_RUNNER = go run $(DB_SOURCE)
 ifeq ($(DEBUG), true)
@@ -85,6 +91,11 @@ build:
 .PHONY: run
 run:
 	$(MAIN_RUNNER) "password"
+
+## run-memory: Run memory app
+.PHONY: run-memory
+run-memory:
+	$(MEMORY_RUNNER)
 
 ## run-db: Run db app
 .PHONY: run-db

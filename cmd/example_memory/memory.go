@@ -4,10 +4,9 @@ import (
 	"flag"
 	"os"
 
-	auth "github.com/ViBiOh/auth/v2/pkg/auth/memory"
 	"github.com/ViBiOh/auth/v2/pkg/handler"
 	"github.com/ViBiOh/auth/v2/pkg/ident/basic"
-	basicProvider "github.com/ViBiOh/auth/v2/pkg/ident/basic/memory"
+	basicMemory "github.com/ViBiOh/auth/v2/pkg/provider/memory"
 	"github.com/ViBiOh/httputils/v3/pkg/httputils"
 	"github.com/ViBiOh/httputils/v3/pkg/logger"
 )
@@ -15,21 +14,16 @@ import (
 func main() {
 	fs := flag.NewFlagSet("memory", flag.ExitOnError)
 
-	basicProviderConfig := basicProvider.Flags(fs, "ident")
-	authConfig := auth.Flags(fs, "auth")
-
+	basicConfig := basicMemory.Flags(fs, "")
 	serverConfig := httputils.Flags(fs, "")
 
 	logger.Fatal(fs.Parse(os.Args[1:]))
 
-	basicProviderApp, err := basicProvider.New(basicProviderConfig)
+	basicApp, err := basicMemory.New(basicConfig)
 	logger.Fatal(err)
 
-	authApp, err := auth.New(authConfig)
-	logger.Fatal(err)
-
-	basicProviderProvider := basic.New(basicProviderApp)
-	handlerApp := handler.New(authApp, basicProviderProvider)
+	basicProviderProvider := basic.New(basicApp)
+	handlerApp := handler.New(basicApp, basicProviderProvider)
 
 	server := httputils.New(serverConfig)
 	server.ListenServeWait(handlerApp.Handler(nil))

@@ -6,9 +6,9 @@ import (
 	"os"
 	"strings"
 
-	basicDb "github.com/ViBiOh/auth/v2/pkg/db"
 	"github.com/ViBiOh/auth/v2/pkg/handler"
 	"github.com/ViBiOh/auth/v2/pkg/ident/basic"
+	basicDb "github.com/ViBiOh/auth/v2/pkg/provider/db"
 	"github.com/ViBiOh/auth/v2/pkg/service"
 	"github.com/ViBiOh/httputils/v3/pkg/crud"
 	"github.com/ViBiOh/httputils/v3/pkg/db"
@@ -21,7 +21,6 @@ func main() {
 
 	dbConfig := db.Flags(fs, "ident")
 	crudConfig := crud.Flags(fs, "ident")
-
 	serverConfig := httputils.Flags(fs, "")
 
 	logger.Fatal(fs.Parse(os.Args[1:]))
