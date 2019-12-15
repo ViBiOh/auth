@@ -16,13 +16,12 @@ import (
 type key int
 
 const (
-	authorizationHeader     = "Authorization"
-	ctxUserKey          key = iota
+	ctxUserKey key = iota
 )
 
-var _ httpmodel.Middleware = &app{}
-
 var (
+	_ httpmodel.Middleware = &app{}
+
 	// ErrEmptyAuth occurs when authorization content is not found
 	ErrEmptyAuth = errors.New("empty authorization content")
 
@@ -90,7 +89,7 @@ func (a app) Handler(next http.Handler) http.Handler {
 
 // IsAuthenticated check if request has correct headers for authentification
 func (a app) IsAuthenticated(r *http.Request, profile string) (ident.Provider, model.User, error) {
-	authContent := strings.TrimSpace(r.Header.Get(authorizationHeader))
+	authContent := strings.TrimSpace(r.Header.Get("Authorization"))
 	if len(strings.TrimSpace(authContent)) == 0 {
 		return a.identProviders[0], model.NoneUser, ErrEmptyAuth
 	}
@@ -117,6 +116,10 @@ func (a app) IsAuthenticated(r *http.Request, profile string) (ident.Provider, m
 
 // HasProfile checks if User
 func (a app) HasProfile(user model.User, profile string) bool {
+	if a.authProvider == nil {
+		return false
+	}
+
 	return a.authProvider.IsAuthorized(user, profile)
 }
 

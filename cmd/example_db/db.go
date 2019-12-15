@@ -6,10 +6,9 @@ import (
 	"os"
 	"strings"
 
-	auth "github.com/ViBiOh/auth/v2/pkg/auth/db"
+	basicDb "github.com/ViBiOh/auth/v2/pkg/db"
 	"github.com/ViBiOh/auth/v2/pkg/handler"
 	"github.com/ViBiOh/auth/v2/pkg/ident/basic"
-	basicProvider "github.com/ViBiOh/auth/v2/pkg/ident/basic/db"
 	"github.com/ViBiOh/auth/v2/pkg/service"
 	"github.com/ViBiOh/httputils/v3/pkg/crud"
 	"github.com/ViBiOh/httputils/v3/pkg/db"
@@ -30,13 +29,11 @@ func main() {
 	appDB, err := db.New(dbConfig)
 	logger.Fatal(err)
 
-	basicApp := basicProvider.New(appDB)
-	authApp := auth.New(appDB)
-
+	basicApp := basicDb.New(appDB)
 	basicProvider := basic.New(basicApp)
-	handlerApp := handler.New(authApp, basicProvider)
+	handlerApp := handler.New(basicApp, basicProvider)
 
-	crudHandler, err := crud.New(crudConfig, service.New(appDB, authApp))
+	crudHandler, err := crud.New(crudConfig, service.New(appDB, basicApp))
 	logger.Fatal(err)
 
 	rawHandler := http.StripPrefix("/signup", crudHandler.Handler())
