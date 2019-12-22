@@ -26,5 +26,5 @@ func main() {
 	handlerApp := handler.New(basicApp, basicProviderProvider)
 
 	server := httputils.New(serverConfig)
-	server.ListenServeWait(handlerApp.Handler(nil))
+	server.ListenServeWait(handlerApp.Middleware(nil))
 }

@@ -20,7 +20,7 @@ const (
 )
 
 var (
-	_ httpmodel.Middleware = &app{}
+	_ httpmodel.Middleware = app{}.Middleware
 
 	// ErrEmptyAuth occurs when authorization content is not found
 	ErrEmptyAuth = errors.New("empty authorization content")
@@ -31,7 +31,7 @@ var (
 
 // App of package
 type App interface {
-	Handler(http.Handler) http.Handler
+	Middleware(http.Handler) http.Handler
 	IsAuthenticated(*http.Request, string) (ident.Provider, model.User, error)
 	HasProfile(model.User, string) bool
 }
@@ -62,8 +62,8 @@ func UserFromContext(ctx context.Context) model.User {
 	return model.NoneUser
 }
 
-// Handler wrap next authenticated handler
-func (a app) Handler(next http.Handler) http.Handler {
+// Middleware wraps next authenticated handler
+func (a app) Middleware(next http.Handler) http.Handler {
 	if len(a.identProviders) == 0 {
 		return next
 	}

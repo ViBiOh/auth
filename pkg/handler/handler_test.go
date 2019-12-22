@@ -76,7 +76,7 @@ func TestUserFromContext(t *testing.T) {
 	}
 }
 
-func TestHandler(t *testing.T) {
+func TestMiddleware(t *testing.T) {
 	basicAuthRequest, _ := request.New().BasicAuth("admin", "password").Get("/").Build(context.Background(), nil)
 
 	var cases = []struct {
@@ -123,14 +123,14 @@ func TestHandler(t *testing.T) {
 			})
 
 			writer := httptest.NewRecorder()
-			testCase.instance.Handler(handler).ServeHTTP(writer, testCase.request)
+			testCase.instance.Middleware(handler).ServeHTTP(writer, testCase.request)
 
 			if result := writer.Code; result != testCase.wantStatus {
-				t.Errorf("Handler = %d, want %d", result, testCase.wantStatus)
+				t.Errorf("Middleware = %d, want %d", result, testCase.wantStatus)
 			}
 
 			if result, _ := request.ReadBodyResponse(writer.Result()); string(result) != testCase.want {
-				t.Errorf("Handler = `%s`, want `%s`", string(result), testCase.want)
+				t.Errorf("Middleware = `%s`, want `%s`", string(result), testCase.want)
 			}
 		})
 	}

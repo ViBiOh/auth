@@ -36,7 +36,7 @@ func main() {
 	logger.Fatal(err)
 
 	rawHandler := http.StripPrefix("/signup", crudHandler.Handler())
-	protectedHandler := httputils.ChainMiddlewares(crudHandler.Handler(), handlerApp)
+	protectedHandler := httputils.ChainMiddlewares(crudHandler.Handler(), handlerApp.Middleware)
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, "/signup") && r.Method == http.MethodPost {
