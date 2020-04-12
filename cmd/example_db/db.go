@@ -20,7 +20,7 @@ func main() {
 	fs := flag.NewFlagSet("db", flag.ExitOnError)
 
 	dbConfig := db.Flags(fs, "ident")
-	crudConfig := crud.Flags(fs, "ident")
+	crudConfig := crud.GetConfiguredFlags("auth", "")(fs, "ident")
 	serverConfig := httputils.Flags(fs, "")
 
 	logger.Fatal(fs.Parse(os.Args[1:]))
@@ -47,5 +47,6 @@ func main() {
 	})
 
 	server := httputils.New(serverConfig)
+	server.Health(appDB.Ping)
 	server.ListenServeWait(handler)
 }
