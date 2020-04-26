@@ -18,7 +18,7 @@ var _ crud.Service = &app{}
 
 // App of package
 type App interface {
-	Unmarshal(data []byte) (interface{}, error)
+	Unmarshal(data []byte, contentType string) (interface{}, error)
 	Check(ctx context.Context, old, new interface{}) []crud.Error
 	List(ctx context.Context, page, pageSize uint, sortKey string, sortDesc bool, filters map[string][]string) ([]interface{}, uint, error)
 	Get(ctx context.Context, ID uint64) (interface{}, error)
@@ -41,7 +41,7 @@ func New(db *sql.DB, auth auth.Provider) App {
 }
 
 // Unmarshal User
-func (a app) Unmarshal(data []byte) (interface{}, error) {
+func (a app) Unmarshal(data []byte, contentType string) (interface{}, error) {
 	var user model.User
 
 	if err := json.Unmarshal(data, &user); err != nil {
