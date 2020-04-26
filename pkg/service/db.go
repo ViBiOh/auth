@@ -127,23 +127,8 @@ INSERT INTO
 ) RETURNING id
 `
 
-func (a app) create(o model.User, tx *sql.Tx) (newID uint64, err error) {
-	var usedTx *sql.Tx
-	if usedTx, err = db.GetTx(a.db, tx); err != nil {
-		return
-	}
-
-	if usedTx != tx {
-		defer func() {
-			err = db.EndTx(usedTx, err)
-		}()
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), sqlTimeout)
-	defer cancel()
-
-	err = usedTx.QueryRowContext(ctx, insertQuery, o.Login, o.Password).Scan(&newID)
-	return
+func (a app) create(o model.User, tx *sql.Tx) (uint64, error) {
+	return db.CreateWithTimeout(a.db, tx, sqlTimeout, insertQuery, o.Login, o.Password)
 }
 
 const updateQuery = `
@@ -155,24 +140,8 @@ WHERE
   id = $1
 `
 
-func (a app) update(o model.User, tx *sql.Tx) (err error) {
-	var usedTx *sql.Tx
-	if usedTx, err = db.GetTx(a.db, tx); err != nil {
-		return
-	}
-
-	if usedTx != tx {
-		defer func() {
-			err = db.EndTx(usedTx, err)
-		}()
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), sqlTimeout)
-	defer cancel()
-
-	_, err = usedTx.ExecContext(ctx, updateQuery, o.ID, o.Login)
-
-	return
+func (a app) update(o model.User, tx *sql.Tx) error {
+	return db.ExecWithTimeout(a.db, tx, sqlTimeout, updateQuery, o.ID, o.Login)
 }
 
 const deleteQuery = `
@@ -182,21 +151,6 @@ WHERE
   id = $1
 `
 
-func (a app) delete(o model.User, tx *sql.Tx) (err error) {
-	var usedTx *sql.Tx
-	if usedTx, err = db.GetTx(a.db, tx); err != nil {
-		return
-	}
-
-	if usedTx != tx {
-		defer func() {
-			err = db.EndTx(usedTx, err)
-		}()
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), sqlTimeout)
-	defer cancel()
-
-	_, err = usedTx.ExecContext(ctx, deleteQuery, o.ID)
-	return
+func (a app) delete(o model.User, tx *sql.Tx) error {
+	return db.ExecWithTimeout(a.db, tx, sqlTimeout, deleteQuery, o.ID)
 }
