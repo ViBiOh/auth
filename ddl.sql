@@ -1,4 +1,4 @@
-CREATE EXTENSION pgcrypto;
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- clean
 DROP TABLE IF EXISTS login;
