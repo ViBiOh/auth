@@ -1,11 +1,19 @@
 package service
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
+	"regexp"
+	"time"
 
 	"github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/httputils/v3/pkg/db"
+)
+
+var (
+	sortKeyMatcher = regexp.MustCompile(`[A-Za-z0-9]+`)
+	sqlTimeout     = time.Second * 5
 )
 
 // RowScanner describes scan ability of a row
@@ -32,23 +40,17 @@ func scanUser(row RowScanner) (model.User, error) {
 }
 
 func scanUsers(rows *sql.Rows) ([]model.User, uint, error) {
+	var totalCount uint
 	list := make([]model.User, 0)
-	var (
-		id         uint64
-		login      string
-		totalCount uint
-	)
 
 	for rows.Next() {
-		if err := rows.Scan(&id, &login, &totalCount); err != nil {
-			if err == sql.ErrNoRows {
-				return nil, 0, err
-			}
+		var user model.User
 
+		if err := rows.Scan(&user.ID, &user.Login, &totalCount); err != nil {
 			return nil, 0, err
 		}
 
-		list = append(list, model.NewUser(id, login))
+		list = append(list, user)
 	}
 
 	return list, totalCount, nil
@@ -58,10 +60,10 @@ const listQuery = `
 SELECT
   id,
   login,
-  count(*) OVER() AS full_count
+  count(id) OVER() AS full_count
 FROM
   login
-ORDER BY $3
+ORDER BY %s
 LIMIT $1
 OFFSET $2
 `
@@ -69,17 +71,20 @@ OFFSET $2
 func (a app) list(page, pageSize uint, sortKey string, sortAsc bool) ([]model.User, uint, error) {
 	order := "creation_date DESC"
 
-	if sortKey != "" {
+	if sortKeyMatcher.MatchString(sortKey) {
 		order = sortKey
-	}
 
-	if !sortAsc {
-		order = fmt.Sprintf("%s DESC", order)
+		if !sortAsc {
+			order += " DESC"
+		}
 	}
 
 	offset := (page - 1) * pageSize
 
-	rows, err := a.db.Query(listQuery, pageSize, offset, order)
+	ctx, cancel := context.WithTimeout(context.Background(), sqlTimeout)
+	defer cancel()
+
+	rows, err := a.db.QueryContext(ctx, fmt.Sprintf(listQuery, order), pageSize, offset)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -88,12 +93,7 @@ func (a app) list(page, pageSize uint, sortKey string, sortAsc bool) ([]model.Us
 		err = db.RowsClose(rows, err)
 	}()
 
-	list, totalCount, err := scanUsers(rows)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	return list, totalCount, nil
+	return scanUsers(rows)
 }
 
 const getByIDQuery = `
@@ -107,7 +107,10 @@ WHERE
 `
 
 func (a app) get(id uint64) (model.User, error) {
-	row := a.db.QueryRow(getByIDQuery, id)
+	ctx, cancel := context.WithTimeout(context.Background(), sqlTimeout)
+	defer cancel()
+
+	row := a.db.QueryRowContext(ctx, getByIDQuery, id)
 
 	return scanUser(row)
 }
@@ -124,7 +127,7 @@ INSERT INTO
 ) RETURNING id
 `
 
-func (a app) create(o model.User, tx *sql.Tx) (id uint64, err error) {
+func (a app) create(o model.User, tx *sql.Tx) (newID uint64, err error) {
 	var usedTx *sql.Tx
 	if usedTx, err = db.GetTx(a.db, tx); err != nil {
 		return
@@ -136,7 +139,10 @@ func (a app) create(o model.User, tx *sql.Tx) (id uint64, err error) {
 		}()
 	}
 
-	err = usedTx.QueryRow(insertQuery, o.Login, o.Password).Scan(&id)
+	ctx, cancel := context.WithTimeout(context.Background(), sqlTimeout)
+	defer cancel()
+
+	err = usedTx.QueryRowContext(ctx, insertQuery, o.Login, o.Password).Scan(&newID)
 	return
 }
 
@@ -161,7 +167,10 @@ func (a app) update(o model.User, tx *sql.Tx) (err error) {
 		}()
 	}
 
-	_, err = usedTx.Exec(updateQuery, o.ID, o.Login)
+	ctx, cancel := context.WithTimeout(context.Background(), sqlTimeout)
+	defer cancel()
+
+	_, err = usedTx.ExecContext(ctx, updateQuery, o.ID, o.Login)
 
 	return
 }
@@ -185,6 +194,9 @@ func (a app) delete(o model.User, tx *sql.Tx) (err error) {
 		}()
 	}
 
-	_, err = usedTx.Exec(deleteQuery, o.ID, o.ID)
+	ctx, cancel := context.WithTimeout(context.Background(), sqlTimeout)
+	defer cancel()
+
+	_, err = usedTx.ExecContext(ctx, deleteQuery, o.ID)
 	return
 }

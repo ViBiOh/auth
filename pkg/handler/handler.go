@@ -93,6 +93,8 @@ func (a app) IsAuthenticated(r *http.Request, profile string) (ident.Provider, m
 		return nil, model.NoneUser, ErrNoMatchingProvider
 	}
 
+	checkProfile := len(strings.TrimSpace(profile)) != 0
+
 	authContent := strings.TrimSpace(r.Header.Get("Authorization"))
 	if len(authContent) == 0 {
 		return a.identProviders[0], model.NoneUser, ErrEmptyAuth
@@ -108,11 +110,11 @@ func (a app) IsAuthenticated(r *http.Request, profile string) (ident.Provider, m
 			return provider, user, err
 		}
 
-		if len(strings.TrimSpace(profile)) == 0 || a.HasProfile(user, profile) {
-			return provider, user, nil
+		if checkProfile && !a.HasProfile(user, profile) {
+			return provider, user, auth.ErrForbidden
 		}
 
-		return provider, user, auth.ErrForbidden
+		return provider, user, nil
 	}
 
 	return nil, model.NoneUser, ErrNoMatchingProvider

@@ -1,7 +1,9 @@
 package db
 
 import (
+	"context"
 	"database/sql"
+	"time"
 
 	"github.com/ViBiOh/auth/v2/pkg/auth"
 	"github.com/ViBiOh/auth/v2/pkg/ident"
@@ -13,6 +15,8 @@ import (
 var (
 	_ auth.Provider   = App{}
 	_ basic.UserLogin = App{}
+
+	sqlTimeout = time.Second * 5
 )
 
 // App of package
@@ -40,21 +44,21 @@ WHERE
 
 // Login user with its credentials
 func (a App) Login(login, password string) (model.User, error) {
-	var (
-		id      uint64
-		dbLogin string
-	)
+	var user model.User
 
-	if err := a.db.QueryRow(readUserQuery, login, password).Scan(&id, &dbLogin); err != nil {
+	ctx, cancel := context.WithTimeout(context.Background(), sqlTimeout)
+	defer cancel()
+
+	if err := a.db.QueryRowContext(ctx, readUserQuery, login, password).Scan(&user.ID, &user.Login); err != nil {
+		logger.Error("unable to login %s: %s", login, err.Error())
+
 		if err == sql.ErrNoRows {
 			return model.NoneUser, ident.ErrInvalidCredentials
 		}
-
-		logger.Error("%s", err.Error())
 		return model.NoneUser, ident.ErrUnavailableService
 	}
 
-	return model.NewUser(id, dbLogin), nil
+	return user, nil
 }
 
 const readLoginProfile = `
@@ -73,12 +77,12 @@ WHERE
 func (a App) IsAuthorized(user model.User, profile string) bool {
 	var id uint64
 
-	if err := a.db.QueryRow(readLoginProfile, user.ID, profile).Scan(&id); err != nil {
-		if err == sql.ErrNoRows {
-			return false
-		}
+	ctx, cancel := context.WithTimeout(context.Background(), sqlTimeout)
+	defer cancel()
 
-		logger.Error("%s", err.Error())
+	if err := a.db.QueryRowContext(ctx, readLoginProfile, user.ID, profile).Scan(&id); err != nil {
+		logger.Error("unable to authorized %s: %s", user.Login, err.Error())
+
 		return false
 	}
 

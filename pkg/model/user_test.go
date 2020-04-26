@@ -6,24 +6,30 @@ import (
 )
 
 func TestNewUser(t *testing.T) {
+	type args struct {
+		id    uint64
+		login string
+	}
+
 	var cases = []struct {
 		intention string
-		id        uint64
-		login     string
+		args      args
 		want      User
 	}{
 		{
-			"should work with given params",
-			1,
-			"vibioh",
+			"simple",
+			args{
+				id:    1,
+				login: "vibioh",
+			},
 			User{ID: 1, Login: "vibioh"},
 		},
 	}
 
-	for _, testCase := range cases {
-		t.Run(testCase.intention, func(t *testing.T) {
-			if result := NewUser(testCase.id, testCase.login); !reflect.DeepEqual(result, testCase.want) {
-				t.Errorf("NewUser() = %#v, want %#v", result, testCase.want)
+	for _, tc := range cases {
+		t.Run(tc.intention, func(t *testing.T) {
+			if got := NewUser(tc.args.id, tc.args.login); !reflect.DeepEqual(got, tc.want) {
+				t.Errorf("NewUser() = %v, want %v", got, tc.want)
 			}
 		})
 	}
