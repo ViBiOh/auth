@@ -125,7 +125,7 @@ func (a app) Delete(ctx context.Context, o interface{}) (err error) {
 	}
 
 	if err := a.delete(user, nil); err != nil {
-		err = fmt.Errorf("unable to delete: %w", err)
+		return fmt.Errorf("unable to delete: %w", err)
 	}
 
 	return
