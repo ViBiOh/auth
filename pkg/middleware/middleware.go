@@ -1,4 +1,4 @@
-package handler
+package middleware
 
 import (
 	"context"
@@ -11,12 +11,6 @@ import (
 	"github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/httputils/v3/pkg/httperror"
 	httpmodel "github.com/ViBiOh/httputils/v3/pkg/model"
-)
-
-type key int
-
-const (
-	ctxUserKey key = iota
 )
 
 var (
@@ -33,7 +27,7 @@ var (
 type App interface {
 	Middleware(http.Handler) http.Handler
 	IsAuthenticated(*http.Request, string) (ident.Provider, model.User, error)
-	HasProfile(model.User, string) bool
+	HasProfile(context.Context, model.User, string) bool
 }
 
 type app struct {
@@ -47,19 +41,6 @@ func New(authProvider auth.Provider, identProviders ...ident.Provider) App {
 		authProvider:   authProvider,
 		identProviders: identProviders,
 	}
-}
-
-// UserFromContext retrieves user from context
-func UserFromContext(ctx context.Context) model.User {
-	rawUser := ctx.Value(ctxUserKey)
-	if rawUser == nil {
-		return model.NoneUser
-	}
-
-	if user, ok := rawUser.(model.User); ok {
-		return user
-	}
-	return model.NoneUser
 }
 
 // Middleware wraps next authenticated handler
@@ -81,8 +62,7 @@ func (a app) Middleware(next http.Handler) http.Handler {
 		}
 
 		if next != nil {
-			userContext := context.WithValue(r.Context(), ctxUserKey, user)
-			next.ServeHTTP(w, r.WithContext(userContext))
+			next.ServeHTTP(w, r.WithContext(model.StoreUser(r.Context(), user)))
 		}
 	})
 }
@@ -105,12 +85,12 @@ func (a app) IsAuthenticated(r *http.Request, profile string) (ident.Provider, m
 			continue
 		}
 
-		user, err := provider.GetUser(authContent)
+		user, err := provider.GetUser(r.Context(), authContent)
 		if err != nil {
 			return provider, user, err
 		}
 
-		if checkProfile && !a.HasProfile(user, profile) {
+		if checkProfile && !a.HasProfile(r.Context(), user, profile) {
 			return provider, user, auth.ErrForbidden
 		}
 
@@ -121,12 +101,12 @@ func (a app) IsAuthenticated(r *http.Request, profile string) (ident.Provider, m
 }
 
 // HasProfile checks if User
-func (a app) HasProfile(user model.User, profile string) bool {
+func (a app) HasProfile(ctx context.Context, user model.User, profile string) bool {
 	if a.authProvider == nil {
 		return false
 	}
 
-	return a.authProvider.IsAuthorized(user, profile)
+	return a.authProvider.IsAuthorized(ctx, user, profile)
 }
 
 func onHandlerFail(w http.ResponseWriter, r *http.Request, err error, provider ident.Provider) {

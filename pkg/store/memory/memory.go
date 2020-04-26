@@ -1,6 +1,7 @@
 package memory
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"strconv"
@@ -15,8 +16,8 @@ import (
 )
 
 var (
-	_ auth.Provider   = &App{}
-	_ basic.UserLogin = &App{}
+	_ auth.Provider  = &App{}
+	_ basic.Provider = &App{}
 )
 
 type basicUser struct {
@@ -63,7 +64,7 @@ func New(config Config) (App, error) {
 }
 
 // Login user with its credentials
-func (a App) Login(login, password string) (model.User, error) {
+func (a App) Login(ctx context.Context, login, password string) (model.User, error) {
 	user, ok := a.basic[login]
 	if !ok {
 		return model.NoneUser, ident.ErrInvalidCredentials
@@ -77,7 +78,7 @@ func (a App) Login(login, password string) (model.User, error) {
 }
 
 // IsAuthorized checks if User is authorized
-func (a App) IsAuthorized(user model.User, profile string) bool {
+func (a App) IsAuthorized(ctx context.Context, user model.User, profile string) bool {
 	profiles, ok := a.auth[user.ID]
 	if !ok {
 		return false

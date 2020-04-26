@@ -1,35 +1,14 @@
-package db
+package store
 
 import (
 	"context"
 	"database/sql"
-	"time"
 
-	"github.com/ViBiOh/auth/v2/pkg/auth"
 	"github.com/ViBiOh/auth/v2/pkg/ident"
-	"github.com/ViBiOh/auth/v2/pkg/ident/basic"
 	"github.com/ViBiOh/auth/v2/pkg/model"
+	"github.com/ViBiOh/httputils/v3/pkg/db"
 	"github.com/ViBiOh/httputils/v3/pkg/logger"
 )
-
-var (
-	_ auth.Provider   = App{}
-	_ basic.UserLogin = App{}
-
-	sqlTimeout = time.Second * 5
-)
-
-// App of package
-type App struct {
-	db *sql.DB
-}
-
-// New creates new App from dependencies
-func New(db *sql.DB) App {
-	return App{
-		db: db,
-	}
-}
 
 const readUserQuery = `
 SELECT
@@ -42,11 +21,10 @@ WHERE
   AND password = crypt($2, password)
 `
 
-// Login user with its credentials
-func (a App) Login(login, password string) (model.User, error) {
+func (a app) Login(ctx context.Context, login, password string) (model.User, error) {
 	var user model.User
 
-	ctx, cancel := context.WithTimeout(context.Background(), sqlTimeout)
+	ctx, cancel := context.WithTimeout(ctx, db.SQLTimeout)
 	defer cancel()
 
 	if err := a.db.QueryRowContext(ctx, readUserQuery, login, password).Scan(&user.ID, &user.Login); err != nil {
@@ -73,11 +51,10 @@ WHERE
   AND lp.login_id = $1
 `
 
-// IsAuthorized checks if User is authorized
-func (a App) IsAuthorized(user model.User, profile string) bool {
+func (a app) IsAuthorized(ctx context.Context, user model.User, profile string) bool {
 	var id uint64
 
-	ctx, cancel := context.WithTimeout(context.Background(), sqlTimeout)
+	ctx, cancel := context.WithTimeout(ctx, db.SQLTimeout)
 	defer cancel()
 
 	if err := a.db.QueryRowContext(ctx, readLoginProfile, user.ID, profile).Scan(&id); err != nil {

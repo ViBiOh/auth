@@ -9,8 +9,8 @@ import (
 	"strings"
 
 	"github.com/ViBiOh/auth/v2/pkg/auth"
-	"github.com/ViBiOh/auth/v2/pkg/handler"
 	"github.com/ViBiOh/auth/v2/pkg/model"
+	"github.com/ViBiOh/auth/v2/pkg/store"
 	"github.com/ViBiOh/httputils/v3/pkg/crud"
 )
 
@@ -28,15 +28,15 @@ type App interface {
 }
 
 type app struct {
-	db   *sql.DB
-	auth auth.Provider
+	store store.UserStorage
+	auth  auth.Provider
 }
 
 // New creates new App from Config
-func New(db *sql.DB, auth auth.Provider) App {
+func New(store store.UserStorage, auth auth.Provider) App {
 	return &app{
-		db:   db,
-		auth: auth,
+		store: store,
+		auth:  auth,
 	}
 }
 
@@ -57,7 +57,7 @@ func (a app) List(ctx context.Context, page, pageSize uint, sortKey string, sort
 		return nil, 0, err
 	}
 
-	list, total, err := a.list(page, pageSize, sortKey, sortAsc)
+	list, total, err := a.store.List(ctx, page, pageSize, sortKey, sortAsc)
 	if err != nil {
 		return nil, 0, fmt.Errorf("unable to list: %w", err)
 	}
@@ -76,7 +76,7 @@ func (a app) Get(ctx context.Context, ID uint64) (interface{}, error) {
 		return nil, err
 	}
 
-	item, err := a.get(ID)
+	item, err := a.store.Get(ctx, ID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, crud.ErrNotFound
@@ -91,7 +91,7 @@ func (a app) Get(ctx context.Context, ID uint64) (interface{}, error) {
 func (a app) Create(ctx context.Context, o interface{}) (interface{}, error) {
 	user := o.(model.User)
 
-	id, err := a.create(user, nil)
+	id, err := a.store.Create(ctx, user)
 	if err != nil {
 		return model.NoneUser, fmt.Errorf("unable to create: %w", err)
 	}
@@ -109,7 +109,7 @@ func (a app) Update(ctx context.Context, o interface{}) (interface{}, error) {
 		return nil, err
 	}
 
-	if err := a.update(user, nil); err != nil {
+	if err := a.store.Update(ctx, user); err != nil {
 		return nil, fmt.Errorf("unable to update: %w", err)
 	}
 
@@ -124,7 +124,7 @@ func (a app) Delete(ctx context.Context, o interface{}) (err error) {
 		return err
 	}
 
-	if err := a.delete(user, nil); err != nil {
+	if err := a.store.Delete(ctx, user); err != nil {
 		return fmt.Errorf("unable to delete: %w", err)
 	}
 
@@ -134,7 +134,7 @@ func (a app) Delete(ctx context.Context, o interface{}) (err error) {
 func (a app) Check(ctx context.Context, old, new interface{}) []crud.Error {
 	output := make([]crud.Error, 0)
 
-	if new == nil && a.auth.IsAuthorized(handler.UserFromContext(ctx), "admin") {
+	if new == nil && a.auth.IsAuthorized(ctx, model.ReadUser(ctx), "admin") {
 		output = append(output, crud.NewError("profile", "you must be an admin to delete user"))
 	}
 
@@ -156,7 +156,7 @@ func (a app) Check(ctx context.Context, old, new interface{}) []crud.Error {
 }
 
 func (a app) checkAdminOrSelfContext(ctx context.Context, id uint64) error {
-	user := handler.UserFromContext(ctx)
+	user := model.ReadUser(ctx)
 	if user == model.NoneUser {
 		return crud.ErrUnauthorized
 	}
@@ -165,7 +165,7 @@ func (a app) checkAdminOrSelfContext(ctx context.Context, id uint64) error {
 		return nil
 	}
 
-	if !a.auth.IsAuthorized(user, "admin") {
+	if !a.auth.IsAuthorized(ctx, user, "admin") {
 		return crud.ErrForbidden
 	}
 

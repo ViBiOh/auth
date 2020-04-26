@@ -1,6 +1,7 @@
 package ident
 
 import (
+	"context"
 	"errors"
 	"net/http"
 
@@ -24,7 +25,7 @@ type Provider interface {
 	IsMatching(string) bool
 
 	// GetUser returns User found in content header
-	GetUser(string) (model.User, error)
+	GetUser(context.Context, string) (model.User, error)
 
 	// OnError handles HTTP request when login fails
 	OnError(http.ResponseWriter, *http.Request, error)

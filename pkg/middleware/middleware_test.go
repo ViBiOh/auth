@@ -1,4 +1,4 @@
-package handler
+package middleware
 
 import (
 	"context"
@@ -20,7 +20,7 @@ type testProvider struct {
 	matching bool
 }
 
-func (t testProvider) IsAuthorized(user model.User, profile string) bool {
+func (t testProvider) IsAuthorized(ctx context.Context, user model.User, profile string) bool {
 	if profile == "admin" {
 		return true
 	}
@@ -31,7 +31,7 @@ func (t testProvider) IsMatching(input string) bool {
 	return t.matching
 }
 
-func (t testProvider) GetUser(input string) (model.User, error) {
+func (t testProvider) GetUser(ctx context.Context, input string) (model.User, error) {
 	if input == "Basic YWRtaW46cGFzc3dvcmQ=" {
 		return model.NewUser(8000, "admin"), nil
 	} else if input == "Basic" {
@@ -42,38 +42,6 @@ func (t testProvider) GetUser(input string) (model.User, error) {
 
 func (t testProvider) OnError(w http.ResponseWriter, r *http.Request, err error) {
 	http.Error(w, err.Error(), http.StatusTeapot)
-}
-
-func TestUserFromContext(t *testing.T) {
-	var cases = []struct {
-		intention string
-		input     context.Context
-		want      model.User
-	}{
-		{
-			"empty",
-			context.Background(),
-			model.NoneUser,
-		},
-		{
-			"invalid type",
-			context.WithValue(context.Background(), ctxUserKey, "User value"),
-			model.NoneUser,
-		},
-		{
-			"valid",
-			context.WithValue(context.Background(), ctxUserKey, model.NewUser(8000, "test")),
-			model.NewUser(8000, "test"),
-		},
-	}
-
-	for _, testCase := range cases {
-		t.Run(testCase.intention, func(t *testing.T) {
-			if result := UserFromContext(testCase.input); !reflect.DeepEqual(result, testCase.want) {
-				t.Errorf("UserFromContext() = %v, want %v", result, testCase.want)
-			}
-		})
-	}
 }
 
 func TestMiddleware(t *testing.T) {
@@ -251,7 +219,7 @@ func TestHasProfile(t *testing.T) {
 
 	for _, testCase := range cases {
 		t.Run(testCase.intention, func(t *testing.T) {
-			if result := testCase.instance.HasProfile(testCase.user, testCase.profile); result != testCase.want {
+			if result := testCase.instance.HasProfile(context.Background(), testCase.user, testCase.profile); result != testCase.want {
 				t.Errorf("HasProfile() = %t, want %t", result, testCase.want)
 			}
 		})

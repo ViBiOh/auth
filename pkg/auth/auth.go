@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"errors"
 
 	"github.com/ViBiOh/auth/v2/pkg/model"
@@ -14,5 +15,5 @@ var (
 // Provider provides methods for dealing with identification
 type Provider interface {
 	// IsAuthorized checks if given user is authorized
-	IsAuthorized(model.User, string) bool
+	IsAuthorized(context.Context, model.User, string) bool
 }
