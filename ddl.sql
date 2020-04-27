@@ -43,3 +43,6 @@ CREATE TABLE login_profile (
 );
 
 CREATE UNIQUE INDEX login_profile_login_id ON login_profile(login_id);
+
+-- data
+INSERT INTO profile (name) VALUES ('admin');

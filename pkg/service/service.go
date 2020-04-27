@@ -10,6 +10,7 @@ import (
 	"github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/auth/v2/pkg/store"
 	"github.com/ViBiOh/httputils/v3/pkg/crud"
+	"github.com/ViBiOh/httputils/v3/pkg/logger"
 )
 
 var _ crud.Service = &app{}
@@ -162,6 +163,8 @@ func (a app) CheckRights(ctx context.Context, id uint64) error {
 	if id != 0 && user.ID == id || a.auth.IsAuthorized(ctx, user, "admin") {
 		return nil
 	}
+
+	logger.Info("unauthorized access for login=%s", user.Login)
 
 	return crud.ErrForbidden
 }
