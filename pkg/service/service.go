@@ -2,9 +2,7 @@ package service
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"strings"
 
@@ -45,12 +43,8 @@ func New(store store.UserStorage, auth auth.Provider) App {
 // Unmarshal User
 func (a app) Unmarshal(data []byte, contentType string) (interface{}, error) {
 	var user model.User
-
-	if err := json.Unmarshal(data, &user); err != nil {
-		return nil, err
-	}
-
-	return user, nil
+	err := json.Unmarshal(data, &user)
+	return user, err
 }
 
 // List Users
@@ -80,13 +74,14 @@ func (a app) Get(ctx context.Context, ID uint64) (interface{}, error) {
 
 	item, err := a.store.Get(ctx, ID)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, crud.ErrNotFound
-		}
 		return nil, fmt.Errorf("unable to get: %w", err)
 	}
 
-	return &item, nil
+	if item == model.NoneUser {
+		return nil, crud.ErrNotFound
+	}
+
+	return item, nil
 }
 
 // Create User
@@ -107,37 +102,34 @@ func (a app) Create(ctx context.Context, o interface{}) (interface{}, error) {
 func (a app) Update(ctx context.Context, o interface{}) (interface{}, error) {
 	user := o.(model.User)
 
-	if err := a.CheckRights(ctx, user.ID); err != nil {
-		return nil, err
-	}
-
 	if err := a.store.Update(ctx, user); err != nil {
-		return nil, fmt.Errorf("unable to update: %w", err)
+		return user, fmt.Errorf("unable to update: %w", err)
 	}
 
-	return o, nil
+	return user, nil
 }
 
 // Delete User
-func (a app) Delete(ctx context.Context, o interface{}) (err error) {
+func (a app) Delete(ctx context.Context, o interface{}) error {
 	user := o.(model.User)
-
-	if err := a.CheckRights(ctx, user.ID); err != nil {
-		return err
-	}
 
 	if err := a.store.Delete(ctx, user); err != nil {
 		return fmt.Errorf("unable to delete: %w", err)
 	}
 
-	return
+	return nil
 }
 
 func (a app) Check(ctx context.Context, old, new interface{}) []crud.Error {
 	output := make([]crud.Error, 0)
 
-	if new == nil && a.auth.IsAuthorized(ctx, model.ReadUser(ctx), "admin") {
-		output = append(output, crud.NewError("profile", "you must be an admin to delete user"))
+	user := model.ReadUser(ctx)
+	if old != nil && user == model.NoneUser {
+		output = append(output, crud.NewError("context", "you must be logged in for interacting"))
+	}
+
+	if new == nil && !a.auth.IsAuthorized(ctx, user, "admin") {
+		output = append(output, crud.NewError("context", "you must be an admin for deleting"))
 	}
 
 	if new == nil {
@@ -146,11 +138,15 @@ func (a app) Check(ctx context.Context, old, new interface{}) []crud.Error {
 
 	newUser := new.(model.User)
 
-	if strings.TrimSpace(newUser.Login) == "" {
-		output = append(output, crud.NewError("name", "name is required"))
+	if old != nil && new != nil && !(user.ID == newUser.ID || a.auth.IsAuthorized(ctx, user, "admin")) {
+		output = append(output, crud.NewError("context", "you're not authorized to interact with other user"))
 	}
 
-	if old == nil && new != nil && strings.TrimSpace(newUser.Password) == "" {
+	if len(strings.TrimSpace(newUser.Login)) == 0 {
+		output = append(output, crud.NewError("login", "login is required"))
+	}
+
+	if old == nil && new != nil && len(strings.TrimSpace(newUser.Password)) == 0 {
 		output = append(output, crud.NewError("password", "password is required"))
 	}
 

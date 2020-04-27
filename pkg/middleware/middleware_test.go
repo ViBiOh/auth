@@ -55,7 +55,7 @@ func TestMiddleware(t *testing.T) {
 		wantStatus int
 	}{
 		{
-			"do nothing if no provider",
+			"no provider",
 			New(nil),
 			httptest.NewRequest(http.MethodOptions, "/", nil),
 			"OPTIONS",
@@ -69,14 +69,14 @@ func TestMiddleware(t *testing.T) {
 			http.StatusNoContent,
 		},
 		{
-			"handle authentication failure",
+			"failure",
 			New(nil, testProvider{}),
 			httptest.NewRequest(http.MethodGet, "/", nil),
 			"empty authorization content\n",
 			http.StatusTeapot,
 		},
 		{
-			"handle authentication",
+			"success",
 			New(nil, testProvider{matching: true}),
 			basicAuthRequest,
 			"GET",
@@ -133,7 +133,7 @@ func TestIsAuthenticated(t *testing.T) {
 			ErrEmptyAuth,
 		},
 		{
-			"no provider",
+			"no match",
 			New(testProvider{}, testProvider{}),
 			basicAuthRequest,
 			"",

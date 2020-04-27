@@ -13,7 +13,4 @@ type UserStorage interface {
 	Create(ctx context.Context, o model.User) (uint64, error)
 	Update(ctx context.Context, o model.User) error
 	Delete(ctx context.Context, o model.User) error
-
-	Login(ctx context.Context, login, password string) (model.User, error)
-	IsAuthorized(ctx context.Context, user model.User, profile string) bool
 }

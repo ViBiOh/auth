@@ -20,18 +20,18 @@ var _ ident.Provider = &App{}
 // Provider check user credentials
 type Provider interface {
 	// Login user with its credentials
-	Login(context.Context, string, string) (model.User, error)
+	Login(ctx context.Context, login, password string) (model.User, error)
 }
 
 // App of the package
 type App struct {
-	userLogin Provider
+	provider Provider
 }
 
 // New creates new App from Config
-func New(userLogin Provider) App {
+func New(provider Provider) App {
 	return App{
-		userLogin: userLogin,
+		provider: provider,
 	}
 }
 
@@ -55,9 +55,9 @@ func (a App) GetUser(ctx context.Context, content string) (model.User, error) {
 	}
 
 	login := strings.ToLower(data[:sepIndex])
-	password := data[sepIndex+1:]
+	password := strings.TrimSpace(data[sepIndex+1:])
 
-	return a.userLogin.Login(ctx, login, password)
+	return a.provider.Login(ctx, login, password)
 }
 
 // OnError handles HTTP request when login fails
