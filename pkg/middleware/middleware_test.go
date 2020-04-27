@@ -84,21 +84,21 @@ func TestMiddleware(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range cases {
-		t.Run(testCase.intention, func(t *testing.T) {
+	for _, tc := range cases {
+		t.Run(tc.intention, func(t *testing.T) {
 			handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.Write([]byte(r.Method))
 			})
 
 			writer := httptest.NewRecorder()
-			testCase.instance.Middleware(handler).ServeHTTP(writer, testCase.request)
+			tc.instance.Middleware(handler).ServeHTTP(writer, tc.request)
 
-			if result := writer.Code; result != testCase.wantStatus {
-				t.Errorf("Middleware = %d, want %d", result, testCase.wantStatus)
+			if got := writer.Code; got != tc.wantStatus {
+				t.Errorf("Middleware = %d, want %d", got, tc.wantStatus)
 			}
 
-			if result, _ := request.ReadBodyResponse(writer.Result()); string(result) != testCase.want {
-				t.Errorf("Middleware = `%s`, want `%s`", string(result), testCase.want)
+			if got, _ := request.ReadBodyResponse(writer.Result()); string(got) != tc.want {
+				t.Errorf("Middleware = `%s`, want `%s`", string(got), tc.want)
 			}
 		})
 	}
@@ -174,20 +174,22 @@ func TestIsAuthenticated(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range cases {
-		t.Run(testCase.intention, func(t *testing.T) {
-			_, result, err := testCase.instance.IsAuthenticated(testCase.request, testCase.profile)
+	for _, tc := range cases {
+		t.Run(tc.intention, func(t *testing.T) {
+			_, got, gotErr := tc.instance.IsAuthenticated(tc.request, tc.profile)
 
 			failed := false
 
-			if testCase.wantErr != nil && !errors.Is(err, testCase.wantErr) {
+			if tc.wantErr == nil && gotErr != nil {
 				failed = true
-			} else if !reflect.DeepEqual(result, testCase.want) {
+			} else if tc.wantErr != nil && !errors.Is(gotErr, tc.wantErr) {
+				failed = true
+			} else if !reflect.DeepEqual(got, tc.want) {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("IsAuthenticated() = (%v, `%s`), want (%v, `%s`)", result, err, testCase.want, testCase.wantErr)
+				t.Errorf("IsAuthenticated() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
 			}
 		})
 	}
@@ -217,10 +219,10 @@ func TestHasProfile(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range cases {
-		t.Run(testCase.intention, func(t *testing.T) {
-			if result := testCase.instance.HasProfile(context.Background(), testCase.user, testCase.profile); result != testCase.want {
-				t.Errorf("HasProfile() = %t, want %t", result, testCase.want)
+	for _, tc := range cases {
+		t.Run(tc.intention, func(t *testing.T) {
+			if got := tc.instance.HasProfile(context.Background(), tc.user, tc.profile); got != tc.want {
+				t.Errorf("HasProfile() = %t, want %t", got, tc.want)
 			}
 		})
 	}
@@ -253,17 +255,17 @@ func TestOnHandlerFail(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range cases {
-		t.Run(testCase.intention, func(t *testing.T) {
+	for _, tc := range cases {
+		t.Run(tc.intention, func(t *testing.T) {
 			writer := httptest.NewRecorder()
-			onHandlerFail(writer, testCase.request, testCase.err, testCase.provider)
+			onHandlerFail(writer, tc.request, tc.err, tc.provider)
 
-			if result := writer.Code; result != testCase.wantStatus {
-				t.Errorf("onHandlerFail = %d, want %d", result, testCase.wantStatus)
+			if got := writer.Code; got != tc.wantStatus {
+				t.Errorf("onHandlerFail = %d, want %d", got, tc.wantStatus)
 			}
 
-			if result, _ := request.ReadBodyResponse(writer.Result()); string(result) != testCase.want {
-				t.Errorf("onHandlerFail = `%s`, want `%s`", string(result), testCase.want)
+			if got, _ := request.ReadBodyResponse(writer.Result()); string(got) != tc.want {
+				t.Errorf("onHandlerFail = `%s`, want `%s`", string(got), tc.want)
 			}
 		})
 	}

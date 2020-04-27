@@ -25,6 +25,8 @@ type App interface {
 	Create(ctx context.Context, o interface{}) (interface{}, error)
 	Update(ctx context.Context, o interface{}) (interface{}, error)
 	Delete(ctx context.Context, o interface{}) error
+
+	CheckRights(ctx context.Context, id uint64) error
 }
 
 type app struct {
@@ -53,7 +55,7 @@ func (a app) Unmarshal(data []byte, contentType string) (interface{}, error) {
 
 // List Users
 func (a app) List(ctx context.Context, page, pageSize uint, sortKey string, sortAsc bool, filters map[string][]string) ([]interface{}, uint, error) {
-	if err := a.checkAdminOrSelfContext(ctx, 0); err != nil {
+	if err := a.CheckRights(ctx, 0); err != nil {
 		return nil, 0, err
 	}
 
@@ -72,7 +74,7 @@ func (a app) List(ctx context.Context, page, pageSize uint, sortKey string, sort
 
 // Get User
 func (a app) Get(ctx context.Context, ID uint64) (interface{}, error) {
-	if err := a.checkAdminOrSelfContext(ctx, ID); err != nil {
+	if err := a.CheckRights(ctx, ID); err != nil {
 		return nil, err
 	}
 
@@ -105,7 +107,7 @@ func (a app) Create(ctx context.Context, o interface{}) (interface{}, error) {
 func (a app) Update(ctx context.Context, o interface{}) (interface{}, error) {
 	user := o.(model.User)
 
-	if err := a.checkAdminOrSelfContext(ctx, user.ID); err != nil {
+	if err := a.CheckRights(ctx, user.ID); err != nil {
 		return nil, err
 	}
 
@@ -120,7 +122,7 @@ func (a app) Update(ctx context.Context, o interface{}) (interface{}, error) {
 func (a app) Delete(ctx context.Context, o interface{}) (err error) {
 	user := o.(model.User)
 
-	if err := a.checkAdminOrSelfContext(ctx, user.ID); err != nil {
+	if err := a.CheckRights(ctx, user.ID); err != nil {
 		return err
 	}
 
@@ -155,19 +157,15 @@ func (a app) Check(ctx context.Context, old, new interface{}) []crud.Error {
 	return output
 }
 
-func (a app) checkAdminOrSelfContext(ctx context.Context, id uint64) error {
+func (a app) CheckRights(ctx context.Context, id uint64) error {
 	user := model.ReadUser(ctx)
 	if user == model.NoneUser {
 		return crud.ErrUnauthorized
 	}
 
-	if id != 0 && user.ID == id {
+	if id != 0 && user.ID == id || a.auth.IsAuthorized(ctx, user, "admin") {
 		return nil
 	}
 
-	if !a.auth.IsAuthorized(ctx, user, "admin") {
-		return crud.ErrForbidden
-	}
-
-	return nil
+	return crud.ErrForbidden
 }
