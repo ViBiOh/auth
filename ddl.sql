@@ -1,15 +1,17 @@
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- clean
-DROP TABLE IF EXISTS login;
+DROP TABLE IF EXISTS login_profile;
 DROP TABLE IF EXISTS profile;
+DROP TABLE IF EXISTS login;
 
-DROP SEQUENCE IF EXISTS login_seq;
 DROP SEQUENCE IF EXISTS profile_seq;
+DROP SEQUENCE IF EXISTS login_seq;
 
-DROP INDEX IF EXISTS login_id;
-DROP INDEX IF EXISTS login_login;
+DROP INDEX IF EXISTS login_profile_login_id;
 DROP INDEX IF EXISTS profile_id;
+DROP INDEX IF EXISTS profile_id;
+DROP INDEX IF EXISTS login_login;
 
 -- user
 CREATE SEQUENCE login_seq;
@@ -37,8 +39,8 @@ CREATE UNIQUE INDEX profile_id ON profile(id);
 
 -- login_profile
 CREATE TABLE login_profile (
-  login_id BIGINT NOT NULL REFERENCES login(id),
-  profile_id BIGINT NOT NULL REFERENCES profile(id),
+  login_id BIGINT NOT NULL REFERENCES login(id) ON DELETE CASCADE,
+  profile_id BIGINT NOT NULL REFERENCES profile(id) ON DELETE CASCADE,
   creation_date TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 

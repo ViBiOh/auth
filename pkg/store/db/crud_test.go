@@ -12,7 +12,7 @@ import (
 	"github.com/ViBiOh/httputils/v3/pkg/db"
 )
 
-func TestListTargets(t *testing.T) {
+func TestList(t *testing.T) {
 	type args struct {
 		page     uint
 		pageSize uint
@@ -121,7 +121,7 @@ func TestListTargets(t *testing.T) {
 			}
 
 			if failed {
-				t.Errorf("listTargets() = (%+v, %d, `%s`), want (%+v, %d, `%s`)", got, gotCount, gotErr, tc.want, tc.wantCount, tc.wantErr)
+				t.Errorf("List() = (%+v, %d, `%s`), want (%+v, %d, `%s`)", got, gotCount, gotErr, tc.want, tc.wantCount, tc.wantErr)
 			}
 
 			if err := mock.ExpectationsWereMet(); err != nil {
