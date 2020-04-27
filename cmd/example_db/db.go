@@ -4,7 +4,6 @@ import (
 	"flag"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/ViBiOh/auth/v2/pkg/ident/basic"
 	"github.com/ViBiOh/auth/v2/pkg/middleware"
@@ -14,13 +13,14 @@ import (
 	"github.com/ViBiOh/httputils/v3/pkg/db"
 	"github.com/ViBiOh/httputils/v3/pkg/httputils"
 	"github.com/ViBiOh/httputils/v3/pkg/logger"
+	"github.com/ViBiOh/httputils/v3/pkg/query"
 )
 
 func main() {
-	fs := flag.NewFlagSet("db", flag.ExitOnError)
+	fs := flag.NewFlagSet("example", flag.ExitOnError)
 
-	dbConfig := db.Flags(fs, "ident")
-	crudConfig := crud.GetConfiguredFlags("auth", "")(fs, "ident")
+	dbConfig := db.Flags(fs, "db")
+	crudConfig := crud.GetConfiguredFlags("/users", "User")(fs, "crud")
 	serverConfig := httputils.Flags(fs, "")
 
 	logger.Fatal(fs.Parse(os.Args[1:]))
@@ -30,21 +30,21 @@ func main() {
 
 	authProvider := dbStore.New(appDB)
 	identProvider := basic.New(authProvider)
-
 	middlewareApp := middleware.New(authProvider, identProvider)
 
-	crudHandler, err := crud.New(crudConfig, service.New(authProvider, authProvider))
+	crudApp, err := crud.New(crudConfig, service.New(authProvider, authProvider))
 	logger.Fatal(err)
 
-	rawHandler := http.StripPrefix("/signup", crudHandler.Handler())
-	protectedHandler := httputils.ChainMiddlewares(crudHandler.Handler(), middlewareApp.Middleware)
+	crudHandler := crudApp.Handler()
 
+	protectedHandler := httputils.ChainMiddlewares(crudHandler, middlewareApp.Middleware)
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasPrefix(r.URL.Path, "/signup") && r.Method == http.MethodPost {
-			rawHandler.ServeHTTP(w, r)
-		} else {
-			protectedHandler.ServeHTTP(w, r)
+		if r.Method == http.MethodPost && query.IsRoot(r) {
+			crudHandler.ServeHTTP(w, r)
+			return
 		}
+
+		protectedHandler.ServeHTTP(w, r)
 	})
 
 	server := httputils.New(serverConfig)

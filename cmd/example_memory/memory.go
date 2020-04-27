@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	fs := flag.NewFlagSet("memory", flag.ExitOnError)
+	fs := flag.NewFlagSet("example", flag.ExitOnError)
 
 	basicConfig := memoryStore.Flags(fs, "")
 	serverConfig := httputils.Flags(fs, "")
