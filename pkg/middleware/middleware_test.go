@@ -1,4 +1,4 @@
-package handler
+package middleware
 
 import (
 	"context"
@@ -20,7 +20,7 @@ type testProvider struct {
 	matching bool
 }
 
-func (t testProvider) IsAuthorized(user model.User, profile string) bool {
+func (t testProvider) IsAuthorized(ctx context.Context, user model.User, profile string) bool {
 	if profile == "admin" {
 		return true
 	}
@@ -31,7 +31,7 @@ func (t testProvider) IsMatching(input string) bool {
 	return t.matching
 }
 
-func (t testProvider) GetUser(input string) (model.User, error) {
+func (t testProvider) GetUser(ctx context.Context, input string) (model.User, error) {
 	if input == "Basic YWRtaW46cGFzc3dvcmQ=" {
 		return model.NewUser(8000, "admin"), nil
 	} else if input == "Basic" {
@@ -42,38 +42,6 @@ func (t testProvider) GetUser(input string) (model.User, error) {
 
 func (t testProvider) OnError(w http.ResponseWriter, r *http.Request, err error) {
 	http.Error(w, err.Error(), http.StatusTeapot)
-}
-
-func TestUserFromContext(t *testing.T) {
-	var cases = []struct {
-		intention string
-		input     context.Context
-		want      model.User
-	}{
-		{
-			"empty",
-			context.Background(),
-			model.NoneUser,
-		},
-		{
-			"invalid type",
-			context.WithValue(context.Background(), ctxUserKey, "User value"),
-			model.NoneUser,
-		},
-		{
-			"valid",
-			context.WithValue(context.Background(), ctxUserKey, model.NewUser(8000, "test")),
-			model.NewUser(8000, "test"),
-		},
-	}
-
-	for _, testCase := range cases {
-		t.Run(testCase.intention, func(t *testing.T) {
-			if result := UserFromContext(testCase.input); !reflect.DeepEqual(result, testCase.want) {
-				t.Errorf("UserFromContext() = %v, want %v", result, testCase.want)
-			}
-		})
-	}
 }
 
 func TestMiddleware(t *testing.T) {
@@ -87,7 +55,7 @@ func TestMiddleware(t *testing.T) {
 		wantStatus int
 	}{
 		{
-			"do nothing if no provider",
+			"no provider",
 			New(nil),
 			httptest.NewRequest(http.MethodOptions, "/", nil),
 			"OPTIONS",
@@ -101,14 +69,14 @@ func TestMiddleware(t *testing.T) {
 			http.StatusNoContent,
 		},
 		{
-			"handle authentication failure",
+			"failure",
 			New(nil, testProvider{}),
 			httptest.NewRequest(http.MethodGet, "/", nil),
 			"empty authorization content\n",
 			http.StatusTeapot,
 		},
 		{
-			"handle authentication",
+			"success",
 			New(nil, testProvider{matching: true}),
 			basicAuthRequest,
 			"GET",
@@ -116,21 +84,21 @@ func TestMiddleware(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range cases {
-		t.Run(testCase.intention, func(t *testing.T) {
+	for _, tc := range cases {
+		t.Run(tc.intention, func(t *testing.T) {
 			handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.Write([]byte(r.Method))
 			})
 
 			writer := httptest.NewRecorder()
-			testCase.instance.Middleware(handler).ServeHTTP(writer, testCase.request)
+			tc.instance.Middleware(handler).ServeHTTP(writer, tc.request)
 
-			if result := writer.Code; result != testCase.wantStatus {
-				t.Errorf("Middleware = %d, want %d", result, testCase.wantStatus)
+			if got := writer.Code; got != tc.wantStatus {
+				t.Errorf("Middleware = %d, want %d", got, tc.wantStatus)
 			}
 
-			if result, _ := request.ReadBodyResponse(writer.Result()); string(result) != testCase.want {
-				t.Errorf("Middleware = `%s`, want `%s`", string(result), testCase.want)
+			if got, _ := request.ReadBodyResponse(writer.Result()); string(got) != tc.want {
+				t.Errorf("Middleware = `%s`, want `%s`", string(got), tc.want)
 			}
 		})
 	}
@@ -165,7 +133,7 @@ func TestIsAuthenticated(t *testing.T) {
 			ErrEmptyAuth,
 		},
 		{
-			"no provider",
+			"no match",
 			New(testProvider{}, testProvider{}),
 			basicAuthRequest,
 			"",
@@ -206,20 +174,22 @@ func TestIsAuthenticated(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range cases {
-		t.Run(testCase.intention, func(t *testing.T) {
-			_, result, err := testCase.instance.IsAuthenticated(testCase.request, testCase.profile)
+	for _, tc := range cases {
+		t.Run(tc.intention, func(t *testing.T) {
+			_, got, gotErr := tc.instance.IsAuthenticated(tc.request, tc.profile)
 
 			failed := false
 
-			if testCase.wantErr != nil && !errors.Is(err, testCase.wantErr) {
+			if tc.wantErr == nil && gotErr != nil {
 				failed = true
-			} else if !reflect.DeepEqual(result, testCase.want) {
+			} else if tc.wantErr != nil && !errors.Is(gotErr, tc.wantErr) {
+				failed = true
+			} else if !reflect.DeepEqual(got, tc.want) {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("IsAuthenticated() = (%v, `%s`), want (%v, `%s`)", result, err, testCase.want, testCase.wantErr)
+				t.Errorf("IsAuthenticated() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
 			}
 		})
 	}
@@ -249,10 +219,10 @@ func TestHasProfile(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range cases {
-		t.Run(testCase.intention, func(t *testing.T) {
-			if result := testCase.instance.HasProfile(testCase.user, testCase.profile); result != testCase.want {
-				t.Errorf("HasProfile() = %t, want %t", result, testCase.want)
+	for _, tc := range cases {
+		t.Run(tc.intention, func(t *testing.T) {
+			if got := tc.instance.HasProfile(context.Background(), tc.user, tc.profile); got != tc.want {
+				t.Errorf("HasProfile() = %t, want %t", got, tc.want)
 			}
 		})
 	}
@@ -285,17 +255,17 @@ func TestOnHandlerFail(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range cases {
-		t.Run(testCase.intention, func(t *testing.T) {
+	for _, tc := range cases {
+		t.Run(tc.intention, func(t *testing.T) {
 			writer := httptest.NewRecorder()
-			onHandlerFail(writer, testCase.request, testCase.err, testCase.provider)
+			onHandlerFail(writer, tc.request, tc.err, tc.provider)
 
-			if result := writer.Code; result != testCase.wantStatus {
-				t.Errorf("onHandlerFail = %d, want %d", result, testCase.wantStatus)
+			if got := writer.Code; got != tc.wantStatus {
+				t.Errorf("onHandlerFail = %d, want %d", got, tc.wantStatus)
 			}
 
-			if result, _ := request.ReadBodyResponse(writer.Result()); string(result) != testCase.want {
-				t.Errorf("onHandlerFail = `%s`, want `%s`", string(result), testCase.want)
+			if got, _ := request.ReadBodyResponse(writer.Result()); string(got) != tc.want {
+				t.Errorf("onHandlerFail = `%s`, want `%s`", string(got), tc.want)
 			}
 		})
 	}

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
@@ -8,6 +9,7 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/ViBiOh/auth/v2/pkg/ident"
 	"github.com/ViBiOh/auth/v2/pkg/model"
+	"github.com/ViBiOh/httputils/v3/pkg/db"
 )
 
 func TestLogin(t *testing.T) {
@@ -53,11 +55,11 @@ func TestLogin(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			db, mock, err := sqlmock.New()
+			mockDb, mock, err := sqlmock.New()
 			if err != nil {
 				t.Fatalf("unable to create mock database: %s", err)
 			}
-			defer db.Close()
+			defer mockDb.Close()
 
 			expectedQuery := mock.ExpectQuery("SELECT id, login FROM login WHERE login = .+ AND password = crypt(.+, password)").WithArgs("vibioh", "secret")
 
@@ -68,16 +70,16 @@ func TestLogin(t *testing.T) {
 			}
 
 			if tc.intention == "timeout" {
-				savedSQLTimeout := sqlTimeout
-				sqlTimeout = time.Second
+				savedSQLTimeout := db.SQLTimeout
+				db.SQLTimeout = time.Second
 				defer func() {
-					sqlTimeout = savedSQLTimeout
+					db.SQLTimeout = savedSQLTimeout
 				}()
 
-				expectedQuery.WillDelayFor(sqlTimeout * 2)
+				expectedQuery.WillDelayFor(db.SQLTimeout * 2)
 			}
 
-			got, gotErr := New(db).Login(tc.args.login, tc.args.password)
+			got, gotErr := New(mockDb).Login(context.Background(), tc.args.login, tc.args.password)
 			failed := false
 
 			if tc.wantErr != nil && !errors.Is(gotErr, tc.wantErr) {
@@ -128,25 +130,25 @@ func TestIsAuthorized(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			db, mock, err := sqlmock.New()
+			mockDb, mock, err := sqlmock.New()
 			if err != nil {
 				t.Fatalf("unable to create mock database: %s", err)
 			}
-			defer db.Close()
+			defer mockDb.Close()
 
 			expectedQuery := mock.ExpectQuery("SELECT p.id FROM profile p, login_profile lp WHERE p.name = .+ AND lp.profile_id = p.id AND lp.login_id = .+").WithArgs(1, "admin").WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 
 			if tc.intention == "timeout" {
-				savedSQLTimeout := sqlTimeout
-				sqlTimeout = time.Second
+				savedSQLTimeout := db.SQLTimeout
+				db.SQLTimeout = time.Second
 				defer func() {
-					sqlTimeout = savedSQLTimeout
+					db.SQLTimeout = savedSQLTimeout
 				}()
 
-				expectedQuery.WillDelayFor(sqlTimeout * 2)
+				expectedQuery.WillDelayFor(db.SQLTimeout * 2)
 			}
 
-			if got := New(db).IsAuthorized(tc.args.user, tc.args.profile); got != tc.want {
+			if got := New(mockDb).IsAuthorized(context.Background(), tc.args.user, tc.args.profile); got != tc.want {
 				t.Errorf("IsAuthorized() = %t, want %t", got, tc.want)
 			}
 

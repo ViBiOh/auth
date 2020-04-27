@@ -1,7 +1,7 @@
 github.com/DATA-DOG/go-sqlmock v1.4.1 h1:ThlnYciV1iM/V0OSF/dtkqWb6xo5qITT1TJBG1MRDJM=
 github.com/DATA-DOG/go-sqlmock v1.4.1/go.mod h1:f/Ixk793poVmq4qj/V1dPUg2JEAKC73Q5eFN3EC/SaM=
-github.com/ViBiOh/httputils/v3 v3.15.0 h1:e7Ogaio1aJRlztCF1UPo7NPKHhmVyuym496hez83JiA=
-github.com/ViBiOh/httputils/v3 v3.15.0/go.mod h1:XaNCzKOhynf+7U0E0RXrzGLtMkLxpVzrHwa0N1ANTmo=
+github.com/ViBiOh/httputils/v3 v3.16.1 h1:oHla9p0TJr3y6QfDa1RQoq4imhMunG8055gXvOMiYik=
+github.com/ViBiOh/httputils/v3 v3.16.1/go.mod h1:XaNCzKOhynf+7U0E0RXrzGLtMkLxpVzrHwa0N1ANTmo=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
 github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
 github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf/go.mod h1:ybxpYRFXyAe+OPACYpWeL0wqObRcbAqCMya13uyzqw0=

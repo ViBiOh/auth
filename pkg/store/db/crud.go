@@ -1,11 +1,10 @@
-package service
+package db
 
 import (
 	"context"
 	"database/sql"
 	"fmt"
 	"regexp"
-	"time"
 
 	"github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/httputils/v3/pkg/db"
@@ -13,22 +12,12 @@ import (
 
 var (
 	sortKeyMatcher = regexp.MustCompile(`[A-Za-z0-9]+`)
-	sqlTimeout     = time.Second * 5
 )
 
-// RowScanner describes scan ability of a row
-type RowScanner interface {
-	Scan(...interface{}) error
-}
+func scanUser(row db.RowScanner) (model.User, error) {
+	var user model.User
 
-func scanUser(row RowScanner) (model.User, error) {
-	var (
-		id    uint64
-		login string
-	)
-
-	err := row.Scan(&id, &login)
-	if err != nil {
+	if err := row.Scan(&user.ID, &user.Login); err != nil {
 		if err == sql.ErrNoRows {
 			return model.NoneUser, nil
 		}
@@ -36,7 +25,7 @@ func scanUser(row RowScanner) (model.User, error) {
 		return model.NoneUser, err
 	}
 
-	return model.NewUser(id, login), nil
+	return user, nil
 }
 
 func scanUsers(rows *sql.Rows) ([]model.User, uint, error) {
@@ -60,7 +49,7 @@ const listQuery = `
 SELECT
   id,
   login,
-  count(id) OVER() AS full_count
+  count(1) OVER() AS full_count
 FROM
   login
 ORDER BY %s
@@ -68,7 +57,7 @@ LIMIT $1
 OFFSET $2
 `
 
-func (a app) list(page, pageSize uint, sortKey string, sortAsc bool) ([]model.User, uint, error) {
+func (a app) List(ctx context.Context, page, pageSize uint, sortKey string, sortAsc bool) ([]model.User, uint, error) {
 	order := "creation_date DESC"
 
 	if sortKeyMatcher.MatchString(sortKey) {
@@ -81,7 +70,7 @@ func (a app) list(page, pageSize uint, sortKey string, sortAsc bool) ([]model.Us
 
 	offset := (page - 1) * pageSize
 
-	ctx, cancel := context.WithTimeout(context.Background(), sqlTimeout)
+	ctx, cancel := context.WithTimeout(ctx, db.SQLTimeout)
 	defer cancel()
 
 	rows, err := a.db.QueryContext(ctx, fmt.Sprintf(listQuery, order), pageSize, offset)
@@ -106,13 +95,8 @@ WHERE
   id = $1
 `
 
-func (a app) get(id uint64) (model.User, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), sqlTimeout)
-	defer cancel()
-
-	row := a.db.QueryRowContext(ctx, getByIDQuery, id)
-
-	return scanUser(row)
+func (a app) Get(ctx context.Context, id uint64) (model.User, error) {
+	return scanUser(db.GetRow(ctx, a.db, getByIDQuery, id))
 }
 
 const insertQuery = `
@@ -127,8 +111,8 @@ INSERT INTO
 ) RETURNING id
 `
 
-func (a app) create(o model.User, tx *sql.Tx) (uint64, error) {
-	return db.CreateWithTimeout(a.db, tx, sqlTimeout, insertQuery, o.Login, o.Password)
+func (a app) Create(ctx context.Context, o model.User) (uint64, error) {
+	return db.Create(ctx, a.db, insertQuery, o.Login, o.Password)
 }
 
 const updateQuery = `
@@ -140,8 +124,21 @@ WHERE
   id = $1
 `
 
-func (a app) update(o model.User, tx *sql.Tx) error {
-	return db.ExecWithTimeout(a.db, tx, sqlTimeout, updateQuery, o.ID, o.Login)
+func (a app) Update(ctx context.Context, o model.User) error {
+	return db.Exec(ctx, a.db, updateQuery, o.ID, o.Login)
+}
+
+const updatePasswordQuery = `
+UPDATE
+  login
+SET
+  password = crypt($2, gen_salt('bf',8))
+WHERE
+  id = $1
+`
+
+func (a app) UpdatePassword(ctx context.Context, o model.User) error {
+	return db.Exec(ctx, a.db, updatePasswordQuery, o.ID, o.Password)
 }
 
 const deleteQuery = `
@@ -151,6 +148,6 @@ WHERE
   id = $1
 `
 
-func (a app) delete(o model.User, tx *sql.Tx) error {
-	return db.ExecWithTimeout(a.db, tx, sqlTimeout, deleteQuery, o.ID)
+func (a app) Delete(ctx context.Context, o model.User) error {
+	return db.Exec(ctx, a.db, deleteQuery, o.ID)
 }
