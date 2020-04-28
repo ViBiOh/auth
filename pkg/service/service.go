@@ -95,6 +95,7 @@ func (a app) Create(ctx context.Context, o interface{}) (interface{}, error) {
 	}
 
 	user.ID = id
+	user.Password = ""
 
 	return user, nil
 }
