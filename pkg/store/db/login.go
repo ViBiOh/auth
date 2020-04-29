@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"database/sql"
+	"strings"
 
 	"github.com/ViBiOh/auth/v2/pkg/ident"
 	"github.com/ViBiOh/auth/v2/pkg/model"
@@ -27,7 +28,7 @@ func (a app) Login(ctx context.Context, login, password string) (model.User, err
 	ctx, cancel := context.WithTimeout(ctx, db.SQLTimeout)
 	defer cancel()
 
-	if err := a.db.QueryRowContext(ctx, readUserQuery, login, password).Scan(&user.ID, &user.Login); err != nil {
+	if err := a.db.QueryRowContext(ctx, readUserQuery, strings.ToLower(login), password).Scan(&user.ID, &user.Login); err != nil {
 		logger.Error("unable to login %s: %s", login, err.Error())
 
 		if err == sql.ErrNoRows {

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/httputils/v3/pkg/db"
@@ -13,20 +14,6 @@ import (
 var (
 	sortKeyMatcher = regexp.MustCompile(`[A-Za-z0-9]+`)
 )
-
-func scanUser(row db.RowScanner) (model.User, error) {
-	var user model.User
-
-	if err := row.Scan(&user.ID, &user.Login); err != nil {
-		if err == sql.ErrNoRows {
-			return model.NoneUser, nil
-		}
-
-		return model.NoneUser, err
-	}
-
-	return user, nil
-}
 
 func scanUsers(rows *sql.Rows) ([]model.User, uint, error) {
 	var totalCount uint
@@ -96,7 +83,19 @@ WHERE
 `
 
 func (a app) Get(ctx context.Context, id uint64) (model.User, error) {
-	return scanUser(db.GetRow(ctx, a.db, getByIDQuery, id))
+	var item model.User
+	scanner := func(row db.RowScanner) error {
+		err := row.Scan(&item.ID, &item.Login)
+		if err == sql.ErrNoRows {
+			item = model.NoneUser
+			return nil
+		}
+
+		return err
+	}
+
+	err := db.GetRow(ctx, a.db, scanner, getByIDQuery, id)
+	return item, err
 }
 
 const insertQuery = `
@@ -112,7 +111,7 @@ INSERT INTO
 `
 
 func (a app) Create(ctx context.Context, o model.User) (uint64, error) {
-	return db.Create(ctx, a.db, insertQuery, o.Login, o.Password)
+	return db.Create(ctx, a.db, insertQuery, strings.ToLower(o.Login), o.Password)
 }
 
 const updateQuery = `
@@ -125,7 +124,7 @@ WHERE
 `
 
 func (a app) Update(ctx context.Context, o model.User) error {
-	return db.Exec(ctx, a.db, updateQuery, o.ID, o.Login)
+	return db.Exec(ctx, a.db, updateQuery, o.ID, strings.ToLower(o.Login))
 }
 
 const updatePasswordQuery = `
