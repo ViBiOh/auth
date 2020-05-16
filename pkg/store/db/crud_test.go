@@ -217,11 +217,17 @@ func TestCreate(t *testing.T) {
 			}
 			defer mockDb.Close()
 
+			ctx := context.Background()
 			mock.ExpectBegin()
-			mock.ExpectQuery("INSERT INTO login").WithArgs("vibioh", "secret").WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
-			mock.ExpectCommit()
+			tx, err := mockDb.Begin()
+			if err != nil {
+				t.Errorf("unable to create tx: %s", err)
+			}
+			ctx = db.StoreTx(ctx, tx)
 
-			got, gotErr := app{db: mockDb}.Create(context.Background(), tc.args.o)
+			mock.ExpectQuery("INSERT INTO login").WithArgs("vibioh", "secret").WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
+
+			got, gotErr := app{db: mockDb}.Create(ctx, tc.args.o)
 
 			failed := false
 
@@ -274,11 +280,17 @@ func TestUpdate(t *testing.T) {
 			}
 			defer mockDb.Close()
 
+			ctx := context.Background()
 			mock.ExpectBegin()
-			mock.ExpectExec("UPDATE login SET login").WithArgs(1, "vibioh").WillReturnResult(sqlmock.NewResult(0, 1))
-			mock.ExpectCommit()
+			tx, err := mockDb.Begin()
+			if err != nil {
+				t.Errorf("unable to create tx: %s", err)
+			}
+			ctx = db.StoreTx(ctx, tx)
 
-			gotErr := app{db: mockDb}.Update(context.Background(), tc.args.o)
+			mock.ExpectExec("UPDATE login SET login").WithArgs(1, "vibioh").WillReturnResult(sqlmock.NewResult(0, 1))
+
+			gotErr := app{db: mockDb}.Update(ctx, tc.args.o)
 
 			failed := false
 
@@ -329,11 +341,17 @@ func TestUpdatePassword(t *testing.T) {
 			}
 			defer mockDb.Close()
 
+			ctx := context.Background()
 			mock.ExpectBegin()
-			mock.ExpectExec("UPDATE login SET password").WithArgs(1, "secret").WillReturnResult(sqlmock.NewResult(0, 1))
-			mock.ExpectCommit()
+			tx, err := mockDb.Begin()
+			if err != nil {
+				t.Errorf("unable to create tx: %s", err)
+			}
+			ctx = db.StoreTx(ctx, tx)
 
-			gotErr := app{db: mockDb}.UpdatePassword(context.Background(), tc.args.o)
+			mock.ExpectExec("UPDATE login SET password").WithArgs(1, "secret").WillReturnResult(sqlmock.NewResult(0, 1))
+
+			gotErr := app{db: mockDb}.UpdatePassword(ctx, tc.args.o)
 
 			failed := false
 
@@ -383,11 +401,17 @@ func TestDelete(t *testing.T) {
 			}
 			defer mockDb.Close()
 
+			ctx := context.Background()
 			mock.ExpectBegin()
-			mock.ExpectExec("DELETE FROM login").WithArgs(1).WillReturnResult(sqlmock.NewResult(0, 1))
-			mock.ExpectCommit()
+			tx, err := mockDb.Begin()
+			if err != nil {
+				t.Errorf("unable to create tx: %s", err)
+			}
+			ctx = db.StoreTx(ctx, tx)
 
-			gotErr := app{db: mockDb}.Delete(context.Background(), tc.args.o)
+			mock.ExpectExec("DELETE FROM login").WithArgs(1).WillReturnResult(sqlmock.NewResult(0, 1))
+
+			gotErr := app{db: mockDb}.Delete(ctx, tc.args.o)
 
 			failed := false
 

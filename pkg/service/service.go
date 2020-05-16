@@ -2,28 +2,23 @@ package service
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/ViBiOh/auth/v2/pkg/auth"
 	"github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/auth/v2/pkg/store"
-	"github.com/ViBiOh/httputils/v3/pkg/crud"
 	"github.com/ViBiOh/httputils/v3/pkg/logger"
 )
 
-var _ crud.Service = &app{}
-
 // App of package
 type App interface {
-	Unmarshal(data []byte, contentType string) (interface{}, error)
-	Check(ctx context.Context, old, new interface{}) []crud.Error
-	List(ctx context.Context, page, pageSize uint, sortKey string, sortDesc bool, filters map[string][]string) ([]interface{}, uint, error)
-	Get(ctx context.Context, ID uint64) (interface{}, error)
-	Create(ctx context.Context, o interface{}) (interface{}, error)
-	Update(ctx context.Context, o interface{}) (interface{}, error)
-	Delete(ctx context.Context, o interface{}) error
+	List(ctx context.Context, page, pageSize uint, sortKey string, sortDesc bool, filters map[string][]string) ([]model.User, uint, error)
+	Get(ctx context.Context, ID uint64) (model.User, error)
+	Create(ctx context.Context, o model.User) (model.User, error)
+	Update(ctx context.Context, o model.User) (model.User, error)
+	Delete(ctx context.Context, o model.User) error
 
 	CheckRights(ctx context.Context, id uint64) error
 }
@@ -41,15 +36,8 @@ func New(store store.UserStorage, auth auth.Provider) App {
 	}
 }
 
-// Unmarshal User
-func (a app) Unmarshal(data []byte, contentType string) (interface{}, error) {
-	var user model.User
-	err := json.Unmarshal(data, &user)
-	return user, err
-}
-
 // List Users
-func (a app) List(ctx context.Context, page, pageSize uint, sortKey string, sortAsc bool, filters map[string][]string) ([]interface{}, uint, error) {
+func (a app) List(ctx context.Context, page, pageSize uint, sortKey string, sortAsc bool, filters map[string][]string) ([]model.User, uint, error) {
 	if err := a.CheckRights(ctx, 0); err != nil {
 		return nil, 0, err
 	}
@@ -59,7 +47,7 @@ func (a app) List(ctx context.Context, page, pageSize uint, sortKey string, sort
 		return nil, 0, fmt.Errorf("unable to list: %w", err)
 	}
 
-	itemsList := make([]interface{}, len(list))
+	itemsList := make([]model.User, len(list))
 	for index, item := range list {
 		itemsList[index] = item
 	}
@@ -68,27 +56,25 @@ func (a app) List(ctx context.Context, page, pageSize uint, sortKey string, sort
 }
 
 // Get User
-func (a app) Get(ctx context.Context, ID uint64) (interface{}, error) {
+func (a app) Get(ctx context.Context, ID uint64) (model.User, error) {
 	if err := a.CheckRights(ctx, ID); err != nil {
-		return nil, err
+		return model.NoneUser, err
 	}
 
 	item, err := a.store.Get(ctx, ID)
 	if err != nil {
-		return nil, fmt.Errorf("unable to get: %w", err)
+		return model.NoneUser, fmt.Errorf("unable to get: %w", err)
 	}
 
 	if item == model.NoneUser {
-		return nil, crud.ErrNotFound
+		return model.NoneUser, WrapNotFound(errors.New("user not found"))
 	}
 
 	return item, nil
 }
 
 // Create User
-func (a app) Create(ctx context.Context, o interface{}) (interface{}, error) {
-	user := o.(model.User)
-
+func (a app) Create(ctx context.Context, user model.User) (model.User, error) {
 	id, err := a.store.Create(ctx, user)
 	if err != nil {
 		return model.NoneUser, fmt.Errorf("unable to create: %w", err)
@@ -101,9 +87,7 @@ func (a app) Create(ctx context.Context, o interface{}) (interface{}, error) {
 }
 
 // Update User
-func (a app) Update(ctx context.Context, o interface{}) (interface{}, error) {
-	user := o.(model.User)
-
+func (a app) Update(ctx context.Context, user model.User) (model.User, error) {
 	if err := a.store.Update(ctx, user); err != nil {
 		return user, fmt.Errorf("unable to update: %w", err)
 	}
@@ -112,9 +96,7 @@ func (a app) Update(ctx context.Context, o interface{}) (interface{}, error) {
 }
 
 // Delete User
-func (a app) Delete(ctx context.Context, o interface{}) error {
-	user := o.(model.User)
-
+func (a app) Delete(ctx context.Context, user model.User) error {
 	if err := a.store.Delete(ctx, user); err != nil {
 		return fmt.Errorf("unable to delete: %w", err)
 	}
@@ -122,43 +104,41 @@ func (a app) Delete(ctx context.Context, o interface{}) error {
 	return nil
 }
 
-func (a app) Check(ctx context.Context, old, new interface{}) []crud.Error {
-	output := make([]crud.Error, 0)
+func (a app) Check(ctx context.Context, old, new model.User) error {
+	output := make([]error, 0)
 
 	user := model.ReadUser(ctx)
-	if old != nil && user == model.NoneUser {
-		output = append(output, crud.NewError("context", "you must be logged in for interacting"))
+	if old != model.NoneUser && user == model.NoneUser {
+		output = append(output, errors.New("you must be logged in for interacting"))
 	}
 
-	if new == nil && !a.auth.IsAuthorized(ctx, user, "admin") {
-		output = append(output, crud.NewError("context", "you must be an admin for deleting"))
+	if new == model.NoneUser && !a.auth.IsAuthorized(ctx, user, "admin") {
+		output = append(output, errors.New("you must be an admin for deleting"))
 	}
 
-	if new == nil {
-		return output
+	if new == model.NoneUser {
+		return ConcatError(output)
 	}
 
-	newUser := new.(model.User)
-
-	if old != nil && new != nil && !(user.ID == newUser.ID || a.auth.IsAuthorized(ctx, user, "admin")) {
-		output = append(output, crud.NewError("context", "you're not authorized to interact with other user"))
+	if old != model.NoneUser && new != model.NoneUser && !(user.ID == new.ID || a.auth.IsAuthorized(ctx, user, "admin")) {
+		output = append(output, errors.New("you're not authorized to interact with other user"))
 	}
 
-	if len(strings.TrimSpace(newUser.Login)) == 0 {
-		output = append(output, crud.NewError("login", "login is required"))
+	if len(strings.TrimSpace(new.Login)) == 0 {
+		output = append(output, errors.New("login is required"))
 	}
 
-	if old == nil && new != nil && len(strings.TrimSpace(newUser.Password)) == 0 {
-		output = append(output, crud.NewError("password", "password is required"))
+	if old == model.NoneUser && new != model.NoneUser && len(strings.TrimSpace(new.Password)) == 0 {
+		output = append(output, errors.New("password is required"))
 	}
 
-	return output
+	return ConcatError(output)
 }
 
 func (a app) CheckRights(ctx context.Context, id uint64) error {
 	user := model.ReadUser(ctx)
 	if user == model.NoneUser {
-		return crud.ErrUnauthorized
+		return WrapUnauthorized(errors.New("no user in context"))
 	}
 
 	if id != 0 && user.ID == id || a.auth.IsAuthorized(ctx, user, "admin") {
@@ -167,5 +147,5 @@ func (a app) CheckRights(ctx context.Context, id uint64) error {
 
 	logger.Info("unauthorized access for login=%s", user.Login)
 
-	return crud.ErrForbidden
+	return WrapForbidden(errors.New("unauthorized"))
 }

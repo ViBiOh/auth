@@ -8,10 +8,13 @@ import (
 	"testing"
 
 	"github.com/ViBiOh/auth/v2/pkg/model"
-	"github.com/ViBiOh/httputils/v3/pkg/crud"
 )
 
 type testStore struct{}
+
+func (ts testStore) DoAtomic(ctx context.Context, action func(ctx context.Context) error) error {
+	return action(ctx)
+}
 
 func (ts testStore) List(ctx context.Context, page, pageSize uint, sortKey string, sortAsc bool) ([]model.User, uint, error) {
 	if sortKey == "error" {
@@ -63,59 +66,6 @@ func (ts testStore) IsAuthorized(ctx context.Context, user model.User, profile s
 	return user.Login == "admin"
 }
 
-func TestUnmarshal(t *testing.T) {
-	type args struct {
-		data        []byte
-		contentType string
-	}
-
-	var cases = []struct {
-		intention string
-		args      args
-		want      model.User
-		wantErr   error
-	}{
-		{
-			"invalid",
-			args{
-				data: []byte("{\"id\": 1,\"login\": \"vibioh\""),
-			},
-			model.NoneUser,
-			errors.New("unexpected end of JSON input"),
-		},
-		{
-			"valid",
-			args{
-				data: []byte("{\"id\": 1,\"login\": \"vibioh\"}"),
-			},
-			model.NewUser(1, "vibioh"),
-			nil,
-		},
-	}
-
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
-			got, gotErr := New(testStore{}, testStore{}).Unmarshal(tc.args.data, tc.args.contentType)
-
-			failed := false
-
-			if tc.wantErr == nil && gotErr != nil {
-				failed = true
-			} else if tc.wantErr != nil && gotErr == nil {
-				failed = true
-			} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
-				failed = true
-			} else if got != tc.want {
-				failed = true
-			}
-
-			if failed {
-				t.Errorf("Unmarshal() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
-			}
-		})
-	}
-}
-
 func TestList(t *testing.T) {
 	type args struct {
 		ctx      context.Context
@@ -129,7 +79,7 @@ func TestList(t *testing.T) {
 	var cases = []struct {
 		intention string
 		args      args
-		want      []interface{}
+		want      []model.User
 		wantCount uint
 		wantErr   error
 	}{
@@ -140,7 +90,7 @@ func TestList(t *testing.T) {
 			},
 			nil,
 			0,
-			crud.ErrUnauthorized,
+			ErrUnauthorized,
 		},
 		{
 			"not admin",
@@ -149,7 +99,7 @@ func TestList(t *testing.T) {
 			},
 			nil,
 			0,
-			crud.ErrForbidden,
+			ErrForbidden,
 		},
 		{
 			"error on list",
@@ -166,7 +116,7 @@ func TestList(t *testing.T) {
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "admin")),
 			},
-			[]interface{}{
+			[]model.User{
 				model.NewUser(1, "admin"),
 				model.NewUser(2, "guest"),
 			},
@@ -209,7 +159,7 @@ func TestGet(t *testing.T) {
 	var cases = []struct {
 		intention string
 		args      args
-		want      interface{}
+		want      model.User
 		wantErr   error
 	}{
 		{
@@ -217,8 +167,8 @@ func TestGet(t *testing.T) {
 			args{
 				ctx: context.Background(),
 			},
-			nil,
-			crud.ErrUnauthorized,
+			model.NoneUser,
+			ErrUnauthorized,
 		},
 		{
 			"not self",
@@ -226,8 +176,8 @@ func TestGet(t *testing.T) {
 				id:  1,
 				ctx: model.StoreUser(context.Background(), model.NewUser(2, "guest")),
 			},
-			nil,
-			crud.ErrForbidden,
+			model.NoneUser,
+			ErrForbidden,
 		},
 		{
 			"error on get",
@@ -235,7 +185,7 @@ func TestGet(t *testing.T) {
 				id:  8000,
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "admin")),
 			},
-			nil,
+			model.NoneUser,
 			errors.New("unable to get: unable to connect"),
 		},
 		{
@@ -244,8 +194,8 @@ func TestGet(t *testing.T) {
 				id:  2,
 				ctx: model.StoreUser(context.Background(), model.NewUser(2, "guest")),
 			},
-			nil,
-			crud.ErrNotFound,
+			model.NoneUser,
+			ErrNotFound,
 		},
 		{
 			"found",
@@ -283,13 +233,13 @@ func TestGet(t *testing.T) {
 
 func TestCreate(t *testing.T) {
 	type args struct {
-		o interface{}
+		o model.User
 	}
 
 	var cases = []struct {
 		intention string
 		args      args
-		want      interface{}
+		want      model.User
 		wantErr   error
 	}{
 		{
@@ -335,13 +285,13 @@ func TestCreate(t *testing.T) {
 
 func TestUpdate(t *testing.T) {
 	type args struct {
-		o interface{}
+		o model.User
 	}
 
 	var cases = []struct {
 		intention string
 		args      args
-		want      interface{}
+		want      model.User
 		wantErr   error
 	}{
 		{
@@ -387,13 +337,13 @@ func TestUpdate(t *testing.T) {
 
 func TestDelete(t *testing.T) {
 	type args struct {
-		o interface{}
+		o model.User
 	}
 
 	var cases = []struct {
 		intention string
 		args      args
-		want      interface{}
+		want      model.User
 		wantErr   error
 	}{
 		{
@@ -438,34 +388,31 @@ func TestDelete(t *testing.T) {
 func TestCheck(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		old interface{}
-		new interface{}
+		old model.User
+		new model.User
 	}
 
 	var cases = []struct {
 		intention string
 		args      args
-		want      []crud.Error
+		want      error
 	}{
 		{
 			"empty",
 			args{
 				ctx: context.Background(),
 			},
-			[]crud.Error{
-				crud.NewError("context", "you must be an admin for deleting"),
-			},
+			errors.New("you must be an admin for deleting"),
 		},
 		{
 			"create empty",
 			args{
 				ctx: context.Background(),
-				new: model.NoneUser,
+				new: model.User{
+					ID: 1,
+				},
 			},
-			[]crud.Error{
-				crud.NewError("login", "login is required"),
-				crud.NewError("password", "password is required"),
-			},
+			errors.New("login is required, password is required"),
 		},
 		{
 			"create without password",
@@ -473,9 +420,7 @@ func TestCheck(t *testing.T) {
 				ctx: context.Background(),
 				new: model.NewUser(0, "guest"),
 			},
-			[]crud.Error{
-				crud.NewError("password", "password is required"),
-			},
+			errors.New("password is required"),
 		},
 		{
 			"create valid",
@@ -486,7 +431,7 @@ func TestCheck(t *testing.T) {
 					Password: "secret",
 				},
 			},
-			[]crud.Error{},
+			nil,
 		},
 		{
 			"update unauthorized",
@@ -495,11 +440,7 @@ func TestCheck(t *testing.T) {
 				old: model.NewUser(2, "guest"),
 				new: model.NewUser(2, ""),
 			},
-			[]crud.Error{
-				crud.NewError("context", "you must be logged in for interacting"),
-				crud.NewError("context", "you're not authorized to interact with other user"),
-				crud.NewError("login", "login is required"),
-			},
+			errors.New("you must be logged in for interacting, you're not authorized to interact with other user, login is required"),
 		},
 		{
 			"update forbidden",
@@ -508,10 +449,7 @@ func TestCheck(t *testing.T) {
 				old: model.NewUser(2, "guest"),
 				new: model.NewUser(2, ""),
 			},
-			[]crud.Error{
-				crud.NewError("context", "you're not authorized to interact with other user"),
-				crud.NewError("login", "login is required"),
-			},
+			errors.New("you're not authorized to interact with other user, login is required"),
 		},
 		{
 			"update empty login",
@@ -520,9 +458,7 @@ func TestCheck(t *testing.T) {
 				old: model.NewUser(2, "guest"),
 				new: model.NewUser(2, ""),
 			},
-			[]crud.Error{
-				crud.NewError("login", "login is required"),
-			},
+			errors.New("login is required"),
 		},
 		{
 			"update valid",
@@ -531,7 +467,7 @@ func TestCheck(t *testing.T) {
 				old: model.NewUser(2, "guest"),
 				new: model.NewUser(2, "guest_new"),
 			},
-			[]crud.Error{},
+			nil,
 		},
 		{
 			"update as admin",
@@ -540,7 +476,7 @@ func TestCheck(t *testing.T) {
 				old: model.NewUser(2, "guest"),
 				new: model.NewUser(2, "guest_new"),
 			},
-			[]crud.Error{},
+			nil,
 		},
 		{
 			"delete unauthorized",
@@ -548,10 +484,7 @@ func TestCheck(t *testing.T) {
 				ctx: context.Background(),
 				old: model.NewUser(2, "guest"),
 			},
-			[]crud.Error{
-				crud.NewError("context", "you must be logged in for interacting"),
-				crud.NewError("context", "you must be an admin for deleting"),
-			},
+			errors.New("you must be logged in for interacting, you must be an admin for deleting"),
 		},
 		{
 			"delete forbidden",
@@ -559,9 +492,7 @@ func TestCheck(t *testing.T) {
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "guest")),
 				old: model.NewUser(2, "guest"),
 			},
-			[]crud.Error{
-				crud.NewError("context", "you must be an admin for deleting"),
-			},
+			errors.New("you must be an admin for deleting"),
 		},
 		{
 			"delete self",
@@ -569,9 +500,7 @@ func TestCheck(t *testing.T) {
 				ctx: model.StoreUser(context.Background(), model.NewUser(2, "guest")),
 				old: model.NewUser(2, "guest"),
 			},
-			[]crud.Error{
-				crud.NewError("context", "you must be an admin for deleting"),
-			},
+			errors.New("you must be an admin for deleting"),
 		},
 		{
 			"delete admin",
@@ -579,13 +508,14 @@ func TestCheck(t *testing.T) {
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "admin")),
 				old: model.NewUser(2, "guest"),
 			},
-			[]crud.Error{},
+			nil,
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			if got := New(testStore{}, testStore{}).Check(tc.args.ctx, tc.args.old, tc.args.new); !reflect.DeepEqual(got, tc.want) {
+			testApp := app{store: testStore{}, auth: testStore{}}
+			if got := testApp.Check(tc.args.ctx, tc.args.old, tc.args.new); !reflect.DeepEqual(got, tc.want) {
 				t.Errorf("Check() = %+v, want %+v", got, tc.want)
 			}
 		})

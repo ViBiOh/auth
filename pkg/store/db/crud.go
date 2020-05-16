@@ -32,6 +32,10 @@ func scanUsers(rows *sql.Rows) ([]model.User, uint, error) {
 	return list, totalCount, nil
 }
 
+func (a app) DoAtomic(ctx context.Context, action func(context.Context) error) error {
+	return db.DoAtomic(ctx, a.db, action)
+}
+
 const listQuery = `
 SELECT
   id,
@@ -111,7 +115,7 @@ INSERT INTO
 `
 
 func (a app) Create(ctx context.Context, o model.User) (uint64, error) {
-	return db.Create(ctx, a.db, insertQuery, strings.ToLower(o.Login), o.Password)
+	return db.Create(ctx, insertQuery, strings.ToLower(o.Login), o.Password)
 }
 
 const updateQuery = `
@@ -124,7 +128,7 @@ WHERE
 `
 
 func (a app) Update(ctx context.Context, o model.User) error {
-	return db.Exec(ctx, a.db, updateQuery, o.ID, strings.ToLower(o.Login))
+	return db.Exec(ctx, updateQuery, o.ID, strings.ToLower(o.Login))
 }
 
 const updatePasswordQuery = `
@@ -137,7 +141,7 @@ WHERE
 `
 
 func (a app) UpdatePassword(ctx context.Context, o model.User) error {
-	return db.Exec(ctx, a.db, updatePasswordQuery, o.ID, o.Password)
+	return db.Exec(ctx, updatePasswordQuery, o.ID, o.Password)
 }
 
 const deleteQuery = `
@@ -148,5 +152,5 @@ WHERE
 `
 
 func (a app) Delete(ctx context.Context, o model.User) error {
-	return db.Exec(ctx, a.db, deleteQuery, o.ID)
+	return db.Exec(ctx, deleteQuery, o.ID)
 }
