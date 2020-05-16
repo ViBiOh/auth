@@ -395,7 +395,7 @@ func TestCheck(t *testing.T) {
 	var cases = []struct {
 		intention string
 		args      args
-		want      error
+		wantErr   error
 	}{
 		{
 			"empty",
@@ -514,9 +514,20 @@ func TestCheck(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			testApp := app{store: testStore{}, auth: testStore{}}
-			if got := testApp.Check(tc.args.ctx, tc.args.old, tc.args.new); !reflect.DeepEqual(got, tc.want) {
-				t.Errorf("Check() = %+v, want %+v", got, tc.want)
+			gotErr := New(testStore{}, testStore{}).Check(tc.args.ctx, tc.args.old, tc.args.new)
+
+			failed := false
+
+			if tc.wantErr == nil && gotErr != nil {
+				failed = true
+			} else if tc.wantErr != nil && gotErr == nil {
+				failed = true
+			} else if tc.wantErr != nil && !strings.Contains(gotErr.Error(), tc.wantErr.Error()) {
+				failed = true
+			}
+
+			if failed {
+				t.Errorf("Check() = `%s`, want `%s`", gotErr, tc.wantErr)
 			}
 		})
 	}
