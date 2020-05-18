@@ -15,23 +15,6 @@ var (
 	sortKeyMatcher = regexp.MustCompile(`[A-Za-z0-9]+`)
 )
 
-func scanUsers(rows *sql.Rows) ([]model.User, uint, error) {
-	var totalCount uint
-	list := make([]model.User, 0)
-
-	for rows.Next() {
-		var user model.User
-
-		if err := rows.Scan(&user.ID, &user.Login, &totalCount); err != nil {
-			return nil, 0, err
-		}
-
-		list = append(list, user)
-	}
-
-	return list, totalCount, nil
-}
-
 func (a app) DoAtomic(ctx context.Context, action func(context.Context) error) error {
 	return db.DoAtomic(ctx, a.db, action)
 }
@@ -61,19 +44,22 @@ func (a app) List(ctx context.Context, page, pageSize uint, sortKey string, sort
 
 	offset := (page - 1) * pageSize
 
-	ctx, cancel := context.WithTimeout(ctx, db.SQLTimeout)
-	defer cancel()
+	var totalCount uint
+	list := make([]model.User, 0)
 
-	rows, err := a.db.QueryContext(ctx, fmt.Sprintf(listQuery, order), pageSize, offset)
-	if err != nil {
-		return nil, 0, err
+	scanner := func(rows *sql.Rows) error {
+		var user model.User
+
+		if err := rows.Scan(&user.ID, &user.Login, &totalCount); err != nil {
+			return err
+		}
+
+		list = append(list, user)
+		return nil
 	}
 
-	defer func() {
-		err = db.RowsClose(rows, err)
-	}()
-
-	return scanUsers(rows)
+	err := db.List(ctx, a.db, scanner, fmt.Sprintf(listQuery, order), pageSize, offset)
+	return list, totalCount, err
 }
 
 const getByIDQuery = `
@@ -88,7 +74,7 @@ WHERE
 
 func (a app) Get(ctx context.Context, id uint64) (model.User, error) {
 	var item model.User
-	scanner := func(row db.RowScanner) error {
+	scanner := func(row *sql.Row) error {
 		err := row.Scan(&item.ID, &item.Login)
 		if err == sql.ErrNoRows {
 			item = model.NoneUser
@@ -98,7 +84,7 @@ func (a app) Get(ctx context.Context, id uint64) (model.User, error) {
 		return err
 	}
 
-	err := db.GetRow(ctx, a.db, scanner, getByIDQuery, id)
+	err := db.Get(ctx, a.db, scanner, getByIDQuery, id)
 	return item, err
 }
 

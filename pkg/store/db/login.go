@@ -25,10 +25,11 @@ WHERE
 func (a app) Login(ctx context.Context, login, password string) (model.User, error) {
 	var user model.User
 
-	ctx, cancel := context.WithTimeout(ctx, db.SQLTimeout)
-	defer cancel()
+	scanner := func(row *sql.Row) error {
+		return row.Scan(&user.ID, &user.Login)
+	}
 
-	if err := a.db.QueryRowContext(ctx, readUserQuery, strings.ToLower(login), password).Scan(&user.ID, &user.Login); err != nil {
+	if err := db.Get(ctx, a.db, scanner, readUserQuery, strings.ToLower(login), password); err != nil {
 		logger.Error("unable to login %s: %s", login, err.Error())
 
 		if err == sql.ErrNoRows {
@@ -55,10 +56,11 @@ WHERE
 func (a app) IsAuthorized(ctx context.Context, user model.User, profile string) bool {
 	var id uint64
 
-	ctx, cancel := context.WithTimeout(ctx, db.SQLTimeout)
-	defer cancel()
+	scanner := func(row *sql.Row) error {
+		return row.Scan(&id)
+	}
 
-	if err := a.db.QueryRowContext(ctx, readLoginProfile, user.ID, profile).Scan(&id); err != nil {
+	if err := db.Get(ctx, a.db, scanner, readLoginProfile, user.ID, profile); err != nil {
 		logger.Error("unable to authorized %s: %s", user.Login, err.Error())
 
 		return false

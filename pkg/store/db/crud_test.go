@@ -49,7 +49,7 @@ func TestList(t *testing.T) {
 				pageSize: 20,
 			},
 			"SELECT id, login, .+ AS full_count FROM login ORDER BY creation_date DESC",
-			nil,
+			[]model.User{},
 			0,
 			sqlmock.ErrCancelled,
 		},
