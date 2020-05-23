@@ -61,7 +61,7 @@ func TestLogin(t *testing.T) {
 			}
 			defer mockDb.Close()
 
-			expectedQuery := mock.ExpectQuery("SELECT id, login FROM login WHERE login = .+ AND password = crypt(.+, password)").WithArgs("vibioh", "secret")
+			expectedQuery := mock.ExpectQuery("SELECT id, login FROM auth.login WHERE login = .+ AND password = crypt(.+, password)").WithArgs("vibioh", "secret")
 
 			if tc.intention != "not found" {
 				expectedQuery.WillReturnRows(sqlmock.NewRows([]string{"id", "login"}).AddRow(1, "vibioh"))
@@ -136,7 +136,7 @@ func TestIsAuthorized(t *testing.T) {
 			}
 			defer mockDb.Close()
 
-			expectedQuery := mock.ExpectQuery("SELECT p.id FROM profile p, login_profile lp WHERE p.name = .+ AND lp.profile_id = p.id AND lp.login_id = .+").WithArgs(1, "admin").WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
+			expectedQuery := mock.ExpectQuery("SELECT p.id FROM auth.profile p, auth.login_profile lp WHERE p.name = .+ AND lp.profile_id = p.id AND lp.login_id = .+").WithArgs(1, "admin").WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 
 			if tc.intention == "timeout" {
 				savedSQLTimeout := db.SQLTimeout

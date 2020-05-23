@@ -16,7 +16,7 @@ SELECT
   id,
   login
 FROM
-  login
+  auth.login
 WHERE
   login = $1
   AND password = crypt($2, password)
@@ -45,8 +45,8 @@ const readLoginProfile = `
 SELECT
   p.id
 FROM
-  profile p,
-  login_profile lp
+  auth.profile p,
+  auth.login_profile lp
 WHERE
   p.name = $2
   AND lp.profile_id = p.id

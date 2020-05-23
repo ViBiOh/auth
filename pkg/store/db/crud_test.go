@@ -34,7 +34,7 @@ func TestList(t *testing.T) {
 				page:     1,
 				pageSize: 20,
 			},
-			"SELECT id, login, .+ AS full_count FROM login ORDER BY creation_date DESC",
+			"SELECT id, login, .+ AS full_count FROM auth.login ORDER BY creation_date DESC",
 			[]model.User{
 				model.NewUser(1, "vibioh"),
 				model.NewUser(2, "guest"),
@@ -48,7 +48,7 @@ func TestList(t *testing.T) {
 				page:     1,
 				pageSize: 20,
 			},
-			"SELECT id, login, .+ AS full_count FROM login ORDER BY creation_date DESC",
+			"SELECT id, login, .+ AS full_count FROM auth.login ORDER BY creation_date DESC",
 			[]model.User{},
 			0,
 			sqlmock.ErrCancelled,
@@ -61,7 +61,7 @@ func TestList(t *testing.T) {
 				sortKey:  "login",
 				sortAsc:  true,
 			},
-			"SELECT id, login, .+ AS full_count FROM login ORDER BY login",
+			"SELECT id, login, .+ AS full_count FROM auth.login ORDER BY login",
 			[]model.User{
 				model.NewUser(1, "vibioh"),
 				model.NewUser(2, "guest"),
@@ -77,7 +77,7 @@ func TestList(t *testing.T) {
 				sortKey:  "login",
 				sortAsc:  false,
 			},
-			"SELECT id, login, .+ AS full_count FROM login ORDER BY login DESC",
+			"SELECT id, login, .+ AS full_count FROM auth.login ORDER BY login DESC",
 			[]model.User{
 				model.NewUser(1, "vibioh"),
 				model.NewUser(2, "guest"),
@@ -160,7 +160,7 @@ func TestGet(t *testing.T) {
 			}
 			defer mockDb.Close()
 
-			mock.ExpectQuery("SELECT id, login FROM login").WithArgs(1).WillReturnRows(sqlmock.NewRows([]string{"id", "login"}).AddRow(1, "vibioh"))
+			mock.ExpectQuery("SELECT id, login FROM auth.login").WithArgs(1).WillReturnRows(sqlmock.NewRows([]string{"id", "login"}).AddRow(1, "vibioh"))
 
 			got, gotErr := app{db: mockDb}.Get(context.Background(), tc.args.id)
 
@@ -225,7 +225,7 @@ func TestCreate(t *testing.T) {
 			}
 			ctx = db.StoreTx(ctx, tx)
 
-			mock.ExpectQuery("INSERT INTO login").WithArgs("vibioh", "secret").WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
+			mock.ExpectQuery("INSERT INTO auth.login").WithArgs("vibioh", "secret").WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 
 			got, gotErr := app{db: mockDb}.Create(ctx, tc.args.o)
 
@@ -288,7 +288,7 @@ func TestUpdate(t *testing.T) {
 			}
 			ctx = db.StoreTx(ctx, tx)
 
-			mock.ExpectExec("UPDATE login SET login").WithArgs(1, "vibioh").WillReturnResult(sqlmock.NewResult(0, 1))
+			mock.ExpectExec("UPDATE auth.login SET login").WithArgs(1, "vibioh").WillReturnResult(sqlmock.NewResult(0, 1))
 
 			gotErr := app{db: mockDb}.Update(ctx, tc.args.o)
 
@@ -349,7 +349,7 @@ func TestUpdatePassword(t *testing.T) {
 			}
 			ctx = db.StoreTx(ctx, tx)
 
-			mock.ExpectExec("UPDATE login SET password").WithArgs(1, "secret").WillReturnResult(sqlmock.NewResult(0, 1))
+			mock.ExpectExec("UPDATE auth.login SET password").WithArgs(1, "secret").WillReturnResult(sqlmock.NewResult(0, 1))
 
 			gotErr := app{db: mockDb}.UpdatePassword(ctx, tc.args.o)
 
@@ -409,7 +409,7 @@ func TestDelete(t *testing.T) {
 			}
 			ctx = db.StoreTx(ctx, tx)
 
-			mock.ExpectExec("DELETE FROM login").WithArgs(1).WillReturnResult(sqlmock.NewResult(0, 1))
+			mock.ExpectExec("DELETE FROM auth.login").WithArgs(1).WillReturnResult(sqlmock.NewResult(0, 1))
 
 			gotErr := app{db: mockDb}.Delete(ctx, tc.args.o)
 
