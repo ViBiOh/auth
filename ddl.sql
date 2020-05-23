@@ -1,47 +1,52 @@
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- clean
-DROP TABLE IF EXISTS login_profile;
-DROP TABLE IF EXISTS profile;
-DROP TABLE IF EXISTS login;
+DROP TABLE IF EXISTS auth.login_profile;
+DROP TABLE IF EXISTS auth.profile;
+DROP TABLE IF EXISTS auth.login;
 
-DROP SEQUENCE IF EXISTS profile_seq;
-DROP SEQUENCE IF EXISTS login_seq;
+DROP SEQUENCE IF EXISTS auth.profile_seq;
+DROP SEQUENCE IF EXISTS auth.login_seq;
 
 DROP INDEX IF EXISTS login_profile_login_id;
 DROP INDEX IF EXISTS profile_id;
 DROP INDEX IF EXISTS profile_id;
 DROP INDEX IF EXISTS login_login;
 
+DROP SCHEMA IF EXISTS auth;
+
+-- schema
+CREATE SCHEMA auth;
+
 -- user
-CREATE SEQUENCE login_seq;
-CREATE TABLE login (
-  id BIGINT NOT NULL DEFAULT nextval('login_seq'),
+CREATE SEQUENCE auth.login_seq;
+CREATE TABLE auth.login (
+  id BIGINT NOT NULL DEFAULT nextval('auth.login_seq'),
   login TEXT NOT NULL,
   password TEXT NOT NULL,
   creation_date TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
-ALTER SEQUENCE login_seq OWNED BY login.id;
+ALTER SEQUENCE auth.login_seq OWNED BY auth.login.id;
 
-CREATE UNIQUE INDEX login_id ON login(id);
-CREATE UNIQUE INDEX login_login ON login(login);
+CREATE UNIQUE INDEX login_id ON auth.login(id);
+CREATE UNIQUE INDEX login_login ON auth.login(login);
 
 -- profile
-CREATE SEQUENCE profile_seq;
-CREATE TABLE profile (
-  id BIGINT NOT NULL DEFAULT nextval('profile_seq'),
+CREATE SEQUENCE auth.profile_seq;
+CREATE TABLE auth.profile (
+  id BIGINT NOT NULL DEFAULT nextval('auth.profile_seq'),
   name TEXT NOT NULL,
   creation_date TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
-ALTER SEQUENCE profile_seq OWNED BY profile.id;
+ALTER SEQUENCE auth.profile_seq OWNED BY auth.profile.id;
 
-CREATE UNIQUE INDEX profile_id ON profile(id);
+CREATE UNIQUE INDEX profile_id ON auth.profile(id);
 
 -- login_profile
-CREATE TABLE login_profile (
-  login_id BIGINT NOT NULL REFERENCES login(id) ON DELETE CASCADE,
-  profile_id BIGINT NOT NULL REFERENCES profile(id) ON DELETE CASCADE,
+CREATE TABLE auth.login_profile (
+  login_id BIGINT NOT NULL REFERENCES auth.login(id) ON DELETE CASCADE,
+  profile_id BIGINT NOT NULL REFERENCES auth.profile(id) ON DELETE CASCADE,
   creation_date TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
-CREATE UNIQUE INDEX login_profile_login_id ON login_profile(login_id);
+CREATE UNIQUE INDEX login_profile_login_id ON auth.login_profile(login_id);

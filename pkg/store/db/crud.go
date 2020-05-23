@@ -25,7 +25,7 @@ SELECT
   login,
   count(1) OVER() AS full_count
 FROM
-  login
+  auth.login
 ORDER BY %s
 LIMIT $1
 OFFSET $2
@@ -67,7 +67,7 @@ SELECT
   id,
   login
 FROM
-  login
+  auth.login
 WHERE
   id = $1
 `
@@ -90,7 +90,7 @@ func (a app) Get(ctx context.Context, id uint64) (model.User, error) {
 
 const insertQuery = `
 INSERT INTO
-  login
+  auth.login
 (
   login,
   password
@@ -106,7 +106,7 @@ func (a app) Create(ctx context.Context, o model.User) (uint64, error) {
 
 const updateQuery = `
 UPDATE
-  login
+  auth.login
 SET
   login = $2
 WHERE
@@ -119,7 +119,7 @@ func (a app) Update(ctx context.Context, o model.User) error {
 
 const updatePasswordQuery = `
 UPDATE
-  login
+  auth.login
 SET
   password = crypt($2, gen_salt('bf',8))
 WHERE
@@ -132,7 +132,7 @@ func (a app) UpdatePassword(ctx context.Context, o model.User) error {
 
 const deleteQuery = `
 DELETE FROM
-  login
+  auth.login
 WHERE
   id = $1
 `
