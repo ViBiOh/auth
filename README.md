@@ -3,7 +3,6 @@
 [![Build Status](https://travis-ci.com/ViBiOh/auth.svg?branch=master)](https://travis-ci.com/ViBiOh/auth)
 [![codecov](https://codecov.io/gh/ViBiOh/auth/branch/master/graph/badge.svg)](https://codecov.io/gh/ViBiOh/auth)
 [![Go Report Card](https://goreportcard.com/badge/github.com/ViBiOh/auth/v2)](https://goreportcard.com/report/github.com/ViBiOh/auth/v2)
-[![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=ViBiOh/auth)](https://dependabot.com)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ViBiOh_auth&metric=alert_status)](https://sonarcloud.io/dashboard?id=ViBiOh_auth)
 
 Authentification for apps in microservices.
