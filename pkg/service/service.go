@@ -38,7 +38,7 @@ func New(store store.UserStorage, auth auth.Provider) App {
 }
 
 // List Users
-func (a app) List(ctx context.Context, page, pageSize uint, sortKey string, sortAsc bool, filters map[string][]string) ([]model.User, uint, error) {
+func (a app) List(ctx context.Context, page, pageSize uint, sortKey string, sortAsc bool, _ map[string][]string) ([]model.User, uint, error) {
 	if err := a.CheckRights(ctx, 0); err != nil {
 		return nil, 0, err
 	}

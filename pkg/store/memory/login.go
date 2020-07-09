@@ -9,7 +9,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (a app) Login(ctx context.Context, login, password string) (model.User, error) {
+func (a app) Login(_ context.Context, login, password string) (model.User, error) {
 	user, ok := a.ident[login]
 	if !ok {
 		return model.NoneUser, ident.ErrInvalidCredentials
@@ -22,7 +22,7 @@ func (a app) Login(ctx context.Context, login, password string) (model.User, err
 	return user.User, nil
 }
 
-func (a app) IsAuthorized(ctx context.Context, user model.User, profile string) bool {
+func (a app) IsAuthorized(_ context.Context, user model.User, profile string) bool {
 	profiles, ok := a.auth[user.ID]
 	if !ok {
 		return false

@@ -45,19 +45,19 @@ func Flags(fs *flag.FlagSet, prefix string) Config {
 
 // New creates new App from Config
 func New(config Config) (App, error) {
-	ident, err := loadIdent(strings.TrimSpace(*config.ident))
+	identApp, err := loadIdent(strings.TrimSpace(*config.ident))
 	if err != nil {
 		return nil, err
 	}
 
-	auth, err := loadAuth(strings.TrimSpace(*config.auth))
+	authApp, err := loadAuth(strings.TrimSpace(*config.auth))
 	if err != nil {
 		return nil, err
 	}
 
 	return &app{
-		ident: ident,
-		auth:  auth,
+		ident: identApp,
+		auth:  authApp,
 	}, nil
 }
 

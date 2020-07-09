@@ -20,18 +20,18 @@ type testProvider struct {
 	matching bool
 }
 
-func (t testProvider) IsAuthorized(ctx context.Context, user model.User, profile string) bool {
+func (t testProvider) IsAuthorized(_ context.Context, _ model.User, profile string) bool {
 	if profile == "admin" {
 		return true
 	}
 	return false
 }
 
-func (t testProvider) IsMatching(input string) bool {
+func (t testProvider) IsMatching(_ string) bool {
 	return t.matching
 }
 
-func (t testProvider) GetUser(ctx context.Context, input string) (model.User, error) {
+func (t testProvider) GetUser(_ context.Context, input string) (model.User, error) {
 	if input == "Basic YWRtaW46cGFzc3dvcmQ=" {
 		return model.NewUser(8000, "admin"), nil
 	} else if input == "Basic" {
@@ -40,7 +40,7 @@ func (t testProvider) GetUser(ctx context.Context, input string) (model.User, er
 	return model.NoneUser, nil
 }
 
-func (t testProvider) OnError(w http.ResponseWriter, r *http.Request, err error) {
+func (t testProvider) OnError(w http.ResponseWriter, _ *http.Request, err error) {
 	http.Error(w, err.Error(), http.StatusTeapot)
 }
 

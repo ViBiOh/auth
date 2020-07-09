@@ -16,7 +16,7 @@ func (ts testStore) DoAtomic(ctx context.Context, action func(ctx context.Contex
 	return action(ctx)
 }
 
-func (ts testStore) List(ctx context.Context, page, pageSize uint, sortKey string, sortAsc bool) ([]model.User, uint, error) {
+func (ts testStore) List(_ context.Context, _, _ uint, sortKey string, _ bool) ([]model.User, uint, error) {
 	if sortKey == "error" {
 		return nil, 0, errors.New("invalid sort key")
 	}
@@ -26,7 +26,7 @@ func (ts testStore) List(ctx context.Context, page, pageSize uint, sortKey strin
 	}, 2, nil
 }
 
-func (ts testStore) Get(ctx context.Context, id uint64) (model.User, error) {
+func (ts testStore) Get(_ context.Context, id uint64) (model.User, error) {
 	if id == 8000 {
 		return model.NoneUser, errors.New("unable to connect")
 	}
@@ -38,7 +38,7 @@ func (ts testStore) Get(ctx context.Context, id uint64) (model.User, error) {
 	return model.NewUser(id, "admin"), nil
 }
 
-func (ts testStore) Create(ctx context.Context, o model.User) (uint64, error) {
+func (ts testStore) Create(_ context.Context, o model.User) (uint64, error) {
 	if o.ID != 0 {
 		return 0, errors.New("invalid id")
 	}
@@ -46,7 +46,7 @@ func (ts testStore) Create(ctx context.Context, o model.User) (uint64, error) {
 	return 1, nil
 }
 
-func (ts testStore) Update(ctx context.Context, o model.User) error {
+func (ts testStore) Update(_ context.Context, o model.User) error {
 	if o.ID == 0 {
 		return errors.New("unable to connect")
 	}
@@ -54,7 +54,7 @@ func (ts testStore) Update(ctx context.Context, o model.User) error {
 	return nil
 }
 
-func (ts testStore) Delete(ctx context.Context, o model.User) error {
+func (ts testStore) Delete(_ context.Context, o model.User) error {
 	if o.ID == 0 {
 		return errors.New("unable to connect")
 	}
@@ -62,7 +62,7 @@ func (ts testStore) Delete(ctx context.Context, o model.User) error {
 	return nil
 }
 
-func (ts testStore) IsAuthorized(ctx context.Context, user model.User, profile string) bool {
+func (ts testStore) IsAuthorized(_ context.Context, user model.User, _ string) bool {
 	return user.Login == "admin"
 }
 

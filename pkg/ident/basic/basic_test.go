@@ -17,7 +17,7 @@ var errInvalidCredentials = errors.New("invalid credentials")
 
 type testProvider struct{}
 
-func (tp testProvider) Login(ctx context.Context, login, password string) (model.User, error) {
+func (tp testProvider) Login(_ context.Context, login, password string) (model.User, error) {
 	if login == "admin" && password == "secret" {
 		return model.NewUser(1, "admin"), nil
 	}
