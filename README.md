@@ -28,4 +28,5 @@ In order to build the whole stuff, run the following command.
 ```bash
 make
 ```
+
 Password encrypter accepts one argument, the password, and output the bcrypted one.
