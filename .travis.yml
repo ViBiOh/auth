@@ -8,7 +8,7 @@ jobs:
         - docker
       script: docker build --build-arg CODECOV_TOKEN --build-arg "APP_VERSION=$(make version)" -t "${DOCKER_USER}/$(make name):$(make version)" .
       after_success:
-        - curl -q -sSL --max-time 10 -X POST https://goreportcard.com/checks?repo=github.com/${TRAVIS_REPO_SLUG}
+        - curl -q -sSL --max-time 30 -X POST https://goreportcard.com/checks?repo=github.com/${TRAVIS_REPO_SLUG}
 
 stages:
   - Build
