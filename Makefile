@@ -97,7 +97,7 @@ run:
 ## run-memory: Run memory app
 .PHONY: run-memory
 run-memory:
-	$(MEMORY_RUNNER)
+	$(MEMORY_RUNNER) -users "1:`htpasswd -nBb admin password`"
 
 ## run-db: Run db app
 .PHONY: run-db

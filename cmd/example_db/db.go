@@ -38,9 +38,7 @@ func main() {
 		protectedHandler.ServeHTTP(w, r)
 	})
 
-	server := httputils.New(serverConfig)
-	server.Health(appDB.Ping)
-	server.ListenServeWait(handler)
+	httputils.New(serverConfig).ListenAndServe(handler, nil, appDB.Ping)
 }
 
 // Handler for dump request. Should be use with net/http
