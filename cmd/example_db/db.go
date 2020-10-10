@@ -15,6 +15,7 @@ import (
 	"github.com/ViBiOh/httputils/v3/pkg/httperror"
 	"github.com/ViBiOh/httputils/v3/pkg/httputils"
 	"github.com/ViBiOh/httputils/v3/pkg/logger"
+	"github.com/ViBiOh/httputils/v3/pkg/model"
 	"github.com/ViBiOh/httputils/v3/pkg/request"
 )
 
@@ -33,12 +34,7 @@ func main() {
 	identProvider := basic.New(authProvider)
 	middlewareApp := middleware.New(authProvider, identProvider)
 
-	protectedHandler := httputils.ChainMiddlewares(Handler(), middlewareApp.Middleware)
-	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		protectedHandler.ServeHTTP(w, r)
-	})
-
-	httputils.New(serverConfig).ListenAndServe(handler, nil, appDB.Ping)
+	httputils.New(serverConfig).ListenAndServe(Handler(), []model.Pinger{appDB.Ping}, middlewareApp.Middleware)
 }
 
 // Handler for dump request. Should be use with net/http

@@ -9,7 +9,6 @@ import (
 	memoryStore "github.com/ViBiOh/auth/v2/pkg/store/memory"
 	"github.com/ViBiOh/httputils/v3/pkg/httputils"
 	"github.com/ViBiOh/httputils/v3/pkg/logger"
-	"github.com/ViBiOh/httputils/v3/pkg/model"
 )
 
 func main() {
@@ -26,7 +25,5 @@ func main() {
 	identProvider := basic.New(authProvider)
 	middlewareApp := middleware.New(authProvider, identProvider)
 
-	httputils.New(serverConfig).ListenAndServe(nil, []model.Middleware{
-		middlewareApp.Middleware,
-	})
+	httputils.New(serverConfig).ListenAndServe(nil, nil, middlewareApp.Middleware)
 }
