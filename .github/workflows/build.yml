@@ -1,0 +1,31 @@
+---
+name: Build
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+env:
+  SCRIPTS_NO_INTERACTIVE: "true"
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    name: Golang
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: "^1.15"
+      - run: |
+          make
+          git --no-pager diff -- ':(exclude)go.sum' && git diff --quiet -- ':(exclude)go.sum'
+      - uses: codecov/codecov-action@v1

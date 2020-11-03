@@ -1,6 +1,6 @@
 # auth
 
-[![Build Status](https://travis-ci.com/ViBiOh/auth.svg?branch=master)](https://travis-ci.com/ViBiOh/auth)
+[![Build](https://github.com/ViBiOh/auth/workflows/Build/badge.svg)](https://github.com/ViBiOh/auth/actions)
 [![codecov](https://codecov.io/gh/ViBiOh/auth/branch/master/graph/badge.svg)](https://codecov.io/gh/ViBiOh/auth)
 [![Go Report Card](https://goreportcard.com/badge/github.com/ViBiOh/auth/v2)](https://goreportcard.com/report/github.com/ViBiOh/auth/v2)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ViBiOh_auth&metric=alert_status)](https://sonarcloud.io/dashboard?id=ViBiOh_auth)
