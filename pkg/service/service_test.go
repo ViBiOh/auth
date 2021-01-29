@@ -7,64 +7,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ViBiOh/auth/v2/pkg/auth/authtest"
 	"github.com/ViBiOh/auth/v2/pkg/model"
+	"github.com/ViBiOh/auth/v2/pkg/store/storetest"
 )
-
-type testStore struct{}
-
-func (ts testStore) DoAtomic(ctx context.Context, action func(ctx context.Context) error) error {
-	return action(ctx)
-}
-
-func (ts testStore) List(_ context.Context, _, _ uint, sortKey string, _ bool) ([]model.User, uint, error) {
-	if sortKey == "error" {
-		return nil, 0, errors.New("invalid sort key")
-	}
-	return []model.User{
-		model.NewUser(1, "admin"),
-		model.NewUser(2, "guest"),
-	}, 2, nil
-}
-
-func (ts testStore) Get(_ context.Context, id uint64) (model.User, error) {
-	if id == 8000 {
-		return model.NoneUser, errors.New("unable to connect")
-	}
-
-	if id == 2 {
-		return model.NoneUser, nil
-	}
-
-	return model.NewUser(id, "admin"), nil
-}
-
-func (ts testStore) Create(_ context.Context, o model.User) (uint64, error) {
-	if o.ID != 0 {
-		return 0, errors.New("invalid id")
-	}
-
-	return 1, nil
-}
-
-func (ts testStore) Update(_ context.Context, o model.User) error {
-	if o.ID == 0 {
-		return errors.New("unable to connect")
-	}
-
-	return nil
-}
-
-func (ts testStore) Delete(_ context.Context, o model.User) error {
-	if o.ID == 0 {
-		return errors.New("unable to connect")
-	}
-
-	return nil
-}
-
-func (ts testStore) IsAuthorized(_ context.Context, user model.User, _ string) bool {
-	return user.Login == "admin"
-}
 
 func TestList(t *testing.T) {
 	type args struct {
@@ -78,6 +24,7 @@ func TestList(t *testing.T) {
 
 	var cases = []struct {
 		intention string
+		instance  App
 		args      args
 		want      []model.User
 		wantCount uint
@@ -85,6 +32,7 @@ func TestList(t *testing.T) {
 	}{
 		{
 			"no context",
+			New(storetest.New(), authtest.New()),
 			args{
 				ctx: context.Background(),
 			},
@@ -94,6 +42,7 @@ func TestList(t *testing.T) {
 		},
 		{
 			"not admin",
+			New(storetest.New(), authtest.New().SetIsAuthorized(false)),
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "guest")),
 			},
@@ -103,16 +52,21 @@ func TestList(t *testing.T) {
 		},
 		{
 			"error on list",
+			New(storetest.New().SetList(nil, 0, errors.New("failed")), authtest.New().SetIsAuthorized(true)),
 			args{
 				ctx:     model.StoreUser(context.Background(), model.NewUser(1, "admin")),
 				sortKey: "error",
 			},
 			nil,
 			0,
-			errors.New("unable to list: invalid sort key"),
+			errors.New("unable to list: failed"),
 		},
 		{
 			"valid",
+			New(storetest.New().SetList([]model.User{
+				model.NewUser(1, "admin"),
+				model.NewUser(2, "guest"),
+			}, 2, nil), authtest.New().SetIsAuthorized(true)),
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "admin")),
 			},
@@ -127,7 +81,7 @@ func TestList(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			got, gotCount, gotErr := New(testStore{}, testStore{}).List(tc.args.ctx, tc.args.page, tc.args.pageSize, tc.args.sortKey, tc.args.sortAsc, tc.args.filters)
+			got, gotCount, gotErr := tc.instance.List(tc.args.ctx, tc.args.page, tc.args.pageSize, tc.args.sortKey, tc.args.sortAsc, tc.args.filters)
 
 			failed := false
 
@@ -158,12 +112,14 @@ func TestGet(t *testing.T) {
 
 	var cases = []struct {
 		intention string
+		instance  App
 		args      args
 		want      model.User
 		wantErr   error
 	}{
 		{
 			"no context",
+			New(storetest.New(), authtest.New()),
 			args{
 				ctx: context.Background(),
 			},
@@ -172,6 +128,7 @@ func TestGet(t *testing.T) {
 		},
 		{
 			"not self",
+			New(storetest.New(), authtest.New()),
 			args{
 				id:  1,
 				ctx: model.StoreUser(context.Background(), model.NewUser(2, "guest")),
@@ -181,15 +138,17 @@ func TestGet(t *testing.T) {
 		},
 		{
 			"error on get",
+			New(storetest.New().SetGet(model.NoneUser, errors.New("failed")), authtest.New().SetIsAuthorized(true)),
 			args{
 				id:  8000,
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "admin")),
 			},
 			model.NoneUser,
-			errors.New("unable to get: unable to connect"),
+			errors.New("unable to get: failed"),
 		},
 		{
 			"not found",
+			New(storetest.New().SetGet(model.NoneUser, nil), authtest.New().SetIsAuthorized(true)),
 			args{
 				id:  2,
 				ctx: model.StoreUser(context.Background(), model.NewUser(2, "guest")),
@@ -199,6 +158,7 @@ func TestGet(t *testing.T) {
 		},
 		{
 			"found",
+			New(storetest.New().SetGet(model.NewUser(1, "admin"), nil), authtest.New().SetIsAuthorized(true)),
 			args{
 				id:  1,
 				ctx: model.StoreUser(context.Background(), model.NewUser(2, "admin")),
@@ -210,7 +170,7 @@ func TestGet(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			got, gotErr := New(testStore{}, testStore{}).Get(tc.args.ctx, tc.args.id)
+			got, gotErr := tc.instance.Get(tc.args.ctx, tc.args.id)
 
 			failed := false
 
@@ -238,20 +198,23 @@ func TestCreate(t *testing.T) {
 
 	var cases = []struct {
 		intention string
+		instance  App
 		args      args
 		want      model.User
 		wantErr   error
 	}{
 		{
 			"error on create",
+			New(storetest.New().SetCreate(0, errors.New("failed")), nil),
 			args{
 				o: model.NewUser(1, "admin"),
 			},
 			model.NoneUser,
-			errors.New("unable to create: invalid id"),
+			errors.New("unable to create: failed"),
 		},
 		{
 			"success",
+			New(storetest.New().SetCreate(1, nil), nil),
 			args{
 				o: model.NewUser(0, "admin"),
 			},
@@ -262,7 +225,7 @@ func TestCreate(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			got, gotErr := New(testStore{}, testStore{}).Create(context.Background(), tc.args.o)
+			got, gotErr := tc.instance.Create(context.Background(), tc.args.o)
 
 			failed := false
 
@@ -290,20 +253,23 @@ func TestUpdate(t *testing.T) {
 
 	var cases = []struct {
 		intention string
+		instance  App
 		args      args
 		want      model.User
 		wantErr   error
 	}{
 		{
 			"error on update",
+			New(storetest.New().SetUpdate(errors.New("failed")), nil),
 			args{
-				o: model.NewUser(0, "admin"),
+				o: model.NewUser(1, "admin"),
 			},
-			model.NewUser(0, "admin"),
-			errors.New("unable to update: unable to connect"),
+			model.NewUser(1, "admin"),
+			errors.New("unable to update: failed"),
 		},
 		{
 			"success",
+			New(storetest.New().SetUpdate(nil), nil),
 			args{
 				o: model.NewUser(1, "admin"),
 			},
@@ -314,7 +280,7 @@ func TestUpdate(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			got, gotErr := New(testStore{}, testStore{}).Update(context.Background(), tc.args.o)
+			got, gotErr := tc.instance.Update(context.Background(), tc.args.o)
 
 			failed := false
 
@@ -342,20 +308,23 @@ func TestDelete(t *testing.T) {
 
 	var cases = []struct {
 		intention string
+		instance  App
 		args      args
 		want      model.User
 		wantErr   error
 	}{
 		{
 			"error on delete",
+			New(storetest.New().SetDelete(errors.New("failed")), nil),
 			args{
 				o: model.NewUser(0, "admin"),
 			},
 			model.NewUser(0, "admin"),
-			errors.New("unable to delete: unable to connect"),
+			errors.New("unable to delete: failed"),
 		},
 		{
 			"success",
+			New(storetest.New().SetDelete(nil), nil),
 			args{
 				o: model.NewUser(1, "admin"),
 			},
@@ -366,7 +335,7 @@ func TestDelete(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			gotErr := New(testStore{}, testStore{}).Delete(context.Background(), tc.args.o)
+			gotErr := tc.instance.Delete(context.Background(), tc.args.o)
 
 			failed := false
 
@@ -394,11 +363,13 @@ func TestCheck(t *testing.T) {
 
 	var cases = []struct {
 		intention string
+		instance  App
 		args      args
 		wantErr   error
 	}{
 		{
 			"empty",
+			New(storetest.New(), authtest.New()),
 			args{
 				ctx: context.Background(),
 			},
@@ -406,6 +377,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"create empty",
+			New(storetest.New(), authtest.New()),
 			args{
 				ctx: context.Background(),
 				new: model.User{
@@ -416,6 +388,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"create without password",
+			New(storetest.New(), authtest.New()),
 			args{
 				ctx: context.Background(),
 				new: model.NewUser(0, "guest"),
@@ -424,6 +397,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"create valid",
+			New(storetest.New(), authtest.New()),
 			args{
 				ctx: context.Background(),
 				new: model.User{
@@ -435,6 +409,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"update unauthorized",
+			New(storetest.New(), authtest.New()),
 			args{
 				ctx: context.Background(),
 				old: model.NewUser(2, "guest"),
@@ -444,6 +419,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"update forbidden",
+			New(storetest.New(), authtest.New()),
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "guest")),
 				old: model.NewUser(2, "guest"),
@@ -453,6 +429,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"update empty login",
+			New(storetest.New(), authtest.New()),
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(2, "guest")),
 				old: model.NewUser(2, "guest"),
@@ -462,6 +439,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"update valid",
+			New(storetest.New(), authtest.New()),
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(2, "guest")),
 				old: model.NewUser(2, "guest"),
@@ -471,6 +449,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"update as admin",
+			New(storetest.New(), authtest.New().SetIsAuthorized(true)),
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "admin")),
 				old: model.NewUser(2, "guest"),
@@ -480,6 +459,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"delete unauthorized",
+			New(storetest.New(), authtest.New()),
 			args{
 				ctx: context.Background(),
 				old: model.NewUser(2, "guest"),
@@ -488,6 +468,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"delete forbidden",
+			New(storetest.New(), authtest.New()),
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "guest")),
 				old: model.NewUser(2, "guest"),
@@ -496,6 +477,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"delete self",
+			New(storetest.New(), authtest.New()),
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(2, "guest")),
 				old: model.NewUser(2, "guest"),
@@ -504,6 +486,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"delete admin",
+			New(storetest.New(), authtest.New().SetIsAuthorized(true)),
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "admin")),
 				old: model.NewUser(2, "guest"),
@@ -514,7 +497,7 @@ func TestCheck(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			gotErr := New(testStore{}, testStore{}).Check(tc.args.ctx, tc.args.old, tc.args.new)
+			gotErr := tc.instance.Check(tc.args.ctx, tc.args.old, tc.args.new)
 
 			failed := false
 
