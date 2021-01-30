@@ -20,7 +20,6 @@ type App interface {
 	Create(ctx context.Context, o model.User) (model.User, error)
 	Update(ctx context.Context, o model.User) (model.User, error)
 	Delete(ctx context.Context, o model.User) error
-
 	CheckRights(ctx context.Context, id uint64) error
 }
 
