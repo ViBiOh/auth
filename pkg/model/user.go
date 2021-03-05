@@ -13,9 +13,9 @@ var NoneUser User
 
 // User of the app
 type User struct {
-	ID       uint64 `json:"id"`
 	Login    string `json:"login"`
 	Password string `json:"password,omitempty"`
+	ID       uint64 `json:"id"`
 }
 
 // NewUser creates new user with given id, login and profiles
