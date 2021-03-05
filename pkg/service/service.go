@@ -10,6 +10,7 @@ import (
 	"github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/auth/v2/pkg/store"
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
+	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
 )
 
 // App of package
@@ -67,7 +68,7 @@ func (a app) Get(ctx context.Context, ID uint64) (model.User, error) {
 	}
 
 	if item == model.NoneUser {
-		return model.NoneUser, WrapNotFound(errors.New("user not found"))
+		return model.NoneUser, httpModel.WrapNotFound(errors.New("user not found"))
 	}
 
 	return item, nil
@@ -117,7 +118,7 @@ func (a app) Check(ctx context.Context, old, new model.User) error {
 	}
 
 	if new == model.NoneUser {
-		return ConcatError(output)
+		return httpModel.ConcatError(output)
 	}
 
 	if old != model.NoneUser && new != model.NoneUser && !(user.ID == new.ID || a.auth.IsAuthorized(ctx, user, "admin")) {
@@ -132,13 +133,13 @@ func (a app) Check(ctx context.Context, old, new model.User) error {
 		output = append(output, errors.New("password is required"))
 	}
 
-	return ConcatError(output)
+	return httpModel.ConcatError(output)
 }
 
 func (a app) CheckRights(ctx context.Context, id uint64) error {
 	user := model.ReadUser(ctx)
 	if user == model.NoneUser {
-		return WrapUnauthorized(errors.New("no user in context"))
+		return httpModel.WrapUnauthorized(errors.New("no user in context"))
 	}
 
 	if id != 0 && user.ID == id || a.auth.IsAuthorized(ctx, user, "admin") {
@@ -147,5 +148,5 @@ func (a app) CheckRights(ctx context.Context, id uint64) error {
 
 	logger.Info("unauthorized access for login=%s", user.Login)
 
-	return WrapForbidden(errors.New("unauthorized"))
+	return httpModel.WrapForbidden(errors.New("unauthorized"))
 }
