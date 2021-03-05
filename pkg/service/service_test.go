@@ -10,6 +10,7 @@ import (
 	"github.com/ViBiOh/auth/v2/pkg/auth/authtest"
 	"github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/auth/v2/pkg/store/storetest"
+	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
 )
 
 func TestList(t *testing.T) {
@@ -38,7 +39,7 @@ func TestList(t *testing.T) {
 			},
 			nil,
 			0,
-			ErrUnauthorized,
+			httpModel.ErrUnauthorized,
 		},
 		{
 			"not admin",
@@ -48,7 +49,7 @@ func TestList(t *testing.T) {
 			},
 			nil,
 			0,
-			ErrForbidden,
+			httpModel.ErrForbidden,
 		},
 		{
 			"error on list",
@@ -124,7 +125,7 @@ func TestGet(t *testing.T) {
 				ctx: context.Background(),
 			},
 			model.NoneUser,
-			ErrUnauthorized,
+			httpModel.ErrUnauthorized,
 		},
 		{
 			"not self",
@@ -134,7 +135,7 @@ func TestGet(t *testing.T) {
 				ctx: model.StoreUser(context.Background(), model.NewUser(2, "guest")),
 			},
 			model.NoneUser,
-			ErrForbidden,
+			httpModel.ErrForbidden,
 		},
 		{
 			"error on get",
@@ -154,7 +155,7 @@ func TestGet(t *testing.T) {
 				ctx: model.StoreUser(context.Background(), model.NewUser(2, "guest")),
 			},
 			model.NoneUser,
-			ErrNotFound,
+			httpModel.ErrNotFound,
 		},
 		{
 			"found",
