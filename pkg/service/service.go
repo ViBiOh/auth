@@ -49,9 +49,7 @@ func (a app) List(ctx context.Context, page, pageSize uint, sortKey string, sort
 	}
 
 	itemsList := make([]model.User, len(list))
-	for index, item := range list {
-		itemsList[index] = item
-	}
+	copy(itemsList, list)
 
 	return itemsList, total, nil
 }

@@ -21,10 +21,7 @@ type testProvider struct {
 }
 
 func (t testProvider) IsAuthorized(_ context.Context, _ model.User, profile string) bool {
-	if profile == "admin" {
-		return true
-	}
-	return false
+	return profile == "admin"
 }
 
 func (t testProvider) IsMatching(_ string) bool {
