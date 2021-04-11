@@ -22,11 +22,15 @@ jobs:
     if: "! contains(toJSON(github.event.commits.*.message), '[skip ci]')"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Golang
+        uses: actions/setup-go@v2
         with:
           go-version: "^1.16"
-      - run: |
+      - name: Build
+        run: |
           make
           git --no-pager diff -- ':(exclude)go.sum' && git diff --quiet -- ':(exclude)go.sum'
-      - uses: codecov/codecov-action@v1
+      - name: Codecov
+        uses: codecov/codecov-action@v1
