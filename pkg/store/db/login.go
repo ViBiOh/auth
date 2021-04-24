@@ -30,7 +30,7 @@ func (a app) Login(ctx context.Context, login, password string) (model.User, err
 	}
 
 	if err := db.Get(ctx, a.db, scanner, readUserQuery, strings.ToLower(login), password); err != nil {
-		logger.Error("unable to login %s: %s", login, err.Error())
+		logger.WithField("login", login).Error("unable to login: %s", err.Error())
 
 		if err == sql.ErrNoRows {
 			return model.NoneUser, ident.ErrInvalidCredentials
@@ -61,7 +61,7 @@ func (a app) IsAuthorized(ctx context.Context, user model.User, profile string) 
 	}
 
 	if err := db.Get(ctx, a.db, scanner, readLoginProfile, user.ID, profile); err != nil {
-		logger.Error("unable to authorized %s: %s", user.Login, err.Error())
+		logger.WithField("login", user.Login).Error("unable to authorized: %s", err.Error())
 
 		return false
 	}

@@ -144,7 +144,7 @@ func (a app) CheckRights(ctx context.Context, id uint64) error {
 		return nil
 	}
 
-	logger.Info("unauthorized access for login=%s", user.Login)
+	logger.WithField("login", user.Login).Info("unauthorized access")
 
 	return httpModel.WrapForbidden(errors.New("unauthorized"))
 }
