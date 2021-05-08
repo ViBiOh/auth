@@ -29,7 +29,7 @@ func main() {
 	authProvider, err := memoryStore.New(basicConfig)
 	logger.Fatal(err)
 
-	identProvider := basic.New(authProvider)
+	identProvider := basic.New(authProvider, "Example Memory")
 	middlewareApp := middleware.New(authProvider, identProvider)
 
 	go appServer.Start("http", healthApp.End(), httputils.Handler(nil, healthApp, middlewareApp.Middleware))

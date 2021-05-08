@@ -3,6 +3,7 @@ package basic
 import (
 	"context"
 	"encoding/base64"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -26,12 +27,14 @@ type Provider interface {
 // App of the package
 type App struct {
 	provider Provider
+	realm    string
 }
 
 // New creates new App from Config
-func New(provider Provider) App {
+func New(provider Provider, realm string) App {
 	return App{
 		provider: provider,
+		realm:    realm,
 	}
 }
 
@@ -62,6 +65,11 @@ func (a App) GetUser(ctx context.Context, content string) (model.User, error) {
 
 // OnError handles HTTP request when login fails
 func (a App) OnError(w http.ResponseWriter, _ *http.Request, err error) {
-	w.Header().Add("WWW-Authenticate", "Basic charset=\"UTF-8\"")
+	realm := ""
+	if len(a.realm) != 0 {
+		realm = fmt.Sprintf("realm=\"%s\" ", a.realm)
+	}
+
+	w.Header().Add("WWW-Authenticate", fmt.Sprintf("Basic %scharset=\"UTF-8\"", realm))
 	httperror.Unauthorized(w, err)
 }

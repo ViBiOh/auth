@@ -52,7 +52,7 @@ func TestIsMatching(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			if got := New(testProvider{}).IsMatching(tc.args.content); got != tc.want {
+			if got := New(testProvider{}, "").IsMatching(tc.args.content); got != tc.want {
 				t.Errorf("IsMatching() = %t, want %t", got, tc.want)
 			}
 		})
@@ -106,7 +106,7 @@ func TestGetUser(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			got, gotErr := New(testProvider{}).GetUser(context.Background(), tc.args.content)
+			got, gotErr := New(testProvider{}, "").GetUser(context.Background(), tc.args.content)
 
 			failed := false
 
@@ -127,11 +127,15 @@ func TestGetUser(t *testing.T) {
 
 func TestOnError(t *testing.T) {
 	type args struct {
-		err error
+		realm string
+		err   error
 	}
 
 	wantedHeader := http.Header{}
 	wantedHeader.Add("WWW-Authenticate", "Basic charset=\"UTF-8\"")
+
+	wantedRealmHeader := http.Header{}
+	wantedRealmHeader.Add("WWW-Authenticate", "Basic realm=\"Testing\" charset=\"UTF-8\"")
 
 	var cases = []struct {
 		intention  string
@@ -151,12 +155,23 @@ func TestOnError(t *testing.T) {
 			http.StatusUnauthorized,
 			wantedHeader,
 		},
+		{
+			"realm",
+			httptest.NewRequest(http.MethodGet, "/", nil),
+			args{
+				realm: "Testing",
+				err:   errInvalidCredentials,
+			},
+			"invalid credentials\n",
+			http.StatusUnauthorized,
+			wantedRealmHeader,
+		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
 			writer := httptest.NewRecorder()
-			New(testProvider{}).OnError(writer, tc.request, tc.args.err)
+			New(testProvider{}, tc.args.realm).OnError(writer, tc.request, tc.args.err)
 
 			if got := writer.Code; got != tc.wantStatus {
 				t.Errorf("OnError = %d, want %d", got, tc.wantStatus)

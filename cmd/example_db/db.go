@@ -38,7 +38,7 @@ func main() {
 	healthApp := health.New(healthConfig, appDB.Ping)
 
 	authProvider := dbStore.New(appDB)
-	identProvider := basic.New(authProvider)
+	identProvider := basic.New(authProvider, "Example with a DB")
 	middlewareApp := middleware.New(authProvider, identProvider)
 
 	go appServer.Start("http", healthApp.End(), httputils.Handler(Handler(), healthApp, middlewareApp.Middleware))
