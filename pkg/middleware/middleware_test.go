@@ -84,7 +84,9 @@ func TestMiddleware(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
 			handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				w.Write([]byte(r.Method))
+				if _, err := w.Write([]byte(r.Method)); err != nil {
+					t.Errorf("unable to write: %s", err)
+				}
 			})
 
 			writer := httptest.NewRecorder()
