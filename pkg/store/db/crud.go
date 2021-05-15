@@ -3,15 +3,10 @@ package db
 import (
 	"context"
 	"database/sql"
-	"regexp"
 	"strings"
 
 	"github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/httputils/v4/pkg/db"
-)
-
-var (
-	sortKeyMatcher = regexp.MustCompile(`[A-Za-z0-9]+`)
 )
 
 func (a app) DoAtomic(ctx context.Context, action func(context.Context) error) error {
