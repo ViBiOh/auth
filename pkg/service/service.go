@@ -16,7 +16,6 @@ import (
 // App of package
 type App interface {
 	Check(ctx context.Context, old, new model.User) error
-	List(ctx context.Context, page, pageSize uint, sortKey string, sortDesc bool, filters map[string][]string) ([]model.User, uint, error)
 	Get(ctx context.Context, ID uint64) (model.User, error)
 	Create(ctx context.Context, o model.User) (model.User, error)
 	Update(ctx context.Context, o model.User) (model.User, error)
@@ -35,23 +34,6 @@ func New(store store.UserStorage, auth auth.Provider) App {
 		store: store,
 		auth:  auth,
 	}
-}
-
-// List Users
-func (a app) List(ctx context.Context, page, pageSize uint, sortKey string, sortAsc bool, _ map[string][]string) ([]model.User, uint, error) {
-	if err := a.CheckRights(ctx, 0); err != nil {
-		return nil, 0, err
-	}
-
-	list, total, err := a.store.List(ctx, page, pageSize, sortKey, sortAsc)
-	if err != nil {
-		return nil, 0, fmt.Errorf("unable to list: %w", err)
-	}
-
-	itemsList := make([]model.User, len(list))
-	copy(itemsList, list)
-
-	return itemsList, total, nil
 }
 
 // Get User

@@ -13,10 +13,6 @@ var _ store.UserStorage = &App{}
 type App struct {
 	doAtomicErr error
 
-	listUsers []model.User
-	listTotal uint
-	listErr   error
-
 	getUser model.User
 	getErr  error
 
@@ -36,15 +32,6 @@ func New() *App {
 // SetDoAtomic mocks
 func (a *App) SetDoAtomic(err error) *App {
 	a.doAtomicErr = err
-	return a
-}
-
-// SetList mocks
-func (a *App) SetList(users []model.User, total uint, err error) *App {
-	a.listUsers = users
-	a.listTotal = total
-	a.listErr = err
-
 	return a
 }
 
@@ -83,11 +70,6 @@ func (a *App) DoAtomic(ctx context.Context, action func(context.Context) error) 
 	}
 
 	return action(ctx)
-}
-
-// List mocks
-func (a *App) List(_ context.Context, _, _ uint, _ string, _ bool) ([]model.User, uint, error) {
-	return a.listUsers, a.listTotal, a.listErr
 }
 
 // Get mocks

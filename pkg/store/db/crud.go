@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"regexp"
 	"strings"
 
@@ -17,49 +16,6 @@ var (
 
 func (a app) DoAtomic(ctx context.Context, action func(context.Context) error) error {
 	return db.DoAtomic(ctx, a.db, action)
-}
-
-const listQuery = `
-SELECT
-  id,
-  login,
-  count(1) OVER() AS full_count
-FROM
-  auth.login
-ORDER BY %s
-LIMIT $1
-OFFSET $2
-`
-
-func (a app) List(ctx context.Context, page, pageSize uint, sortKey string, sortAsc bool) ([]model.User, uint, error) {
-	order := "creation_date DESC"
-
-	if sortKeyMatcher.MatchString(sortKey) {
-		order = sortKey
-
-		if !sortAsc {
-			order += " DESC"
-		}
-	}
-
-	offset := (page - 1) * pageSize
-
-	var totalCount uint
-	list := make([]model.User, 0)
-
-	scanner := func(rows *sql.Rows) error {
-		var user model.User
-
-		if err := rows.Scan(&user.ID, &user.Login, &totalCount); err != nil {
-			return err
-		}
-
-		list = append(list, user)
-		return nil
-	}
-
-	err := db.List(ctx, a.db, scanner, fmt.Sprintf(listQuery, order), pageSize, offset)
-	return list, totalCount, err
 }
 
 const getByIDQuery = `
