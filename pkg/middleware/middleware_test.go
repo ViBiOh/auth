@@ -252,6 +252,14 @@ func TestOnHandlerFail(t *testing.T) {
 			"no matching provider for Authorization content\n",
 			http.StatusTeapot,
 		},
+		{
+			"no provider",
+			httptest.NewRequest(http.MethodOptions, "/", nil),
+			ErrNoMatchingProvider,
+			nil,
+			"no matching provider for Authorization content\n",
+			http.StatusBadRequest,
+		},
 	}
 
 	for _, tc := range cases {

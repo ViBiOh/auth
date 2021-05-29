@@ -112,7 +112,9 @@ func (a app) HasProfile(ctx context.Context, user model.User, profile string) bo
 func onHandlerFail(w http.ResponseWriter, r *http.Request, err error, provider ident.Provider) {
 	if err == auth.ErrForbidden {
 		httperror.Forbidden(w)
-	} else {
+	} else if provider != nil {
 		provider.OnError(w, r, err)
+	} else {
+		httperror.BadRequest(w, err)
 	}
 }
