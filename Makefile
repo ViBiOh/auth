@@ -11,19 +11,19 @@ PACKAGES ?= ./...
 MAIN_SOURCE = cmd/bcrypt/bcrypt.go
 MAIN_RUNNER = go run $(MAIN_SOURCE)
 ifeq ($(DEBUG), true)
-	MAIN_RUNNER = dlv debug $(MAIN_SOURCE) --
+	MAIN_RUNNER = gdlv -d $(shell dirname $(MAIN_SOURCE)) debug --
 endif
 
 MEMORY_SOURCE = cmd/example_memory/memory.go
 MEMORY_RUNNER = go run $(MEMORY_SOURCE)
 ifeq ($(DEBUG), true)
-	MEMORY_RUNNER = dlv debug $(MEMORY_SOURCE) --
+	MEMORY_RUNNER = gdlv -d $(shell dirname $(MEMORY_SOURCE)) debug --
 endif
 
 DB_SOURCE = cmd/example_db/db.go
 DB_RUNNER = go run $(DB_SOURCE)
 ifeq ($(DEBUG), true)
-	DB_RUNNER = dlv debug $(DB_SOURCE) --
+	DB_RUNNER = gdlv -d $(shell dirname $(DB_SOURCE)) debug --
 endif
 
 .DEFAULT_GOAL := app
