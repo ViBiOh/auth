@@ -17,7 +17,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	bestCost, err := findBestCost(time.Second / 5)
+	bestCost, err := findBestCost(time.Second / 4)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -31,19 +31,22 @@ func main() {
 }
 
 func findBestCost(maxDuration time.Duration) (int, error) {
-	var duration time.Duration
 	password := []byte("b6aa8c7d9931406946efe9ba2fadc1a6") // random string
 
-	cost := bcrypt.MinCost
-	for ; duration < maxDuration && cost < bcrypt.MaxCost; cost++ {
-		start := time.Now()
-
-		if _, err := bcrypt.GenerateFromPassword(password, cost); err != nil {
-			return cost, fmt.Errorf("unable to generate password: %s", err)
+	for i := bcrypt.MinCost + 1; i <= bcrypt.MaxCost; i++ {
+		hashedPassword, err := bcrypt.GenerateFromPassword(password, i)
+		if err != nil {
+			return i, fmt.Errorf("unable to generate password: %s", err)
 		}
 
-		duration = time.Since(start)
+		start := time.Now()
+		_ = bcrypt.CompareHashAndPassword(hashedPassword, password)
+		duration := time.Since(start)
+
+		if duration > maxDuration {
+			return i - 1, nil
+		}
 	}
 
-	return cost, nil
+	return bcrypt.MaxCost, nil
 }
