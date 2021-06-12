@@ -6,11 +6,10 @@ import (
 	"strings"
 
 	"github.com/ViBiOh/auth/v2/pkg/model"
-	"github.com/ViBiOh/httputils/v4/pkg/db"
 )
 
 func (a app) DoAtomic(ctx context.Context, action func(context.Context) error) error {
-	return db.DoAtomic(ctx, a.db, action)
+	return a.db.DoAtomic(ctx, action)
 }
 
 const getByIDQuery = `
@@ -35,7 +34,7 @@ func (a app) Get(ctx context.Context, id uint64) (model.User, error) {
 		return err
 	}
 
-	err := db.Get(ctx, a.db, scanner, getByIDQuery, id)
+	err := a.db.Get(ctx, scanner, getByIDQuery, id)
 	return item, err
 }
 
@@ -52,7 +51,7 @@ INSERT INTO
 `
 
 func (a app) Create(ctx context.Context, o model.User) (uint64, error) {
-	return db.Create(ctx, insertQuery, strings.ToLower(o.Login), o.Password)
+	return a.db.Create(ctx, insertQuery, strings.ToLower(o.Login), o.Password)
 }
 
 const updateQuery = `
@@ -65,7 +64,7 @@ WHERE
 `
 
 func (a app) Update(ctx context.Context, o model.User) error {
-	return db.Exec(ctx, updateQuery, o.ID, strings.ToLower(o.Login))
+	return a.db.Exec(ctx, updateQuery, o.ID, strings.ToLower(o.Login))
 }
 
 const updatePasswordQuery = `
@@ -78,7 +77,7 @@ WHERE
 `
 
 func (a app) UpdatePassword(ctx context.Context, o model.User) error {
-	return db.Exec(ctx, updatePasswordQuery, o.ID, o.Password)
+	return a.db.Exec(ctx, updatePasswordQuery, o.ID, o.Password)
 }
 
 const deleteQuery = `
@@ -89,5 +88,5 @@ WHERE
 `
 
 func (a app) Delete(ctx context.Context, o model.User) error {
-	return db.Exec(ctx, deleteQuery, o.ID)
+	return a.db.Exec(ctx, deleteQuery, o.ID)
 }

@@ -2,12 +2,12 @@ package db
 
 import (
 	"context"
-	"database/sql"
 
 	"github.com/ViBiOh/auth/v2/pkg/auth"
 	"github.com/ViBiOh/auth/v2/pkg/ident/basic"
 	"github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/auth/v2/pkg/store"
+	"github.com/ViBiOh/httputils/v4/pkg/db"
 )
 
 // App of package
@@ -30,11 +30,11 @@ var (
 )
 
 type app struct {
-	db *sql.DB
+	db db.App
 }
 
 // New creates new App from dependencies
-func New(db *sql.DB) App {
+func New(db db.App) App {
 	return app{
 		db: db,
 	}

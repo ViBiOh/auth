@@ -7,7 +7,6 @@ import (
 
 	"github.com/ViBiOh/auth/v2/pkg/ident"
 	"github.com/ViBiOh/auth/v2/pkg/model"
-	"github.com/ViBiOh/httputils/v4/pkg/db"
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
 )
 
@@ -29,7 +28,7 @@ func (a app) Login(ctx context.Context, login, password string) (model.User, err
 		return row.Scan(&user.ID, &user.Login)
 	}
 
-	if err := db.Get(ctx, a.db, scanner, readUserQuery, strings.ToLower(login), password); err != nil {
+	if err := a.db.Get(ctx, scanner, readUserQuery, strings.ToLower(login), password); err != nil {
 		logger.WithField("login", login).Error("unable to login: %s", err.Error())
 
 		if err == sql.ErrNoRows {
@@ -60,7 +59,7 @@ func (a app) IsAuthorized(ctx context.Context, user model.User, profile string) 
 		return row.Scan(&id)
 	}
 
-	if err := db.Get(ctx, a.db, scanner, readLoginProfile, user.ID, profile); err != nil {
+	if err := a.db.Get(ctx, scanner, readLoginProfile, user.ID, profile); err != nil {
 		logger.WithField("login", user.Login).Error("unable to authorized: %s", err.Error())
 
 		return false
