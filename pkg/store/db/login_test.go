@@ -79,7 +79,7 @@ func TestLogin(t *testing.T) {
 				expectedQuery.WillDelayFor(db.SQLTimeout * 2)
 			}
 
-			got, gotErr := New(mockDb).Login(context.Background(), tc.args.login, tc.args.password)
+			got, gotErr := New(db.NewFromSQL(mockDb)).Login(context.Background(), tc.args.login, tc.args.password)
 			failed := false
 
 			if tc.wantErr != nil && !errors.Is(gotErr, tc.wantErr) {
@@ -148,7 +148,7 @@ func TestIsAuthorized(t *testing.T) {
 				expectedQuery.WillDelayFor(db.SQLTimeout * 2)
 			}
 
-			if got := New(mockDb).IsAuthorized(context.Background(), tc.args.user, tc.args.profile); got != tc.want {
+			if got := New(db.NewFromSQL(mockDb)).IsAuthorized(context.Background(), tc.args.user, tc.args.profile); got != tc.want {
 				t.Errorf("IsAuthorized() = %t, want %t", got, tc.want)
 			}
 
