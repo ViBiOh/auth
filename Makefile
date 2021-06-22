@@ -26,6 +26,12 @@ ifeq ($(DEBUG), true)
 	DB_RUNNER = gdlv -d $(shell dirname $(DB_SOURCE)) debug --
 endif
 
+SCORE_SOURCE = cmd/bcrypt_score/bcrypt_score.go
+SCORE_RUNNER = go run $(SCORE_SOURCE)
+ifeq ($(DEBUG), true)
+	SCORE_RUNNER = gdlv -d $(shell dirname $(SCORE_SOURCE)) debug --
+endif
+
 .DEFAULT_GOAL := app
 
 ## help: Display list of commands
@@ -92,7 +98,7 @@ build:
 ## run: Locally run the application, e.g. node index.js, python -m myapp, go run myapp etc ...
 .PHONY: run
 run:
-	$(MAIN_RUNNER) "password"
+	$(MAIN_RUNNER) "password" 12
 
 ## run-memory: Run memory app
 .PHONY: run-memory
@@ -103,3 +109,8 @@ run-memory:
 .PHONY: run-db
 run-db:
 	$(DB_RUNNER)
+
+## run: Locally compute the best bcrypt score
+.PHONY: run-score
+run-score:
+	$(SCORE_RUNNER)
