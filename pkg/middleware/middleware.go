@@ -26,8 +26,8 @@ var (
 // App of package
 type App interface {
 	Middleware(http.Handler) http.Handler
-	IsAuthenticated(*http.Request, string) (ident.Provider, model.User, error)
-	HasProfile(context.Context, model.User, string) bool
+	IsAuthenticated(*http.Request) (ident.Provider, model.User, error)
+	IsAuthorized(context.Context, string) bool
 }
 
 type app struct {
@@ -55,7 +55,7 @@ func (a app) Middleware(next http.Handler) http.Handler {
 			return
 		}
 
-		provider, user, err := a.IsAuthenticated(r, "")
+		provider, user, err := a.IsAuthenticated(r)
 		if err != nil {
 			onHandlerFail(w, r, err, provider)
 			return
@@ -68,12 +68,10 @@ func (a app) Middleware(next http.Handler) http.Handler {
 }
 
 // IsAuthenticated check if request has correct headers for authentification
-func (a app) IsAuthenticated(r *http.Request, profile string) (ident.Provider, model.User, error) {
+func (a app) IsAuthenticated(r *http.Request) (ident.Provider, model.User, error) {
 	if len(a.identProviders) == 0 {
 		return nil, model.NoneUser, ErrNoMatchingProvider
 	}
-
-	checkProfile := len(strings.TrimSpace(profile)) != 0
 
 	authContent := strings.TrimSpace(r.Header.Get("Authorization"))
 	if len(authContent) == 0 {
@@ -90,23 +88,19 @@ func (a app) IsAuthenticated(r *http.Request, profile string) (ident.Provider, m
 			return provider, user, err
 		}
 
-		if checkProfile && !a.HasProfile(r.Context(), user, profile) {
-			return provider, user, auth.ErrForbidden
-		}
-
 		return provider, user, nil
 	}
 
 	return nil, model.NoneUser, ErrNoMatchingProvider
 }
 
-// HasProfile checks if User
-func (a app) HasProfile(ctx context.Context, user model.User, profile string) bool {
+// IsAuthorized checks if User in context has given profile
+func (a app) IsAuthorized(ctx context.Context, profile string) bool {
 	if a.authProvider == nil {
 		return false
 	}
 
-	return a.authProvider.IsAuthorized(ctx, user, profile)
+	return a.authProvider.IsAuthorized(ctx, model.ReadUser(ctx), profile)
 }
 
 func onHandlerFail(w http.ResponseWriter, r *http.Request, err error, provider ident.Provider) {

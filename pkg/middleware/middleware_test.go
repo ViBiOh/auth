@@ -111,7 +111,6 @@ func TestIsAuthenticated(t *testing.T) {
 		intention string
 		instance  App
 		request   *http.Request
-		profile   string
 		want      model.User
 		wantErr   error
 	}{
@@ -119,7 +118,6 @@ func TestIsAuthenticated(t *testing.T) {
 			"no provider",
 			New(nil),
 			httptest.NewRequest(http.MethodGet, "/", nil),
-			"",
 			model.NoneUser,
 			ErrNoMatchingProvider,
 		},
@@ -127,7 +125,6 @@ func TestIsAuthenticated(t *testing.T) {
 			"empty request",
 			New(testProvider{}, testProvider{}),
 			httptest.NewRequest(http.MethodGet, "/", nil),
-			"",
 			model.NoneUser,
 			ErrEmptyAuth,
 		},
@@ -135,7 +132,6 @@ func TestIsAuthenticated(t *testing.T) {
 			"no match",
 			New(testProvider{}, testProvider{}),
 			basicAuthRequest,
-			"",
 			model.NoneUser,
 			ErrNoMatchingProvider,
 		},
@@ -143,39 +139,21 @@ func TestIsAuthenticated(t *testing.T) {
 			"error on get user",
 			New(testProvider{}, testProvider{matching: true}),
 			errorRequest,
-			"",
 			model.NoneUser,
 			errTestProvider,
 		},
 		{
-			"no profile",
+			"valid",
 			New(testProvider{}, testProvider{matching: true}),
 			basicAuthRequest,
-			"",
 			model.NewUser(8000, "admin"),
 			nil,
-		},
-		{
-			"admin profile",
-			New(testProvider{}, testProvider{matching: true}),
-			basicAuthRequest,
-			"admin",
-			model.NewUser(8000, "admin"),
-			nil,
-		},
-		{
-			"invalid profile",
-			New(testProvider{}, testProvider{matching: true}),
-			basicAuthRequest,
-			"guest",
-			model.NewUser(8000, "admin"),
-			auth.ErrForbidden,
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			_, got, gotErr := tc.instance.IsAuthenticated(tc.request, tc.profile)
+			_, got, gotErr := tc.instance.IsAuthenticated(tc.request)
 
 			failed := false
 
@@ -194,34 +172,42 @@ func TestIsAuthenticated(t *testing.T) {
 	}
 }
 
-func TestHasProfile(t *testing.T) {
+func TestIsAuthorized(t *testing.T) {
+	type args struct {
+		context context.Context
+		profile string
+	}
+
 	var cases = []struct {
 		intention string
 		instance  App
-		user      model.User
-		profile   string
+		args      args
 		want      bool
 	}{
 		{
 			"no provider",
 			New(nil),
-			model.NoneUser,
-			"admin",
+			args{
+				context: model.StoreUser(context.Background(), model.NoneUser),
+				profile: "admin",
+			},
 			false,
 		},
 		{
 			"call provider",
 			New(testProvider{}),
-			model.NoneUser,
-			"admin",
+			args{
+				context: model.StoreUser(context.Background(), model.NoneUser),
+				profile: "admin",
+			},
 			true,
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			if got := tc.instance.HasProfile(context.Background(), tc.user, tc.profile); got != tc.want {
-				t.Errorf("HasProfile() = %t, want %t", got, tc.want)
+			if got := tc.instance.IsAuthorized(tc.args.context, tc.args.profile); got != tc.want {
+				t.Errorf("IsAuthorized() = %t, want %t", got, tc.want)
 			}
 		})
 	}
