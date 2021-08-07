@@ -16,7 +16,7 @@ func TestLogin(t *testing.T) {
 		t.Errorf("unable to generate password: %s", err)
 	}
 
-	instance := app{
+	instance := App{
 		ident: map[string]basicUser{
 			"admin": {
 				model.NewUser(1, "admin"),
@@ -86,7 +86,7 @@ func TestLogin(t *testing.T) {
 }
 
 func TestIsAuthorized(t *testing.T) {
-	instance := app{
+	instance := App{
 		auth: map[uint64][]string{
 			1: {"admin"},
 			2: nil,

@@ -21,7 +21,8 @@ WHERE
   AND password = crypt($2, password)
 `
 
-func (a app) Login(ctx context.Context, login, password string) (model.User, error) {
+// Login checks given credentials
+func (a App) Login(ctx context.Context, login, password string) (model.User, error) {
 	var user model.User
 
 	scanner := func(row *sql.Row) error {
@@ -52,7 +53,8 @@ WHERE
   AND lp.login_id = $1
 `
 
-func (a app) IsAuthorized(ctx context.Context, user model.User, profile string) bool {
+// IsAuthorized checks user on profile
+func (a App) IsAuthorized(ctx context.Context, user model.User, profile string) bool {
 	var id uint64
 
 	scanner := func(row *sql.Row) error {

@@ -42,7 +42,7 @@ func TestGet(t *testing.T) {
 
 			mock.ExpectQuery("SELECT id, login FROM auth.login").WithArgs(1).WillReturnRows(sqlmock.NewRows([]string{"id", "login"}).AddRow(1, "vibioh"))
 
-			got, gotErr := app{db: db.NewFromSQL(mockDb)}.Get(context.Background(), tc.args.id)
+			got, gotErr := App{db: db.NewFromSQL(mockDb)}.Get(context.Background(), tc.args.id)
 
 			failed := false
 
@@ -107,7 +107,7 @@ func TestCreate(t *testing.T) {
 
 			mock.ExpectQuery("INSERT INTO auth.login").WithArgs("vibioh", "secret").WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 
-			got, gotErr := app{db: db.NewFromSQL(mockDb)}.Create(ctx, tc.args.o)
+			got, gotErr := App{db: db.NewFromSQL(mockDb)}.Create(ctx, tc.args.o)
 
 			failed := false
 
@@ -170,7 +170,7 @@ func TestUpdate(t *testing.T) {
 
 			mock.ExpectExec("UPDATE auth.login SET login").WithArgs(1, "vibioh").WillReturnResult(sqlmock.NewResult(0, 1))
 
-			gotErr := app{db: db.NewFromSQL(mockDb)}.Update(ctx, tc.args.o)
+			gotErr := App{db: db.NewFromSQL(mockDb)}.Update(ctx, tc.args.o)
 
 			failed := false
 
@@ -231,7 +231,7 @@ func TestUpdatePassword(t *testing.T) {
 
 			mock.ExpectExec("UPDATE auth.login SET password").WithArgs(1, "secret").WillReturnResult(sqlmock.NewResult(0, 1))
 
-			gotErr := app{db: db.NewFromSQL(mockDb)}.UpdatePassword(ctx, tc.args.o)
+			gotErr := App{db: db.NewFromSQL(mockDb)}.UpdatePassword(ctx, tc.args.o)
 
 			failed := false
 
@@ -291,7 +291,7 @@ func TestDelete(t *testing.T) {
 
 			mock.ExpectExec("DELETE FROM auth.login").WithArgs(1).WillReturnResult(sqlmock.NewResult(0, 1))
 
-			gotErr := app{db: db.NewFromSQL(mockDb)}.Delete(ctx, tc.args.o)
+			gotErr := App{db: db.NewFromSQL(mockDb)}.Delete(ctx, tc.args.o)
 
 			failed := false
 

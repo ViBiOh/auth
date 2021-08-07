@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	_ httpmodel.Middleware = app{}.Middleware
+	_ httpmodel.Middleware = App{}.Middleware
 
 	// ErrEmptyAuth occurs when authorization content is not found
 	ErrEmptyAuth = errors.New("empty authorization content")
@@ -24,27 +24,21 @@ var (
 )
 
 // App of package
-type App interface {
-	Middleware(http.Handler) http.Handler
-	IsAuthenticated(*http.Request) (ident.Provider, model.User, error)
-	IsAuthorized(context.Context, string) bool
-}
-
-type app struct {
+type App struct {
 	authProvider   auth.Provider
 	identProviders []ident.Provider
 }
 
 // New creates new App for given providers
 func New(authProvider auth.Provider, identProviders ...ident.Provider) App {
-	return &app{
+	return App{
 		authProvider:   authProvider,
 		identProviders: identProviders,
 	}
 }
 
 // Middleware wraps next authenticated handler
-func (a app) Middleware(next http.Handler) http.Handler {
+func (a App) Middleware(next http.Handler) http.Handler {
 	if len(a.identProviders) == 0 {
 		return next
 	}
@@ -68,7 +62,7 @@ func (a app) Middleware(next http.Handler) http.Handler {
 }
 
 // IsAuthenticated check if request has correct headers for authentification
-func (a app) IsAuthenticated(r *http.Request) (ident.Provider, model.User, error) {
+func (a App) IsAuthenticated(r *http.Request) (ident.Provider, model.User, error) {
 	if len(a.identProviders) == 0 {
 		return nil, model.NoneUser, ErrNoMatchingProvider
 	}
@@ -95,7 +89,7 @@ func (a app) IsAuthenticated(r *http.Request) (ident.Provider, model.User, error
 }
 
 // IsAuthorized checks if User in context has given profile
-func (a app) IsAuthorized(ctx context.Context, profile string) bool {
+func (a App) IsAuthorized(ctx context.Context, profile string) bool {
 	if a.authProvider == nil {
 		return false
 	}

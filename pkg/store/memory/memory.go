@@ -1,7 +1,6 @@
 package memory
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"strconv"
@@ -14,25 +13,20 @@ import (
 )
 
 var (
-	_ auth.Provider  = app{}
-	_ basic.Provider = app{}
+	_ auth.Provider  = App{}
+	_ basic.Provider = App{}
 )
 
 // App of package
-type App interface {
-	Login(ctx context.Context, login, password string) (model.User, error)
-	IsAuthorized(ctx context.Context, user model.User, profile string) bool
+type App struct {
+	ident map[string]basicUser
+	auth  map[uint64][]string
 }
 
 // Config of package
 type Config struct {
 	ident *string
 	auth  *string
-}
-
-type app struct {
-	ident map[string]basicUser
-	auth  map[uint64][]string
 }
 
 // Flags adds flags for configuring package
@@ -47,15 +41,15 @@ func Flags(fs *flag.FlagSet, prefix string) Config {
 func New(config Config) (App, error) {
 	identApp, err := loadIdent(strings.TrimSpace(*config.ident))
 	if err != nil {
-		return nil, err
+		return App{}, err
 	}
 
 	authApp, err := loadAuth(strings.TrimSpace(*config.auth))
 	if err != nil {
-		return nil, err
+		return App{}, err
 	}
 
-	return &app{
+	return App{
 		ident: identApp,
 		auth:  authApp,
 	}, nil
