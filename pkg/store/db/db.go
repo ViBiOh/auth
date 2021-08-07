@@ -3,7 +3,6 @@ package db
 import (
 	"github.com/ViBiOh/auth/v2/pkg/auth"
 	"github.com/ViBiOh/auth/v2/pkg/ident/basic"
-	"github.com/ViBiOh/auth/v2/pkg/store"
 	"github.com/ViBiOh/httputils/v4/pkg/db"
 )
 
@@ -13,9 +12,9 @@ type App struct {
 }
 
 var (
-	_ auth.Provider     = App{}
-	_ basic.Provider    = App{}
-	_ store.UserStorage = App{}
+	_ auth.Provider  = App{}
+	_ auth.Storage   = App{}
+	_ basic.Provider = App{}
 )
 
 // New creates new App from dependencies

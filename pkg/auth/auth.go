@@ -17,3 +17,12 @@ type Provider interface {
 	// IsAuthorized checks if given user is authorized
 	IsAuthorized(context.Context, model.User, string) bool
 }
+
+// Storage defines interaction with storage from User
+type Storage interface {
+	DoAtomic(ctx context.Context, action func(context.Context) error) error
+	Get(ctx context.Context, id uint64) (model.User, error)
+	Create(ctx context.Context, o model.User) (uint64, error)
+	Update(ctx context.Context, o model.User) error
+	Delete(ctx context.Context, o model.User) error
+}

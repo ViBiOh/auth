@@ -64,6 +64,8 @@ init:
 	go install github.com/kisielk/errcheck@latest
 	go install golang.org/x/lint/golint@latest
 	go install golang.org/x/tools/cmd/goimports@latest
+	go install github.com/golang/mock/mockgen@v1.6.0
+	$(MAKE) mocks
 	go mod tidy
 
 ## format: Format code. e.g Prettier (js), format (golang)
@@ -78,6 +80,13 @@ style:
 	golint $(PACKAGES)
 	errcheck -ignoretests $(PACKAGES)
 	go vet $(PACKAGES)
+
+## mocks: Generate mocks
+.PHONY: mocks
+mocks:
+	find . -name "mocks" -type d -exec rm {} \;
+	mockgen -destination pkg/mocks/auth_storage.go -mock_names Storage=Storage -package mocks github.com/ViBiOh/auth/v2/pkg/auth Storage
+	mockgen -destination pkg/mocks/auth_provider.go -mock_names Provider=Provider -package mocks github.com/ViBiOh/auth/v2/pkg/auth Provider
 
 ## test: Shortcut to launch all the test tasks (unit, functional and integration).
 .PHONY: test

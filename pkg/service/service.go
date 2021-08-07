@@ -8,41 +8,31 @@ import (
 
 	"github.com/ViBiOh/auth/v2/pkg/auth"
 	"github.com/ViBiOh/auth/v2/pkg/model"
-	"github.com/ViBiOh/auth/v2/pkg/store"
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
 )
 
 // App of package
-type App interface {
-	Check(ctx context.Context, old, new model.User) error
-	Get(ctx context.Context, ID uint64) (model.User, error)
-	Create(ctx context.Context, o model.User) (model.User, error)
-	Update(ctx context.Context, o model.User) (model.User, error)
-	Delete(ctx context.Context, o model.User) error
-	CheckRights(ctx context.Context, id uint64) error
-}
-
-type app struct {
-	store store.UserStorage
-	auth  auth.Provider
+type App struct {
+	storeApp auth.Storage
+	authApp  auth.Provider
 }
 
 // New creates new App from Config
-func New(store store.UserStorage, auth auth.Provider) App {
-	return &app{
-		store: store,
-		auth:  auth,
+func New(storeApp auth.Storage, authApp auth.Provider) App {
+	return App{
+		storeApp: storeApp,
+		authApp:  authApp,
 	}
 }
 
 // Get User
-func (a app) Get(ctx context.Context, ID uint64) (model.User, error) {
+func (a App) Get(ctx context.Context, ID uint64) (model.User, error) {
 	if err := a.CheckRights(ctx, ID); err != nil {
 		return model.NoneUser, err
 	}
 
-	item, err := a.store.Get(ctx, ID)
+	item, err := a.storeApp.Get(ctx, ID)
 	if err != nil {
 		return model.NoneUser, fmt.Errorf("unable to get: %w", err)
 	}
@@ -55,8 +45,8 @@ func (a app) Get(ctx context.Context, ID uint64) (model.User, error) {
 }
 
 // Create User
-func (a app) Create(ctx context.Context, user model.User) (model.User, error) {
-	id, err := a.store.Create(ctx, user)
+func (a App) Create(ctx context.Context, user model.User) (model.User, error) {
+	id, err := a.storeApp.Create(ctx, user)
 	if err != nil {
 		return model.NoneUser, fmt.Errorf("unable to create: %w", err)
 	}
@@ -68,8 +58,8 @@ func (a app) Create(ctx context.Context, user model.User) (model.User, error) {
 }
 
 // Update User
-func (a app) Update(ctx context.Context, user model.User) (model.User, error) {
-	if err := a.store.Update(ctx, user); err != nil {
+func (a App) Update(ctx context.Context, user model.User) (model.User, error) {
+	if err := a.storeApp.Update(ctx, user); err != nil {
 		return user, fmt.Errorf("unable to update: %w", err)
 	}
 
@@ -77,15 +67,16 @@ func (a app) Update(ctx context.Context, user model.User) (model.User, error) {
 }
 
 // Delete User
-func (a app) Delete(ctx context.Context, user model.User) error {
-	if err := a.store.Delete(ctx, user); err != nil {
+func (a App) Delete(ctx context.Context, user model.User) error {
+	if err := a.storeApp.Delete(ctx, user); err != nil {
 		return fmt.Errorf("unable to delete: %w", err)
 	}
 
 	return nil
 }
 
-func (a app) Check(ctx context.Context, old, new model.User) error {
+// Check user values
+func (a App) Check(ctx context.Context, old, new model.User) error {
 	output := make([]error, 0)
 
 	user := model.ReadUser(ctx)
@@ -93,7 +84,7 @@ func (a app) Check(ctx context.Context, old, new model.User) error {
 		output = append(output, errors.New("you must be logged in for interacting"))
 	}
 
-	if new == model.NoneUser && !a.auth.IsAuthorized(ctx, user, "admin") {
+	if new == model.NoneUser && !a.authApp.IsAuthorized(ctx, user, "admin") {
 		output = append(output, errors.New("you must be an admin for deleting"))
 	}
 
@@ -101,7 +92,7 @@ func (a app) Check(ctx context.Context, old, new model.User) error {
 		return httpModel.ConcatError(output)
 	}
 
-	if old != model.NoneUser && new != model.NoneUser && !(user.ID == new.ID || a.auth.IsAuthorized(ctx, user, "admin")) {
+	if old != model.NoneUser && new != model.NoneUser && !(user.ID == new.ID || a.authApp.IsAuthorized(ctx, user, "admin")) {
 		output = append(output, errors.New("you're not authorized to interact with other user"))
 	}
 
@@ -116,13 +107,14 @@ func (a app) Check(ctx context.Context, old, new model.User) error {
 	return httpModel.ConcatError(output)
 }
 
-func (a app) CheckRights(ctx context.Context, id uint64) error {
+// CheckRights of user ID
+func (a App) CheckRights(ctx context.Context, id uint64) error {
 	user := model.ReadUser(ctx)
 	if user == model.NoneUser {
 		return httpModel.WrapUnauthorized(errors.New("no user in context"))
 	}
 
-	if id != 0 && user.ID == id || a.auth.IsAuthorized(ctx, user, "admin") {
+	if id != 0 && user.ID == id || a.authApp.IsAuthorized(ctx, user, "admin") {
 		return nil
 	}
 

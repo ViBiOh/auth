@@ -7,10 +7,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ViBiOh/auth/v2/pkg/auth/authtest"
+	"github.com/ViBiOh/auth/v2/pkg/mocks"
 	"github.com/ViBiOh/auth/v2/pkg/model"
-	"github.com/ViBiOh/auth/v2/pkg/store/storetest"
 	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
+	"github.com/golang/mock/gomock"
 )
 
 func TestGet(t *testing.T) {
@@ -28,7 +28,7 @@ func TestGet(t *testing.T) {
 	}{
 		{
 			"no context",
-			New(storetest.New(), authtest.New()),
+			App{},
 			args{
 				ctx: context.Background(),
 			},
@@ -37,7 +37,7 @@ func TestGet(t *testing.T) {
 		},
 		{
 			"not self",
-			New(storetest.New(), authtest.New()),
+			App{},
 			args{
 				id:  1,
 				ctx: model.StoreUser(context.Background(), model.NewUser(2, "guest")),
@@ -47,7 +47,7 @@ func TestGet(t *testing.T) {
 		},
 		{
 			"error on get",
-			New(storetest.New().SetGet(model.NoneUser, errors.New("failed")), authtest.New().SetIsAuthorized(true)),
+			App{},
 			args{
 				id:  8000,
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "admin")),
@@ -57,7 +57,7 @@ func TestGet(t *testing.T) {
 		},
 		{
 			"not found",
-			New(storetest.New().SetGet(model.NoneUser, nil), authtest.New().SetIsAuthorized(true)),
+			App{},
 			args{
 				id:  2,
 				ctx: model.StoreUser(context.Background(), model.NewUser(2, "guest")),
@@ -67,7 +67,7 @@ func TestGet(t *testing.T) {
 		},
 		{
 			"found",
-			New(storetest.New().SetGet(model.NewUser(1, "admin"), nil), authtest.New().SetIsAuthorized(true)),
+			App{},
 			args{
 				id:  1,
 				ctx: model.StoreUser(context.Background(), model.NewUser(2, "admin")),
@@ -79,6 +79,28 @@ func TestGet(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			authStorage := mocks.NewStorage(ctrl)
+			authProvider := mocks.NewProvider(ctrl)
+
+			switch tc.intention {
+			case "not self":
+				authProvider.EXPECT().IsAuthorized(gomock.Any(), gomock.Any(), gomock.Any()).Return(false)
+			case "error on get":
+				authStorage.EXPECT().Get(gomock.Any(), gomock.Any()).Return(model.NoneUser, errors.New("failed"))
+				authProvider.EXPECT().IsAuthorized(gomock.Any(), gomock.Any(), gomock.Any()).Return(true)
+			case "not found":
+				authStorage.EXPECT().Get(gomock.Any(), gomock.Any()).Return(model.NoneUser, nil)
+			case "found":
+				authStorage.EXPECT().Get(gomock.Any(), gomock.Any()).Return(model.NewUser(1, "admin"), nil)
+				authProvider.EXPECT().IsAuthorized(gomock.Any(), gomock.Any(), gomock.Any()).Return(true)
+			}
+
+			tc.instance.storeApp = authStorage
+			tc.instance.authApp = authProvider
+
 			got, gotErr := tc.instance.Get(tc.args.ctx, tc.args.id)
 
 			failed := false
@@ -114,7 +136,7 @@ func TestCreate(t *testing.T) {
 	}{
 		{
 			"error on create",
-			New(storetest.New().SetCreate(0, errors.New("failed")), nil),
+			App{},
 			args{
 				o: model.NewUser(1, "admin"),
 			},
@@ -123,7 +145,7 @@ func TestCreate(t *testing.T) {
 		},
 		{
 			"success",
-			New(storetest.New().SetCreate(1, nil), nil),
+			App{},
 			args{
 				o: model.NewUser(0, "admin"),
 			},
@@ -134,6 +156,20 @@ func TestCreate(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			authStorage := mocks.NewStorage(ctrl)
+
+			tc.instance.storeApp = authStorage
+
+			switch tc.intention {
+			case "error on create":
+				authStorage.EXPECT().Create(gomock.Any(), gomock.Any()).Return(uint64(0), errors.New("failed"))
+			case "success":
+				authStorage.EXPECT().Create(gomock.Any(), gomock.Any()).Return(uint64(1), nil)
+			}
+
 			got, gotErr := tc.instance.Create(context.Background(), tc.args.o)
 
 			failed := false
@@ -169,7 +205,7 @@ func TestUpdate(t *testing.T) {
 	}{
 		{
 			"error on update",
-			New(storetest.New().SetUpdate(errors.New("failed")), nil),
+			App{},
 			args{
 				o: model.NewUser(1, "admin"),
 			},
@@ -178,7 +214,7 @@ func TestUpdate(t *testing.T) {
 		},
 		{
 			"success",
-			New(storetest.New().SetUpdate(nil), nil),
+			App{},
 			args{
 				o: model.NewUser(1, "admin"),
 			},
@@ -189,6 +225,20 @@ func TestUpdate(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			authStorage := mocks.NewStorage(ctrl)
+
+			tc.instance.storeApp = authStorage
+
+			switch tc.intention {
+			case "error on update":
+				authStorage.EXPECT().Update(gomock.Any(), gomock.Any()).Return(errors.New("failed"))
+			case "success":
+				authStorage.EXPECT().Update(gomock.Any(), gomock.Any()).Return(nil)
+			}
+
 			got, gotErr := tc.instance.Update(context.Background(), tc.args.o)
 
 			failed := false
@@ -224,7 +274,7 @@ func TestDelete(t *testing.T) {
 	}{
 		{
 			"error on delete",
-			New(storetest.New().SetDelete(errors.New("failed")), nil),
+			App{},
 			args{
 				o: model.NewUser(0, "admin"),
 			},
@@ -233,7 +283,7 @@ func TestDelete(t *testing.T) {
 		},
 		{
 			"success",
-			New(storetest.New().SetDelete(nil), nil),
+			App{},
 			args{
 				o: model.NewUser(1, "admin"),
 			},
@@ -244,6 +294,20 @@ func TestDelete(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			authStorage := mocks.NewStorage(ctrl)
+
+			tc.instance.storeApp = authStorage
+
+			switch tc.intention {
+			case "error on delete":
+				authStorage.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(errors.New("failed"))
+			case "success":
+				authStorage.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(nil)
+			}
+
 			gotErr := tc.instance.Delete(context.Background(), tc.args.o)
 
 			failed := false
@@ -278,7 +342,7 @@ func TestCheck(t *testing.T) {
 	}{
 		{
 			"empty",
-			New(storetest.New(), authtest.New()),
+			App{},
 			args{
 				ctx: context.Background(),
 			},
@@ -286,7 +350,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"create empty",
-			New(storetest.New(), authtest.New()),
+			App{},
 			args{
 				ctx: context.Background(),
 				new: model.User{
@@ -297,7 +361,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"create without password",
-			New(storetest.New(), authtest.New()),
+			App{},
 			args{
 				ctx: context.Background(),
 				new: model.NewUser(0, "guest"),
@@ -306,7 +370,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"create valid",
-			New(storetest.New(), authtest.New()),
+			App{},
 			args{
 				ctx: context.Background(),
 				new: model.User{
@@ -318,7 +382,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"update unauthorized",
-			New(storetest.New(), authtest.New()),
+			App{},
 			args{
 				ctx: context.Background(),
 				old: model.NewUser(2, "guest"),
@@ -328,7 +392,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"update forbidden",
-			New(storetest.New(), authtest.New()),
+			App{},
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "guest")),
 				old: model.NewUser(2, "guest"),
@@ -338,7 +402,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"update empty login",
-			New(storetest.New(), authtest.New()),
+			App{},
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(2, "guest")),
 				old: model.NewUser(2, "guest"),
@@ -348,7 +412,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"update valid",
-			New(storetest.New(), authtest.New()),
+			App{},
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(2, "guest")),
 				old: model.NewUser(2, "guest"),
@@ -358,7 +422,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"update as admin",
-			New(storetest.New(), authtest.New().SetIsAuthorized(true)),
+			App{},
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "admin")),
 				old: model.NewUser(2, "guest"),
@@ -368,7 +432,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"delete unauthorized",
-			New(storetest.New(), authtest.New()),
+			App{},
 			args{
 				ctx: context.Background(),
 				old: model.NewUser(2, "guest"),
@@ -377,7 +441,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"delete forbidden",
-			New(storetest.New(), authtest.New()),
+			App{},
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "guest")),
 				old: model.NewUser(2, "guest"),
@@ -386,7 +450,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"delete self",
-			New(storetest.New(), authtest.New()),
+			App{},
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(2, "guest")),
 				old: model.NewUser(2, "guest"),
@@ -395,7 +459,7 @@ func TestCheck(t *testing.T) {
 		},
 		{
 			"delete admin",
-			New(storetest.New(), authtest.New().SetIsAuthorized(true)),
+			App{},
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "admin")),
 				old: model.NewUser(2, "guest"),
@@ -406,6 +470,34 @@ func TestCheck(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			authStorage := mocks.NewStorage(ctrl)
+			authProvider := mocks.NewProvider(ctrl)
+
+			tc.instance.storeApp = authStorage
+			tc.instance.authApp = authProvider
+
+			switch tc.intention {
+			case "empty":
+				authProvider.EXPECT().IsAuthorized(gomock.Any(), gomock.Any(), gomock.Any()).Return(false)
+			case "update unauthorized":
+				authProvider.EXPECT().IsAuthorized(gomock.Any(), gomock.Any(), gomock.Any()).Return(false)
+			case "update forbidden":
+				authProvider.EXPECT().IsAuthorized(gomock.Any(), gomock.Any(), gomock.Any()).Return(false)
+			case "delete unauthorized":
+				authProvider.EXPECT().IsAuthorized(gomock.Any(), gomock.Any(), gomock.Any()).Return(false)
+			case "delete forbidden":
+				authProvider.EXPECT().IsAuthorized(gomock.Any(), gomock.Any(), gomock.Any()).Return(false)
+			case "update as admin":
+				authProvider.EXPECT().IsAuthorized(gomock.Any(), gomock.Any(), gomock.Any()).Return(true)
+			case "delete self":
+				authProvider.EXPECT().IsAuthorized(gomock.Any(), gomock.Any(), gomock.Any()).Return(false)
+			case "delete admin":
+				authProvider.EXPECT().IsAuthorized(gomock.Any(), gomock.Any(), gomock.Any()).Return(true)
+			}
+
 			gotErr := tc.instance.Check(tc.args.ctx, tc.args.old, tc.args.new)
 
 			failed := false
