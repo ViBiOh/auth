@@ -20,9 +20,18 @@ type Provider interface {
 
 // Storage defines interaction with storage from User
 type Storage interface {
-	DoAtomic(ctx context.Context, action func(context.Context) error) error
-	Get(ctx context.Context, id uint64) (model.User, error)
-	Create(ctx context.Context, o model.User) (uint64, error)
-	Update(ctx context.Context, o model.User) error
-	Delete(ctx context.Context, o model.User) error
+	DoAtomic(context.Context, func(context.Context) error) error
+	Get(context.Context, uint64) (model.User, error)
+	Create(context.Context, model.User) (uint64, error)
+	Update(context.Context, model.User) error
+	Delete(context.Context, model.User) error
+}
+
+// Service defines interaction with storage and provider from User
+type Service interface {
+	Get(context.Context, uint64) (model.User, error)
+	Create(context.Context, model.User) (model.User, error)
+	Update(context.Context, model.User) (model.User, error)
+	Delete(context.Context, model.User) error
+	Check(context.Context, model.User, model.User) error
 }
