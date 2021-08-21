@@ -32,9 +32,9 @@ func (t testProvider) GetUser(_ context.Context, input string) (model.User, erro
 	if input == "Basic YWRtaW46cGFzc3dvcmQ=" {
 		return model.NewUser(8000, "admin"), nil
 	} else if input == "Basic" {
-		return model.NoneUser, errTestProvider
+		return model.User{}, errTestProvider
 	}
-	return model.NoneUser, nil
+	return model.User{}, nil
 }
 
 func (t testProvider) OnError(w http.ResponseWriter, _ *http.Request, err error) {
@@ -118,28 +118,28 @@ func TestIsAuthenticated(t *testing.T) {
 			"no provider",
 			New(nil),
 			httptest.NewRequest(http.MethodGet, "/", nil),
-			model.NoneUser,
+			model.User{},
 			ErrNoMatchingProvider,
 		},
 		{
 			"empty request",
 			New(testProvider{}, testProvider{}),
 			httptest.NewRequest(http.MethodGet, "/", nil),
-			model.NoneUser,
+			model.User{},
 			ErrEmptyAuth,
 		},
 		{
 			"no match",
 			New(testProvider{}, testProvider{}),
 			basicAuthRequest,
-			model.NoneUser,
+			model.User{},
 			ErrNoMatchingProvider,
 		},
 		{
 			"error on get user",
 			New(testProvider{}, testProvider{matching: true}),
 			errorRequest,
-			model.NoneUser,
+			model.User{},
 			errTestProvider,
 		},
 		{
@@ -188,7 +188,7 @@ func TestIsAuthorized(t *testing.T) {
 			"no provider",
 			New(nil),
 			args{
-				context: model.StoreUser(context.Background(), model.NoneUser),
+				context: model.StoreUser(context.Background(), model.User{}),
 				profile: "admin",
 			},
 			false,
@@ -197,7 +197,7 @@ func TestIsAuthorized(t *testing.T) {
 			"call provider",
 			New(testProvider{}),
 			args{
-				context: model.StoreUser(context.Background(), model.NoneUser),
+				context: model.StoreUser(context.Background(), model.User{}),
 				profile: "admin",
 			},
 			true,

@@ -29,7 +29,7 @@ func (a App) Get(ctx context.Context, id uint64) (model.User, error) {
 	scanner := func(row *sql.Row) error {
 		err := row.Scan(&item.ID, &item.Login)
 		if err == sql.ErrNoRows {
-			item = model.NoneUser
+			item = model.User{}
 			return nil
 		}
 

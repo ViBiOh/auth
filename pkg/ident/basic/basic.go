@@ -47,14 +47,14 @@ func (a App) IsMatching(content string) bool {
 func (a App) GetUser(ctx context.Context, content string) (model.User, error) {
 	rawData, err := base64.StdEncoding.DecodeString(strings.TrimPrefix(content, authPrefix))
 	if err != nil {
-		return model.NoneUser, ident.ErrMalformedAuth
+		return model.User{}, ident.ErrMalformedAuth
 	}
 
 	data := string(rawData)
 
 	sepIndex := strings.Index(data, ":")
 	if sepIndex < 0 {
-		return model.NoneUser, ident.ErrMalformedAuth
+		return model.User{}, ident.ErrMalformedAuth
 	}
 
 	login := strings.ToLower(data[:sepIndex])

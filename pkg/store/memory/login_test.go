@@ -41,7 +41,7 @@ func TestLogin(t *testing.T) {
 			args{
 				login: "anonymous",
 			},
-			model.NoneUser,
+			model.User{},
 			ident.ErrInvalidCredentials,
 		},
 		{
@@ -50,7 +50,7 @@ func TestLogin(t *testing.T) {
 				login:    "admin",
 				password: "admin",
 			},
-			model.NoneUser,
+			model.User{},
 			ident.ErrInvalidCredentials,
 		},
 		{

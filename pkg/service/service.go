@@ -29,16 +29,16 @@ func New(storeApp auth.Storage, authApp auth.Provider) App {
 // Get User
 func (a App) Get(ctx context.Context, ID uint64) (model.User, error) {
 	if err := a.CheckRights(ctx, ID); err != nil {
-		return model.NoneUser, err
+		return model.User{}, err
 	}
 
 	item, err := a.storeApp.Get(ctx, ID)
 	if err != nil {
-		return model.NoneUser, fmt.Errorf("unable to get: %w", err)
+		return model.User{}, fmt.Errorf("unable to get: %w", err)
 	}
 
-	if item == model.NoneUser {
-		return model.NoneUser, httpModel.WrapNotFound(errors.New("user not found"))
+	if item.IsZero() {
+		return model.User{}, httpModel.WrapNotFound(errors.New("user not found"))
 	}
 
 	return item, nil
@@ -48,7 +48,7 @@ func (a App) Get(ctx context.Context, ID uint64) (model.User, error) {
 func (a App) Create(ctx context.Context, user model.User) (model.User, error) {
 	id, err := a.storeApp.Create(ctx, user)
 	if err != nil {
-		return model.NoneUser, fmt.Errorf("unable to create: %w", err)
+		return model.User{}, fmt.Errorf("unable to create: %w", err)
 	}
 
 	user.ID = id
@@ -80,19 +80,19 @@ func (a App) Check(ctx context.Context, old, new model.User) error {
 	output := make([]error, 0)
 
 	user := model.ReadUser(ctx)
-	if old != model.NoneUser && user == model.NoneUser {
+	if !old.IsZero() && user.IsZero() {
 		output = append(output, errors.New("you must be logged in for interacting"))
 	}
 
-	if new == model.NoneUser && !a.authApp.IsAuthorized(ctx, user, "admin") {
+	if new.IsZero() && !a.authApp.IsAuthorized(ctx, user, "admin") {
 		output = append(output, errors.New("you must be an admin for deleting"))
 	}
 
-	if new == model.NoneUser {
+	if new.IsZero() {
 		return httpModel.ConcatError(output)
 	}
 
-	if old != model.NoneUser && new != model.NoneUser && !(user.ID == new.ID || a.authApp.IsAuthorized(ctx, user, "admin")) {
+	if !old.IsZero() && !new.IsZero() && !(user.ID == new.ID || a.authApp.IsAuthorized(ctx, user, "admin")) {
 		output = append(output, errors.New("you're not authorized to interact with other user"))
 	}
 
@@ -100,7 +100,7 @@ func (a App) Check(ctx context.Context, old, new model.User) error {
 		output = append(output, errors.New("login is required"))
 	}
 
-	if old == model.NoneUser && new != model.NoneUser && len(strings.TrimSpace(new.Password)) == 0 {
+	if old.IsZero() && !new.IsZero() && len(strings.TrimSpace(new.Password)) == 0 {
 		output = append(output, errors.New("password is required"))
 	}
 
@@ -110,7 +110,7 @@ func (a App) Check(ctx context.Context, old, new model.User) error {
 // CheckRights of user ID
 func (a App) CheckRights(ctx context.Context, id uint64) error {
 	user := model.ReadUser(ctx)
-	if user == model.NoneUser {
+	if user.IsZero() {
 		return httpModel.WrapUnauthorized(errors.New("no user in context"))
 	}
 

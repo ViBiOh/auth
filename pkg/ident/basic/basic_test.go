@@ -21,7 +21,7 @@ func (tp testProvider) Login(_ context.Context, login, password string) (model.U
 	if login == "admin" && password == "secret" {
 		return model.NewUser(1, "admin"), nil
 	}
-	return model.NoneUser, errInvalidCredentials
+	return model.User{}, errInvalidCredentials
 }
 
 func TestIsMatching(t *testing.T) {
@@ -75,7 +75,7 @@ func TestGetUser(t *testing.T) {
 			args{
 				content: "🤪",
 			},
-			model.NoneUser,
+			model.User{},
 			ident.ErrMalformedAuth,
 		},
 		{
@@ -83,7 +83,7 @@ func TestGetUser(t *testing.T) {
 			args{
 				content: "Basic c2VjcmV0Cg==",
 			},
-			model.NoneUser,
+			model.User{},
 			ident.ErrMalformedAuth,
 		},
 		{
@@ -99,7 +99,7 @@ func TestGetUser(t *testing.T) {
 			args{
 				content: "Basic YWRtaW46YWRtaW4K",
 			},
-			model.NoneUser,
+			model.User{},
 			errInvalidCredentials,
 		},
 	}

@@ -32,7 +32,7 @@ func TestGet(t *testing.T) {
 			args{
 				ctx: context.Background(),
 			},
-			model.NoneUser,
+			model.User{},
 			httpModel.ErrUnauthorized,
 		},
 		{
@@ -42,7 +42,7 @@ func TestGet(t *testing.T) {
 				id:  1,
 				ctx: model.StoreUser(context.Background(), model.NewUser(2, "guest")),
 			},
-			model.NoneUser,
+			model.User{},
 			httpModel.ErrForbidden,
 		},
 		{
@@ -52,7 +52,7 @@ func TestGet(t *testing.T) {
 				id:  8000,
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "admin")),
 			},
-			model.NoneUser,
+			model.User{},
 			errors.New("unable to get: failed"),
 		},
 		{
@@ -62,7 +62,7 @@ func TestGet(t *testing.T) {
 				id:  2,
 				ctx: model.StoreUser(context.Background(), model.NewUser(2, "guest")),
 			},
-			model.NoneUser,
+			model.User{},
 			httpModel.ErrNotFound,
 		},
 		{
@@ -89,10 +89,10 @@ func TestGet(t *testing.T) {
 			case "not self":
 				authProvider.EXPECT().IsAuthorized(gomock.Any(), gomock.Any(), gomock.Any()).Return(false)
 			case "error on get":
-				authStorage.EXPECT().Get(gomock.Any(), gomock.Any()).Return(model.NoneUser, errors.New("failed"))
+				authStorage.EXPECT().Get(gomock.Any(), gomock.Any()).Return(model.User{}, errors.New("failed"))
 				authProvider.EXPECT().IsAuthorized(gomock.Any(), gomock.Any(), gomock.Any()).Return(true)
 			case "not found":
-				authStorage.EXPECT().Get(gomock.Any(), gomock.Any()).Return(model.NoneUser, nil)
+				authStorage.EXPECT().Get(gomock.Any(), gomock.Any()).Return(model.User{}, nil)
 			case "found":
 				authStorage.EXPECT().Get(gomock.Any(), gomock.Any()).Return(model.NewUser(1, "admin"), nil)
 				authProvider.EXPECT().IsAuthorized(gomock.Any(), gomock.Any(), gomock.Any()).Return(true)
@@ -140,7 +140,7 @@ func TestCreate(t *testing.T) {
 			args{
 				o: model.NewUser(1, "admin"),
 			},
-			model.NoneUser,
+			model.User{},
 			errors.New("unable to create: failed"),
 		},
 		{

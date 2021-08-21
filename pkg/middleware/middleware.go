@@ -64,12 +64,12 @@ func (a App) Middleware(next http.Handler) http.Handler {
 // IsAuthenticated check if request has correct headers for authentification
 func (a App) IsAuthenticated(r *http.Request) (ident.Provider, model.User, error) {
 	if len(a.identProviders) == 0 {
-		return nil, model.NoneUser, ErrNoMatchingProvider
+		return nil, model.User{}, ErrNoMatchingProvider
 	}
 
 	authContent := strings.TrimSpace(r.Header.Get("Authorization"))
 	if len(authContent) == 0 {
-		return a.identProviders[0], model.NoneUser, ErrEmptyAuth
+		return a.identProviders[0], model.User{}, ErrEmptyAuth
 	}
 
 	for _, provider := range a.identProviders {
@@ -85,7 +85,7 @@ func (a App) IsAuthenticated(r *http.Request) (ident.Provider, model.User, error
 		return provider, user, nil
 	}
 
-	return nil, model.NoneUser, ErrNoMatchingProvider
+	return nil, model.User{}, ErrNoMatchingProvider
 }
 
 // IsAuthorized checks if User in context has given profile

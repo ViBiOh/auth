@@ -33,9 +33,9 @@ func (a App) Login(ctx context.Context, login, password string) (model.User, err
 		logger.WithField("login", login).Error("unable to login: %s", err.Error())
 
 		if err == sql.ErrNoRows {
-			return model.NoneUser, ident.ErrInvalidCredentials
+			return model.User{}, ident.ErrInvalidCredentials
 		}
-		return model.NoneUser, ident.ErrUnavailableService
+		return model.User{}, ident.ErrUnavailableService
 	}
 
 	return user, nil

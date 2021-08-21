@@ -8,14 +8,16 @@ const (
 	ctxUserKey key = iota
 )
 
-// NoneUser is a dummy user
-var NoneUser User
-
 // User of the app
 type User struct {
 	Login    string `json:"login"`
 	Password string `json:"password,omitempty"`
 	ID       uint64 `json:"id"`
+}
+
+// IsZero check if instance is valued or not
+func (u User) IsZero() bool {
+	return u.ID == 0 && len(u.Login) == 0
 }
 
 // NewUser creates new user with given id, login and profiles
@@ -35,12 +37,12 @@ func StoreUser(ctx context.Context, user User) context.Context {
 func ReadUser(ctx context.Context) User {
 	rawUser := ctx.Value(ctxUserKey)
 	if rawUser == nil {
-		return NoneUser
+		return User{}
 	}
 
 	if user, ok := rawUser.(User); ok {
 		return user
 	}
 
-	return NoneUser
+	return User{}
 }

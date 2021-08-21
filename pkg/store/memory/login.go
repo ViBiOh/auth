@@ -13,11 +13,11 @@ import (
 func (a App) Login(_ context.Context, login, password string) (model.User, error) {
 	user, ok := a.ident[login]
 	if !ok {
-		return model.NoneUser, ident.ErrInvalidCredentials
+		return model.User{}, ident.ErrInvalidCredentials
 	}
 
 	if err := bcrypt.CompareHashAndPassword(user.password, []byte(password)); err != nil {
-		return model.NoneUser, ident.ErrInvalidCredentials
+		return model.User{}, ident.ErrInvalidCredentials
 	}
 
 	return user.User, nil

@@ -39,7 +39,7 @@ func TestLogin(t *testing.T) {
 				login:    "vibioh",
 				password: "secret",
 			},
-			model.NoneUser,
+			model.User{},
 			ident.ErrInvalidCredentials,
 		},
 		{
@@ -48,7 +48,7 @@ func TestLogin(t *testing.T) {
 				login:    "vibioh",
 				password: "secret",
 			},
-			model.NoneUser,
+			model.User{},
 			ident.ErrUnavailableService,
 		},
 	}
