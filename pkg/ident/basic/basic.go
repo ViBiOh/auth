@@ -58,7 +58,7 @@ func (a App) GetUser(ctx context.Context, content string) (model.User, error) {
 	}
 
 	login := strings.ToLower(data[:sepIndex])
-	password := strings.TrimSpace(data[sepIndex+1:])
+	password := strings.TrimSuffix(data[sepIndex+1:], "\n")
 
 	return a.provider.Login(ctx, login, password)
 }

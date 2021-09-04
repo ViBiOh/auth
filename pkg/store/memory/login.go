@@ -30,7 +30,7 @@ func (a App) IsAuthorized(_ context.Context, user model.User, profile string) bo
 		return false
 	}
 
-	if len(strings.TrimSpace(profile)) == 0 {
+	if len(profile) == 0 {
 		return true
 	}
 

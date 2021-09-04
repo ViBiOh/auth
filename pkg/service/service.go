@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/ViBiOh/auth/v2/pkg/auth"
 	"github.com/ViBiOh/auth/v2/pkg/model"
@@ -96,11 +95,11 @@ func (a App) Check(ctx context.Context, old, new model.User) error {
 		output = append(output, errors.New("you're not authorized to interact with other user"))
 	}
 
-	if len(strings.TrimSpace(new.Login)) == 0 {
+	if len(new.Login) == 0 {
 		output = append(output, errors.New("login is required"))
 	}
 
-	if old.IsZero() && !new.IsZero() && len(strings.TrimSpace(new.Password)) == 0 {
+	if old.IsZero() && !new.IsZero() && len(new.Password) == 0 {
 		output = append(output, errors.New("password is required"))
 	}
 
