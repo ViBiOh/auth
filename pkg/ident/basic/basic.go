@@ -40,12 +40,16 @@ func New(provider Provider, realm string) App {
 
 // IsMatching checks if header content match provider
 func (a App) IsMatching(content string) bool {
-	return strings.HasPrefix(content, authPrefix)
+	return content[:len(authPrefix)] == authPrefix
 }
 
 // GetUser returns User found in content header
 func (a App) GetUser(ctx context.Context, content string) (model.User, error) {
-	rawData, err := base64.StdEncoding.DecodeString(strings.TrimPrefix(content, authPrefix))
+	if len(content) < len(authPrefix) {
+		return model.User{}, ident.ErrMalformedAuth
+	}
+
+	rawData, err := base64.StdEncoding.DecodeString(content[len(authPrefix):])
 	if err != nil {
 		return model.User{}, ident.ErrMalformedAuth
 	}

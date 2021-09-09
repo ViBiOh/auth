@@ -59,6 +59,14 @@ func TestIsMatching(t *testing.T) {
 	}
 }
 
+func BenchmarkIsMatching(b *testing.B) {
+	var app App
+
+	for i := 0; i < b.N; i++ {
+		app.IsMatching("Basic abcdef1234567890")
+	}
+}
+
 func TestGetUser(t *testing.T) {
 	type args struct {
 		content string
@@ -71,9 +79,17 @@ func TestGetUser(t *testing.T) {
 		wantErr   error
 	}{
 		{
+			"invalid string",
+			args{
+				content: "",
+			},
+			model.User{},
+			ident.ErrMalformedAuth,
+		},
+		{
 			"invalid base64",
 			args{
-				content: "🤪",
+				content: "Basic 🤪",
 			},
 			model.User{},
 			ident.ErrMalformedAuth,
