@@ -6,9 +6,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/ViBiOh/auth/v2/pkg/mocks"
 	"github.com/ViBiOh/auth/v2/pkg/model"
-	"github.com/ViBiOh/httputils/v4/pkg/db"
+	"github.com/golang/mock/gomock"
+	"github.com/jackc/pgx/v4"
 )
 
 func TestGet(t *testing.T) {
@@ -34,15 +35,29 @@ func TestGet(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			mockDb, mock, err := sqlmock.New()
-			if err != nil {
-				t.Fatalf("unable to create mock database: %s", err)
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockDatabase := mocks.NewDatabase(ctrl)
+
+			instance := App{db: mockDatabase}
+
+			switch tc.intention {
+			case "create":
+				mockRow := mocks.NewRow(ctrl)
+				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+					*pointers[0].(*uint64) = 1
+					*pointers[1].(*string) = "vibioh"
+
+					return nil
+				})
+				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...interface{}) error {
+					return scanner(mockRow)
+				}
+				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), uint64(1)).DoAndReturn(dummyFn)
 			}
-			defer mockDb.Close()
 
-			mock.ExpectQuery("SELECT id, login FROM auth.login").WithArgs(1).WillReturnRows(sqlmock.NewRows([]string{"id", "login"}).AddRow(1, "vibioh"))
-
-			got, gotErr := App{db: db.NewFromSQL(mockDb)}.Get(context.Background(), tc.args.id)
+			got, gotErr := instance.Get(context.Background(), tc.args.id)
 
 			failed := false
 
@@ -56,10 +71,6 @@ func TestGet(t *testing.T) {
 
 			if failed {
 				t.Errorf("Get() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
-			}
-
-			if err := mock.ExpectationsWereMet(); err != nil {
-				t.Errorf("sqlmock unfilled expectations: %s", err)
 			}
 		})
 	}
@@ -80,7 +91,7 @@ func TestCreate(t *testing.T) {
 			"create",
 			args{
 				o: model.User{
-					Login:    "vibioh",
+					Login:    "ViBiOh",
 					Password: "secret",
 				},
 			},
@@ -91,23 +102,19 @@ func TestCreate(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			mockDb, mock, err := sqlmock.New()
-			if err != nil {
-				t.Fatalf("unable to create mock database: %s", err)
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockDatabase := mocks.NewDatabase(ctrl)
+
+			instance := App{db: mockDatabase}
+
+			switch tc.intention {
+			case "create":
+				mockDatabase.EXPECT().Create(gomock.Any(), gomock.Any(), "vibioh", "secret").Return(uint64(1), nil)
 			}
-			defer mockDb.Close()
 
-			ctx := context.Background()
-			mock.ExpectBegin()
-			tx, err := mockDb.Begin()
-			if err != nil {
-				t.Errorf("unable to create tx: %s", err)
-			}
-			ctx = db.StoreTx(ctx, tx)
-
-			mock.ExpectQuery("INSERT INTO auth.login").WithArgs("vibioh", "secret").WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
-
-			got, gotErr := App{db: db.NewFromSQL(mockDb)}.Create(ctx, tc.args.o)
+			got, gotErr := instance.Create(context.Background(), tc.args.o)
 
 			failed := false
 
@@ -121,10 +128,6 @@ func TestCreate(t *testing.T) {
 
 			if failed {
 				t.Errorf("Create() = (%d, `%s`), want (%d, `%s`)", got, gotErr, tc.want, tc.wantErr)
-			}
-
-			if err := mock.ExpectationsWereMet(); err != nil {
-				t.Errorf("sqlmock unfilled expectations: %s", err)
 			}
 		})
 	}
@@ -145,7 +148,7 @@ func TestUpdate(t *testing.T) {
 			args{
 				o: model.User{
 					ID:    1,
-					Login: "vibioh",
+					Login: "ViBiOh",
 				},
 			},
 			nil,
@@ -154,23 +157,19 @@ func TestUpdate(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			mockDb, mock, err := sqlmock.New()
-			if err != nil {
-				t.Fatalf("unable to create mock database: %s", err)
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockDatabase := mocks.NewDatabase(ctrl)
+
+			instance := App{db: mockDatabase}
+
+			switch tc.intention {
+			case "update":
+				mockDatabase.EXPECT().Exec(gomock.Any(), gomock.Any(), uint64(1), "vibioh").Return(nil)
 			}
-			defer mockDb.Close()
 
-			ctx := context.Background()
-			mock.ExpectBegin()
-			tx, err := mockDb.Begin()
-			if err != nil {
-				t.Errorf("unable to create tx: %s", err)
-			}
-			ctx = db.StoreTx(ctx, tx)
-
-			mock.ExpectExec("UPDATE auth.login SET login").WithArgs(1, "vibioh").WillReturnResult(sqlmock.NewResult(0, 1))
-
-			gotErr := App{db: db.NewFromSQL(mockDb)}.Update(ctx, tc.args.o)
+			gotErr := instance.Update(context.Background(), tc.args.o)
 
 			failed := false
 
@@ -182,10 +181,6 @@ func TestUpdate(t *testing.T) {
 
 			if failed {
 				t.Errorf("Update() = `%s`, want `%s`", gotErr, tc.wantErr)
-			}
-
-			if err := mock.ExpectationsWereMet(); err != nil {
-				t.Errorf("sqlmock unfilled expectations: %s", err)
 			}
 		})
 	}
@@ -215,23 +210,19 @@ func TestUpdatePassword(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			mockDb, mock, err := sqlmock.New()
-			if err != nil {
-				t.Fatalf("unable to create mock database: %s", err)
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockDatabase := mocks.NewDatabase(ctrl)
+
+			instance := App{db: mockDatabase}
+
+			switch tc.intention {
+			case "update":
+				mockDatabase.EXPECT().Exec(gomock.Any(), gomock.Any(), uint64(1), "secret").Return(nil)
 			}
-			defer mockDb.Close()
 
-			ctx := context.Background()
-			mock.ExpectBegin()
-			tx, err := mockDb.Begin()
-			if err != nil {
-				t.Errorf("unable to create tx: %s", err)
-			}
-			ctx = db.StoreTx(ctx, tx)
-
-			mock.ExpectExec("UPDATE auth.login SET password").WithArgs(1, "secret").WillReturnResult(sqlmock.NewResult(0, 1))
-
-			gotErr := App{db: db.NewFromSQL(mockDb)}.UpdatePassword(ctx, tc.args.o)
+			gotErr := instance.UpdatePassword(context.Background(), tc.args.o)
 
 			failed := false
 
@@ -243,10 +234,6 @@ func TestUpdatePassword(t *testing.T) {
 
 			if failed {
 				t.Errorf("UpdatePassword() = `%s`, want `%s`", gotErr, tc.wantErr)
-			}
-
-			if err := mock.ExpectationsWereMet(); err != nil {
-				t.Errorf("sqlmock unfilled expectations: %s", err)
 			}
 		})
 	}
@@ -263,7 +250,7 @@ func TestDelete(t *testing.T) {
 		wantErr   error
 	}{
 		{
-			"update",
+			"delete",
 			args{
 				o: model.User{
 					ID: 1,
@@ -275,23 +262,19 @@ func TestDelete(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			mockDb, mock, err := sqlmock.New()
-			if err != nil {
-				t.Fatalf("unable to create mock database: %s", err)
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockDatabase := mocks.NewDatabase(ctrl)
+
+			instance := App{db: mockDatabase}
+
+			switch tc.intention {
+			case "delete":
+				mockDatabase.EXPECT().Exec(gomock.Any(), gomock.Any(), uint64(1)).Return(nil)
 			}
-			defer mockDb.Close()
 
-			ctx := context.Background()
-			mock.ExpectBegin()
-			tx, err := mockDb.Begin()
-			if err != nil {
-				t.Errorf("unable to create tx: %s", err)
-			}
-			ctx = db.StoreTx(ctx, tx)
-
-			mock.ExpectExec("DELETE FROM auth.login").WithArgs(1).WillReturnResult(sqlmock.NewResult(0, 1))
-
-			gotErr := App{db: db.NewFromSQL(mockDb)}.Delete(ctx, tc.args.o)
+			gotErr := instance.Delete(context.Background(), tc.args.o)
 
 			failed := false
 
@@ -303,10 +286,6 @@ func TestDelete(t *testing.T) {
 
 			if failed {
 				t.Errorf("Delete() = `%s`, want `%s`", gotErr, tc.wantErr)
-			}
-
-			if err := mock.ExpectationsWereMet(); err != nil {
-				t.Errorf("sqlmock unfilled expectations: %s", err)
 			}
 		})
 	}

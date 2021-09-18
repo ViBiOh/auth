@@ -28,11 +28,7 @@ func main() {
 
 	appDB, err := db.New(dbConfig)
 	logger.Fatal(err)
-	defer func() {
-		if err := appDB.Close(); err != nil {
-			logger.Error("unable to close database connection: %s", err)
-		}
-	}()
+	defer appDB.Close()
 
 	healthApp := health.New(healthConfig, appDB.Ping)
 

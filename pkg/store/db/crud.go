@@ -2,10 +2,10 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	"strings"
 
 	"github.com/ViBiOh/auth/v2/pkg/model"
+	"github.com/jackc/pgx/v4"
 )
 
 // DoAtomic do things in a transaction
@@ -26,9 +26,9 @@ WHERE
 // Get get an user
 func (a App) Get(ctx context.Context, id uint64) (model.User, error) {
 	var item model.User
-	scanner := func(row *sql.Row) error {
+	scanner := func(row pgx.Row) error {
 		err := row.Scan(&item.ID, &item.Login)
-		if err == sql.ErrNoRows {
+		if err == pgx.ErrNoRows {
 			item = model.User{}
 			return nil
 		}
@@ -36,8 +36,7 @@ func (a App) Get(ctx context.Context, id uint64) (model.User, error) {
 		return err
 	}
 
-	err := a.db.Get(ctx, scanner, getByIDQuery, id)
-	return item, err
+	return item, a.db.Get(ctx, scanner, getByIDQuery, id)
 }
 
 const insertQuery = `
