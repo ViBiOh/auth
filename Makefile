@@ -87,6 +87,8 @@ mocks:
 	find . -name "mocks" -type d -exec rm -r "{}" \+
 	mockgen -destination pkg/mocks/auth_storage.go -mock_names Storage=Storage -package mocks github.com/ViBiOh/auth/v2/pkg/auth Storage
 	mockgen -destination pkg/mocks/auth_provider.go -mock_names Provider=Provider -package mocks github.com/ViBiOh/auth/v2/pkg/auth Provider
+	mockgen -destination pkg/mocks/storage_database.go -mock_names Database=Database -package mocks github.com/ViBiOh/auth/v2/pkg/store/db Database
+	mockgen -destination pkg/mocks/pgx.go -mock_names Row=Row -package mocks github.com/jackc/pgx/v4 Row
 
 ## test: Shortcut to launch all the test tasks (unit, functional and integration).
 .PHONY: test

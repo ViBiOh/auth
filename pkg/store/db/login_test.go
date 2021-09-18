@@ -4,12 +4,12 @@ import (
 	"context"
 	"errors"
 	"testing"
-	"time"
 
-	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/ViBiOh/auth/v2/pkg/ident"
+	"github.com/ViBiOh/auth/v2/pkg/mocks"
 	"github.com/ViBiOh/auth/v2/pkg/model"
-	"github.com/ViBiOh/httputils/v4/pkg/db"
+	"github.com/golang/mock/gomock"
+	"github.com/jackc/pgx/v4"
 )
 
 func TestLogin(t *testing.T) {
@@ -43,7 +43,7 @@ func TestLogin(t *testing.T) {
 			ident.ErrInvalidCredentials,
 		},
 		{
-			"timeout",
+			"error",
 			args{
 				login:    "vibioh",
 				password: "secret",
@@ -55,31 +55,42 @@ func TestLogin(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			mockDb, mock, err := sqlmock.New()
-			if err != nil {
-				t.Fatalf("unable to create mock database: %s", err)
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockDatabase := mocks.NewDatabase(ctrl)
+
+			instance := App{db: mockDatabase}
+
+			switch tc.intention {
+			case "simple":
+				mockRow := mocks.NewRow(ctrl)
+				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+					*pointers[0].(*uint64) = 1
+					*pointers[1].(*string) = "vibioh"
+
+					return nil
+				})
+				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...interface{}) error {
+					return scanner(mockRow)
+				}
+				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), "vibioh", "secret").DoAndReturn(dummyFn)
+
+			case "not found":
+				mockRow := mocks.NewRow(ctrl)
+				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+					return pgx.ErrNoRows
+				})
+				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...interface{}) error {
+					return scanner(mockRow)
+				}
+				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), "vibioh", "secret").DoAndReturn(dummyFn)
+
+			case "error":
+				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), "vibioh", "secret").Return(errors.New("timeout"))
 			}
-			defer mockDb.Close()
 
-			expectedQuery := mock.ExpectQuery("SELECT id, login FROM auth.login WHERE login = .+ AND password = crypt(.+, password)").WithArgs("vibioh", "secret")
-
-			if tc.intention != "not found" {
-				expectedQuery.WillReturnRows(sqlmock.NewRows([]string{"id", "login"}).AddRow(1, "vibioh"))
-			} else {
-				expectedQuery.WillReturnRows(sqlmock.NewRows([]string{"id", "login"}))
-			}
-
-			if tc.intention == "timeout" {
-				savedSQLTimeout := db.SQLTimeout
-				db.SQLTimeout = time.Second
-				defer func() {
-					db.SQLTimeout = savedSQLTimeout
-				}()
-
-				expectedQuery.WillDelayFor(db.SQLTimeout * 2)
-			}
-
-			got, gotErr := New(db.NewFromSQL(mockDb)).Login(context.Background(), tc.args.login, tc.args.password)
+			got, gotErr := instance.Login(context.Background(), tc.args.login, tc.args.password)
 			failed := false
 
 			if tc.wantErr != nil && !errors.Is(gotErr, tc.wantErr) {
@@ -90,10 +101,6 @@ func TestLogin(t *testing.T) {
 
 			if failed {
 				t.Errorf("Login() = (%v, `%s`), want (%v, `%s`)", got, gotErr, tc.want, tc.wantErr)
-			}
-
-			if err := mock.ExpectationsWereMet(); err != nil {
-				t.Errorf("sqlmock unfilled expectations: %s", err)
 			}
 		})
 	}
@@ -119,7 +126,7 @@ func TestIsAuthorized(t *testing.T) {
 			true,
 		},
 		{
-			"timeout",
+			"error",
 			args{
 				user:    model.NewUser(1, "vibioh"),
 				profile: "admin",
@@ -130,30 +137,31 @@ func TestIsAuthorized(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.intention, func(t *testing.T) {
-			mockDb, mock, err := sqlmock.New()
-			if err != nil {
-				t.Fatalf("unable to create mock database: %s", err)
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockDatabase := mocks.NewDatabase(ctrl)
+
+			instance := App{db: mockDatabase}
+
+			switch tc.intention {
+			case "simple":
+				mockRow := mocks.NewRow(ctrl)
+				mockRow.EXPECT().Scan(gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+					*pointers[0].(*uint64) = 1
+
+					return nil
+				})
+				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...interface{}) error {
+					return scanner(mockRow)
+				}
+				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), uint64(1), "admin").DoAndReturn(dummyFn)
+			case "error":
+				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), uint64(1), "admin").Return(errors.New("timeout"))
 			}
-			defer mockDb.Close()
 
-			expectedQuery := mock.ExpectQuery("SELECT p.id FROM auth.profile p, auth.login_profile lp WHERE p.name = .+ AND lp.profile_id = p.id AND lp.login_id = .+").WithArgs(1, "admin").WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
-
-			if tc.intention == "timeout" {
-				savedSQLTimeout := db.SQLTimeout
-				db.SQLTimeout = time.Second
-				defer func() {
-					db.SQLTimeout = savedSQLTimeout
-				}()
-
-				expectedQuery.WillDelayFor(db.SQLTimeout * 2)
-			}
-
-			if got := New(db.NewFromSQL(mockDb)).IsAuthorized(context.Background(), tc.args.user, tc.args.profile); got != tc.want {
+			if got := instance.IsAuthorized(context.Background(), tc.args.user, tc.args.profile); got != tc.want {
 				t.Errorf("IsAuthorized() = %t, want %t", got, tc.want)
-			}
-
-			if err := mock.ExpectationsWereMet(); err != nil {
-				t.Errorf("sqlmock unfilled expectations: %s", err)
 			}
 		})
 	}
