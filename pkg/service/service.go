@@ -76,7 +76,7 @@ func (a App) Delete(ctx context.Context, user model.User) error {
 
 // Check user values
 func (a App) Check(ctx context.Context, old, new model.User) error {
-	output := make([]error, 0)
+	var output []error
 
 	user := model.ReadUser(ctx)
 	if !old.IsZero() && user.IsZero() {
