@@ -67,7 +67,7 @@ WHERE
 
 // Update user
 func (a App) Update(ctx context.Context, o model.User) error {
-	return a.db.Exec(ctx, updateQuery, o.ID, strings.ToLower(o.Login))
+	return a.db.One(ctx, updateQuery, o.ID, strings.ToLower(o.Login))
 }
 
 const updatePasswordQuery = `
@@ -81,7 +81,7 @@ WHERE
 
 // UpdatePassword of an user
 func (a App) UpdatePassword(ctx context.Context, o model.User) error {
-	return a.db.Exec(ctx, updatePasswordQuery, o.ID, o.Password)
+	return a.db.One(ctx, updatePasswordQuery, o.ID, o.Password)
 }
 
 const deleteQuery = `
@@ -93,5 +93,5 @@ WHERE
 
 // Delete an user
 func (a App) Delete(ctx context.Context, o model.User) error {
-	return a.db.Exec(ctx, deleteQuery, o.ID)
+	return a.db.One(ctx, deleteQuery, o.ID)
 }

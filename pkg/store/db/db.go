@@ -13,7 +13,7 @@ import (
 type Database interface {
 	Get(context.Context, func(pgx.Row) error, string, ...interface{}) error
 	Create(context.Context, string, ...interface{}) (uint64, error)
-	Exec(context.Context, string, ...interface{}) error
+	One(context.Context, string, ...interface{}) error
 	DoAtomic(context.Context, func(context.Context) error) error
 }
 

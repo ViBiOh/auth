@@ -166,7 +166,7 @@ func TestUpdate(t *testing.T) {
 
 			switch tc.intention {
 			case "update":
-				mockDatabase.EXPECT().Exec(gomock.Any(), gomock.Any(), uint64(1), "vibioh").Return(nil)
+				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), uint64(1), "vibioh").Return(nil)
 			}
 
 			gotErr := instance.Update(context.Background(), tc.args.o)
@@ -219,7 +219,7 @@ func TestUpdatePassword(t *testing.T) {
 
 			switch tc.intention {
 			case "update":
-				mockDatabase.EXPECT().Exec(gomock.Any(), gomock.Any(), uint64(1), "secret").Return(nil)
+				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), uint64(1), "secret").Return(nil)
 			}
 
 			gotErr := instance.UpdatePassword(context.Background(), tc.args.o)
@@ -271,7 +271,7 @@ func TestDelete(t *testing.T) {
 
 			switch tc.intention {
 			case "delete":
-				mockDatabase.EXPECT().Exec(gomock.Any(), gomock.Any(), uint64(1)).Return(nil)
+				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), uint64(1)).Return(nil)
 			}
 
 			gotErr := instance.Delete(context.Background(), tc.args.o)

@@ -69,25 +69,6 @@ func (mr *DatabaseMockRecorder) DoAtomic(arg0, arg1 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DoAtomic", reflect.TypeOf((*Database)(nil).DoAtomic), arg0, arg1)
 }
 
-// Exec mocks base method.
-func (m *Database) Exec(arg0 context.Context, arg1 string, arg2 ...interface{}) error {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0, arg1}
-	for _, a := range arg2 {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "Exec", varargs...)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Exec indicates an expected call of Exec.
-func (mr *DatabaseMockRecorder) Exec(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Exec", reflect.TypeOf((*Database)(nil).Exec), varargs...)
-}
-
 // Get mocks base method.
 func (m *Database) Get(arg0 context.Context, arg1 func(pgx.Row) error, arg2 string, arg3 ...interface{}) error {
 	m.ctrl.T.Helper()
@@ -105,4 +86,23 @@ func (mr *DatabaseMockRecorder) Get(arg0, arg1, arg2 interface{}, arg3 ...interf
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1, arg2}, arg3...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*Database)(nil).Get), varargs...)
+}
+
+// One mocks base method.
+func (m *Database) One(arg0 context.Context, arg1 string, arg2 ...interface{}) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "One", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// One indicates an expected call of One.
+func (mr *DatabaseMockRecorder) One(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "One", reflect.TypeOf((*Database)(nil).One), varargs...)
 }
