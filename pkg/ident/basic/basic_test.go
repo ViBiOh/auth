@@ -29,7 +29,7 @@ func TestIsMatching(t *testing.T) {
 		content string
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      bool
@@ -72,7 +72,7 @@ func TestGetUser(t *testing.T) {
 		content string
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      model.User
@@ -153,7 +153,7 @@ func TestOnError(t *testing.T) {
 	wantedRealmHeader := http.Header{}
 	wantedRealmHeader.Add("WWW-Authenticate", "Basic realm=\"Testing\" charset=\"UTF-8\"")
 
-	var cases = []struct {
+	cases := []struct {
 		intention  string
 		request    *http.Request
 		args       args

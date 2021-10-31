@@ -19,7 +19,7 @@ func TestGet(t *testing.T) {
 		id  uint64
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		instance  App
 		args      args
@@ -127,7 +127,7 @@ func TestCreate(t *testing.T) {
 		o model.User
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		instance  App
 		args      args
@@ -196,7 +196,7 @@ func TestUpdate(t *testing.T) {
 		o model.User
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		instance  App
 		args      args
@@ -265,7 +265,7 @@ func TestDelete(t *testing.T) {
 		o model.User
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		instance  App
 		args      args
@@ -334,7 +334,7 @@ func TestCheck(t *testing.T) {
 		new model.User
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		instance  App
 		args      args

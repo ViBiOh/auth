@@ -12,7 +12,7 @@ func TestNewUser(t *testing.T) {
 		login string
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      User
@@ -41,7 +41,7 @@ func TestReadUser(t *testing.T) {
 		ctx context.Context
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      User

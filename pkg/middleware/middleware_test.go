@@ -44,7 +44,7 @@ func (t testProvider) OnError(w http.ResponseWriter, _ *http.Request, err error)
 func TestMiddleware(t *testing.T) {
 	basicAuthRequest, _ := request.New().BasicAuth("admin", "password").Get("/").Build(context.Background(), nil)
 
-	var cases = []struct {
+	cases := []struct {
 		intention  string
 		instance   App
 		request    *http.Request
@@ -107,7 +107,7 @@ func TestIsAuthenticated(t *testing.T) {
 	basicAuthRequest, _ := request.New().BasicAuth("admin", "password").Get("/").Build(context.Background(), nil)
 	errorRequest, _ := request.New().Header("Authorization", "Basic").Get("/").Build(context.Background(), nil)
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		instance  App
 		request   *http.Request
@@ -178,7 +178,7 @@ func TestIsAuthorized(t *testing.T) {
 		profile string
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		instance  App
 		args      args
@@ -214,7 +214,7 @@ func TestIsAuthorized(t *testing.T) {
 }
 
 func TestOnHandlerFail(t *testing.T) {
-	var cases = []struct {
+	cases := []struct {
 		intention  string
 		request    *http.Request
 		err        error

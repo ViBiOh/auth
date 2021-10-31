@@ -11,7 +11,7 @@ import (
 )
 
 func TestFlags(t *testing.T) {
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		want      string
 	}{
@@ -42,7 +42,7 @@ func TestLoadIdent(t *testing.T) {
 		ident string
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      map[string]basicUser
@@ -127,7 +127,7 @@ func TestLoadAuth(t *testing.T) {
 		auth string
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      map[uint64][]string

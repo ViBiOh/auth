@@ -7,10 +7,8 @@ import (
 	"github.com/ViBiOh/auth/v2/pkg/model"
 )
 
-var (
-	// ErrForbidden occurs when user is identified but not authorized
-	ErrForbidden = errors.New("forbidden access")
-)
+// ErrForbidden occurs when user is identified but not authorized
+var ErrForbidden = errors.New("forbidden access")
 
 // Provider provides methods for dealing with identification
 //go:generate mockgen -destination ../mocks/auth_provider.go -mock_names Provider=Provider -package mocks github.com/ViBiOh/auth/v2/pkg/auth Provider

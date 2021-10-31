@@ -30,7 +30,7 @@ func TestLogin(t *testing.T) {
 		password string
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      model.User
@@ -98,7 +98,7 @@ func TestIsAuthorized(t *testing.T) {
 		profile string
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      bool

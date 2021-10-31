@@ -17,7 +17,7 @@ func TestGet(t *testing.T) {
 		id uint64
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      model.User
@@ -81,7 +81,7 @@ func TestCreate(t *testing.T) {
 		o model.User
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		want      uint64
@@ -138,7 +138,7 @@ func TestUpdate(t *testing.T) {
 		o model.User
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		wantErr   error
@@ -191,7 +191,7 @@ func TestUpdatePassword(t *testing.T) {
 		o model.User
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		wantErr   error
@@ -244,7 +244,7 @@ func TestDelete(t *testing.T) {
 		o model.User
 	}
 
-	var cases = []struct {
+	cases := []struct {
 		intention string
 		args      args
 		wantErr   error
