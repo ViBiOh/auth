@@ -3,10 +3,10 @@ module github.com/ViBiOh/auth/v2
 go 1.17
 
 require (
-	github.com/ViBiOh/httputils/v4 v4.31.0
+	github.com/ViBiOh/httputils/v4 v4.31.1
 	github.com/golang/mock v1.6.0
 	github.com/jackc/pgx/v4 v4.14.1
-	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
+	golang.org/x/crypto v0.0.0-20211202192323-5770296d904e
 )
 
 require (
@@ -17,6 +17,6 @@ require (
 	github.com/jackc/pgproto3/v2 v2.2.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20200714003250-2b9c44734f2b // indirect
 	github.com/jackc/pgtype v1.9.1 // indirect
-	github.com/jackc/puddle v1.2.0 // indirect
-	golang.org/x/text v0.3.6 // indirect
+	github.com/jackc/puddle v1.2.1 // indirect
+	golang.org/x/text v0.3.7 // indirect
 )
