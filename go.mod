@@ -3,7 +3,7 @@ module github.com/ViBiOh/auth/v2
 go 1.17
 
 require (
-	github.com/ViBiOh/httputils/v4 v4.31.3
+	github.com/ViBiOh/httputils/v4 v4.32.0
 	github.com/golang/mock v1.6.0
 	github.com/jackc/pgx/v4 v4.14.1
 	golang.org/x/crypto v0.0.0-20211202192323-5770296d904e
