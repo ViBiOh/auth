@@ -11,6 +11,8 @@ import (
 	"github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/httputils/v4/pkg/httperror"
 	httpmodel "github.com/ViBiOh/httputils/v4/pkg/model"
+	"github.com/ViBiOh/httputils/v4/pkg/tracer"
+	"go.opentelemetry.io/otel/trace"
 )
 
 var (
@@ -25,15 +27,17 @@ var (
 
 // App of package
 type App struct {
+	tracer         trace.Tracer
 	authProvider   auth.Provider
 	identProviders []ident.Provider
 }
 
 // New creates new App for given providers
-func New(authProvider auth.Provider, identProviders ...ident.Provider) App {
+func New(authProvider auth.Provider, tracerApp tracer.App, identProviders ...ident.Provider) App {
 	return App{
 		authProvider:   authProvider,
 		identProviders: identProviders,
+		tracer:         tracerApp.GetTracer("auth"),
 	}
 }
 
@@ -65,6 +69,11 @@ func (a App) Middleware(next http.Handler) http.Handler {
 func (a App) IsAuthenticated(r *http.Request) (ident.Provider, model.User, error) {
 	if len(a.identProviders) == 0 {
 		return nil, model.User{}, ErrNoMatchingProvider
+	}
+
+	if a.tracer != nil {
+		_, span := a.tracer.Start(r.Context(), "check_auth", trace.WithSpanKind(trace.SpanKindInternal))
+		defer span.End()
 	}
 
 	authContent := strings.TrimSpace(r.Header.Get("Authorization"))

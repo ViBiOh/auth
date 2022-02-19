@@ -12,6 +12,7 @@ import (
 	"github.com/ViBiOh/auth/v2/pkg/ident"
 	"github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/httputils/v4/pkg/request"
+	"github.com/ViBiOh/httputils/v4/pkg/tracer"
 )
 
 var errTestProvider = errors.New("unable to decode")
@@ -53,28 +54,28 @@ func TestMiddleware(t *testing.T) {
 	}{
 		{
 			"no provider",
-			New(nil),
+			New(nil, tracer.App{}),
 			httptest.NewRequest(http.MethodOptions, "/", nil),
 			"OPTIONS",
 			http.StatusOK,
 		},
 		{
 			"options",
-			New(nil, testProvider{}),
+			New(nil, tracer.App{}, testProvider{}),
 			httptest.NewRequest(http.MethodOptions, "/", nil),
 			"",
 			http.StatusNoContent,
 		},
 		{
 			"failure",
-			New(nil, testProvider{}),
+			New(nil, tracer.App{}, testProvider{}),
 			httptest.NewRequest(http.MethodGet, "/", nil),
 			"empty authorization content\n",
 			http.StatusTeapot,
 		},
 		{
 			"success",
-			New(nil, testProvider{matching: true}),
+			New(nil, tracer.App{}, testProvider{matching: true}),
 			basicAuthRequest,
 			"GET",
 			http.StatusOK,
@@ -116,35 +117,35 @@ func TestIsAuthenticated(t *testing.T) {
 	}{
 		{
 			"no provider",
-			New(nil),
+			New(nil, tracer.App{}),
 			httptest.NewRequest(http.MethodGet, "/", nil),
 			model.User{},
 			ErrNoMatchingProvider,
 		},
 		{
 			"empty request",
-			New(testProvider{}, testProvider{}),
+			New(testProvider{}, tracer.App{}, testProvider{}),
 			httptest.NewRequest(http.MethodGet, "/", nil),
 			model.User{},
 			ErrEmptyAuth,
 		},
 		{
 			"no match",
-			New(testProvider{}, testProvider{}),
+			New(testProvider{}, tracer.App{}, testProvider{}),
 			basicAuthRequest,
 			model.User{},
 			ErrNoMatchingProvider,
 		},
 		{
 			"error on get user",
-			New(testProvider{}, testProvider{matching: true}),
+			New(testProvider{}, tracer.App{}, testProvider{matching: true}),
 			errorRequest,
 			model.User{},
 			errTestProvider,
 		},
 		{
 			"valid",
-			New(testProvider{}, testProvider{matching: true}),
+			New(testProvider{}, tracer.App{}, testProvider{matching: true}),
 			basicAuthRequest,
 			model.NewUser(8000, "admin"),
 			nil,
@@ -186,7 +187,7 @@ func TestIsAuthorized(t *testing.T) {
 	}{
 		{
 			"no provider",
-			New(nil),
+			New(nil, tracer.App{}),
 			args{
 				context: model.StoreUser(context.Background(), model.User{}),
 				profile: "admin",
@@ -195,7 +196,7 @@ func TestIsAuthorized(t *testing.T) {
 		},
 		{
 			"call provider",
-			New(testProvider{}),
+			New(testProvider{}, tracer.App{}),
 			args{
 				context: model.StoreUser(context.Background(), model.User{}),
 				profile: "admin",
