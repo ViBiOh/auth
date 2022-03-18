@@ -45,7 +45,7 @@ func (m *Storage) Create(arg0 context.Context, arg1 model.User) (uint64, error) 
 }
 
 // Create indicates an expected call of Create.
-func (mr *StorageMockRecorder) Create(arg0, arg1 interface{}) *gomock.Call {
+func (mr *StorageMockRecorder) Create(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*Storage)(nil).Create), arg0, arg1)
 }
@@ -59,7 +59,7 @@ func (m *Storage) Delete(arg0 context.Context, arg1 model.User) error {
 }
 
 // Delete indicates an expected call of Delete.
-func (mr *StorageMockRecorder) Delete(arg0, arg1 interface{}) *gomock.Call {
+func (mr *StorageMockRecorder) Delete(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*Storage)(nil).Delete), arg0, arg1)
 }
@@ -73,7 +73,7 @@ func (m *Storage) DoAtomic(arg0 context.Context, arg1 func(context.Context) erro
 }
 
 // DoAtomic indicates an expected call of DoAtomic.
-func (mr *StorageMockRecorder) DoAtomic(arg0, arg1 interface{}) *gomock.Call {
+func (mr *StorageMockRecorder) DoAtomic(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DoAtomic", reflect.TypeOf((*Storage)(nil).DoAtomic), arg0, arg1)
 }
@@ -88,7 +88,7 @@ func (m *Storage) Get(arg0 context.Context, arg1 uint64) (model.User, error) {
 }
 
 // Get indicates an expected call of Get.
-func (mr *StorageMockRecorder) Get(arg0, arg1 interface{}) *gomock.Call {
+func (mr *StorageMockRecorder) Get(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*Storage)(nil).Get), arg0, arg1)
 }
@@ -102,7 +102,7 @@ func (m *Storage) Update(arg0 context.Context, arg1 model.User) error {
 }
 
 // Update indicates an expected call of Update.
-func (mr *StorageMockRecorder) Update(arg0, arg1 interface{}) *gomock.Call {
+func (mr *StorageMockRecorder) Update(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*Storage)(nil).Update), arg0, arg1)
 }

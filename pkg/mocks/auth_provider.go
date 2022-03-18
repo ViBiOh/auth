@@ -44,7 +44,7 @@ func (m *Provider) IsAuthorized(arg0 context.Context, arg1 model.User, arg2 stri
 }
 
 // IsAuthorized indicates an expected call of IsAuthorized.
-func (mr *ProviderMockRecorder) IsAuthorized(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *ProviderMockRecorder) IsAuthorized(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsAuthorized", reflect.TypeOf((*Provider)(nil).IsAuthorized), arg0, arg1, arg2)
 }

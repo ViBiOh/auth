@@ -11,9 +11,9 @@ import (
 // Database interface needed
 //go:generate mockgen -destination ../../mocks/database.go -mock_names Database=Database -package mocks github.com/ViBiOh/auth/v2/pkg/store/db Database
 type Database interface {
-	Get(context.Context, func(pgx.Row) error, string, ...interface{}) error
-	Create(context.Context, string, ...interface{}) (uint64, error)
-	One(context.Context, string, ...interface{}) error
+	Get(context.Context, func(pgx.Row) error, string, ...any) error
+	Create(context.Context, string, ...any) (uint64, error)
+	One(context.Context, string, ...any) error
 	DoAtomic(context.Context, func(context.Context) error) error
 }
 

@@ -45,13 +45,13 @@ func TestGet(t *testing.T) {
 			switch tc.intention {
 			case "create":
 				mockRow := mocks.NewRow(ctrl)
-				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...interface{}) error {
+				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
 					*pointers[0].(*uint64) = 1
 					*pointers[1].(*string) = "vibioh"
 
 					return nil
 				})
-				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...interface{}) error {
+				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...any) error {
 					return scanner(mockRow)
 				}
 				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), uint64(1)).DoAndReturn(dummyFn)
