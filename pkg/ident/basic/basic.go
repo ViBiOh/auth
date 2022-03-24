@@ -40,6 +40,10 @@ func New(provider Provider, realm string) App {
 
 // IsMatching checks if header content match provider
 func (a App) IsMatching(content string) bool {
+	if len(content) < len(authPrefix) {
+		return false
+	}
+
 	return content[:len(authPrefix)] == authPrefix
 }
 

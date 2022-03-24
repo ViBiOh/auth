@@ -34,15 +34,12 @@ func StoreUser(ctx context.Context, user User) context.Context {
 }
 
 // ReadUser retrieves user from context
-func ReadUser(ctx context.Context) User {
+func ReadUser(ctx context.Context) (output User) {
 	rawUser := ctx.Value(ctxUserKey)
 	if rawUser == nil {
 		return User{}
 	}
 
-	if user, ok := rawUser.(User); ok {
-		return user
-	}
-
-	return User{}
+	output, _ = rawUser.(User)
+	return
 }

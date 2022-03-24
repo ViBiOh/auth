@@ -35,6 +35,13 @@ func TestIsMatching(t *testing.T) {
 		want      bool
 	}{
 		{
+			"short",
+			args{
+				content: "Bas",
+			},
+			false,
+		},
+		{
 			"invalid",
 			args{
 				content: "c2VjcmV0Cg==",
