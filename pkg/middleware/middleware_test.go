@@ -45,36 +45,31 @@ func (t testProvider) OnError(w http.ResponseWriter, _ *http.Request, err error)
 func TestMiddleware(t *testing.T) {
 	basicAuthRequest, _ := request.Get("/").BasicAuth("admin", "password").Build(context.Background(), nil)
 
-	cases := []struct {
-		intention  string
+	cases := map[string]struct {
 		instance   App
 		request    *http.Request
 		want       string
 		wantStatus int
 	}{
-		{
-			"no provider",
+		"no provider": {
 			New(nil, tracer.App{}),
 			httptest.NewRequest(http.MethodOptions, "/", nil),
 			"OPTIONS",
 			http.StatusOK,
 		},
-		{
-			"options",
+		"options": {
 			New(nil, tracer.App{}, testProvider{}),
 			httptest.NewRequest(http.MethodOptions, "/", nil),
 			"",
 			http.StatusNoContent,
 		},
-		{
-			"failure",
+		"failure": {
 			New(nil, tracer.App{}, testProvider{}),
 			httptest.NewRequest(http.MethodGet, "/", nil),
 			"empty authorization content\n",
 			http.StatusTeapot,
 		},
-		{
-			"success",
+		"success": {
 			New(nil, tracer.App{}, testProvider{matching: true}),
 			basicAuthRequest,
 			"GET",
@@ -82,8 +77,8 @@ func TestMiddleware(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if _, err := w.Write([]byte(r.Method)); err != nil {
 					t.Errorf("unable to write: %s", err)
@@ -108,43 +103,37 @@ func TestIsAuthenticated(t *testing.T) {
 	basicAuthRequest, _ := request.Get("/").BasicAuth("admin", "password").Build(context.Background(), nil)
 	errorRequest, _ := request.Get("/").Header("Authorization", "Basic").Build(context.Background(), nil)
 
-	cases := []struct {
-		intention string
-		instance  App
-		request   *http.Request
-		want      model.User
-		wantErr   error
+	cases := map[string]struct {
+		instance App
+		request  *http.Request
+		want     model.User
+		wantErr  error
 	}{
-		{
-			"no provider",
+		"no provider": {
 			New(nil, tracer.App{}),
 			httptest.NewRequest(http.MethodGet, "/", nil),
 			model.User{},
 			ErrNoMatchingProvider,
 		},
-		{
-			"empty request",
+		"empty request": {
 			New(testProvider{}, tracer.App{}, testProvider{}),
 			httptest.NewRequest(http.MethodGet, "/", nil),
 			model.User{},
 			ErrEmptyAuth,
 		},
-		{
-			"no match",
+		"no match": {
 			New(testProvider{}, tracer.App{}, testProvider{}),
 			basicAuthRequest,
 			model.User{},
 			ErrNoMatchingProvider,
 		},
-		{
-			"error on get user",
+		"error on get user": {
 			New(testProvider{}, tracer.App{}, testProvider{matching: true}),
 			errorRequest,
 			model.User{},
 			errTestProvider,
 		},
-		{
-			"valid",
+		"valid": {
 			New(testProvider{}, tracer.App{}, testProvider{matching: true}),
 			basicAuthRequest,
 			model.NewUser(8000, "admin"),
@@ -152,8 +141,8 @@ func TestIsAuthenticated(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			_, got, gotErr := tc.instance.IsAuthenticated(tc.request)
 
 			failed := false
@@ -179,14 +168,12 @@ func TestIsAuthorized(t *testing.T) {
 		profile string
 	}
 
-	cases := []struct {
-		intention string
-		instance  App
-		args      args
-		want      bool
+	cases := map[string]struct {
+		instance App
+		args     args
+		want     bool
 	}{
-		{
-			"no provider",
+		"no provider": {
 			New(nil, tracer.App{}),
 			args{
 				context: model.StoreUser(context.Background(), model.User{}),
@@ -194,8 +181,7 @@ func TestIsAuthorized(t *testing.T) {
 			},
 			false,
 		},
-		{
-			"call provider",
+		"call provider": {
 			New(testProvider{}, tracer.App{}),
 			args{
 				context: model.StoreUser(context.Background(), model.User{}),
@@ -205,8 +191,8 @@ func TestIsAuthorized(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			if got := tc.instance.IsAuthorized(tc.args.context, tc.args.profile); got != tc.want {
 				t.Errorf("IsAuthorized() = %t, want %t", got, tc.want)
 			}
@@ -215,32 +201,28 @@ func TestIsAuthorized(t *testing.T) {
 }
 
 func TestOnHandlerFail(t *testing.T) {
-	cases := []struct {
-		intention  string
+	cases := map[string]struct {
 		request    *http.Request
 		err        error
 		provider   ident.Provider
 		want       string
 		wantStatus int
 	}{
-		{
-			"forbidden",
+		"forbidden": {
 			httptest.NewRequest(http.MethodGet, "/", nil),
 			auth.ErrForbidden,
 			nil,
 			"⛔️\n",
 			http.StatusForbidden,
 		},
-		{
-			"onError",
+		"onError": {
 			httptest.NewRequest(http.MethodOptions, "/", nil),
 			ErrNoMatchingProvider,
 			testProvider{},
 			"no matching provider for Authorization content\n",
 			http.StatusTeapot,
 		},
-		{
-			"no provider",
+		"no provider": {
 			httptest.NewRequest(http.MethodOptions, "/", nil),
 			ErrNoMatchingProvider,
 			nil,
@@ -249,8 +231,8 @@ func TestOnHandlerFail(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			writer := httptest.NewRecorder()
 			onHandlerFail(writer, tc.request, tc.err, tc.provider)
 

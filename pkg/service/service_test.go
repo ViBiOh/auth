@@ -19,15 +19,13 @@ func TestGet(t *testing.T) {
 		id  uint64
 	}
 
-	cases := []struct {
-		intention string
-		instance  App
-		args      args
-		want      model.User
-		wantErr   error
+	cases := map[string]struct {
+		instance App
+		args     args
+		want     model.User
+		wantErr  error
 	}{
-		{
-			"no context",
+		"no context": {
 			App{},
 			args{
 				ctx: context.Background(),
@@ -35,8 +33,7 @@ func TestGet(t *testing.T) {
 			model.User{},
 			httpModel.ErrUnauthorized,
 		},
-		{
-			"not self",
+		"not self": {
 			App{},
 			args{
 				id:  1,
@@ -45,8 +42,7 @@ func TestGet(t *testing.T) {
 			model.User{},
 			httpModel.ErrForbidden,
 		},
-		{
-			"error on get",
+		"error on get": {
 			App{},
 			args{
 				id:  8000,
@@ -55,8 +51,7 @@ func TestGet(t *testing.T) {
 			model.User{},
 			errors.New("unable to get: failed"),
 		},
-		{
-			"not found",
+		"not found": {
 			App{},
 			args{
 				id:  2,
@@ -65,8 +60,7 @@ func TestGet(t *testing.T) {
 			model.User{},
 			httpModel.ErrNotFound,
 		},
-		{
-			"found",
+		"found": {
 			App{},
 			args{
 				id:  1,
@@ -77,15 +71,15 @@ func TestGet(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			authStorage := mocks.NewStorage(ctrl)
 			authProvider := mocks.NewProvider(ctrl)
 
-			switch tc.intention {
+			switch intention {
 			case "not self":
 				authProvider.EXPECT().IsAuthorized(gomock.Any(), gomock.Any(), gomock.Any()).Return(false)
 			case "error on get":
@@ -127,15 +121,13 @@ func TestCreate(t *testing.T) {
 		o model.User
 	}
 
-	cases := []struct {
-		intention string
-		instance  App
-		args      args
-		want      model.User
-		wantErr   error
+	cases := map[string]struct {
+		instance App
+		args     args
+		want     model.User
+		wantErr  error
 	}{
-		{
-			"error on create",
+		"error on create": {
 			App{},
 			args{
 				o: model.NewUser(1, "admin"),
@@ -143,8 +135,7 @@ func TestCreate(t *testing.T) {
 			model.User{},
 			errors.New("unable to create: failed"),
 		},
-		{
-			"success",
+		"success": {
 			App{},
 			args{
 				o: model.NewUser(0, "admin"),
@@ -154,8 +145,8 @@ func TestCreate(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -163,7 +154,7 @@ func TestCreate(t *testing.T) {
 
 			tc.instance.storeApp = authStorage
 
-			switch tc.intention {
+			switch intention {
 			case "error on create":
 				authStorage.EXPECT().Create(gomock.Any(), gomock.Any()).Return(uint64(0), errors.New("failed"))
 			case "success":
@@ -196,15 +187,13 @@ func TestUpdate(t *testing.T) {
 		o model.User
 	}
 
-	cases := []struct {
-		intention string
-		instance  App
-		args      args
-		want      model.User
-		wantErr   error
+	cases := map[string]struct {
+		instance App
+		args     args
+		want     model.User
+		wantErr  error
 	}{
-		{
-			"error on update",
+		"error on update": {
 			App{},
 			args{
 				o: model.NewUser(1, "admin"),
@@ -212,8 +201,7 @@ func TestUpdate(t *testing.T) {
 			model.NewUser(1, "admin"),
 			errors.New("unable to update: failed"),
 		},
-		{
-			"success",
+		"success": {
 			App{},
 			args{
 				o: model.NewUser(1, "admin"),
@@ -223,8 +211,8 @@ func TestUpdate(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -232,7 +220,7 @@ func TestUpdate(t *testing.T) {
 
 			tc.instance.storeApp = authStorage
 
-			switch tc.intention {
+			switch intention {
 			case "error on update":
 				authStorage.EXPECT().Update(gomock.Any(), gomock.Any()).Return(errors.New("failed"))
 			case "success":
@@ -265,15 +253,13 @@ func TestDelete(t *testing.T) {
 		o model.User
 	}
 
-	cases := []struct {
-		intention string
-		instance  App
-		args      args
-		want      model.User
-		wantErr   error
+	cases := map[string]struct {
+		instance App
+		args     args
+		want     model.User
+		wantErr  error
 	}{
-		{
-			"error on delete",
+		"error on delete": {
 			App{},
 			args{
 				o: model.NewUser(0, "admin"),
@@ -281,8 +267,7 @@ func TestDelete(t *testing.T) {
 			model.NewUser(0, "admin"),
 			errors.New("unable to delete: failed"),
 		},
-		{
-			"success",
+		"success": {
 			App{},
 			args{
 				o: model.NewUser(1, "admin"),
@@ -292,8 +277,8 @@ func TestDelete(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -301,7 +286,7 @@ func TestDelete(t *testing.T) {
 
 			tc.instance.storeApp = authStorage
 
-			switch tc.intention {
+			switch intention {
 			case "error on delete":
 				authStorage.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(errors.New("failed"))
 			case "success":
@@ -334,22 +319,19 @@ func TestCheck(t *testing.T) {
 		new model.User
 	}
 
-	cases := []struct {
-		intention string
-		instance  App
-		args      args
-		wantErr   error
+	cases := map[string]struct {
+		instance App
+		args     args
+		wantErr  error
 	}{
-		{
-			"empty",
+		"empty": {
 			App{},
 			args{
 				ctx: context.Background(),
 			},
 			errors.New("you must be an admin for deleting"),
 		},
-		{
-			"create empty",
+		"create empty": {
 			App{},
 			args{
 				ctx: context.Background(),
@@ -359,8 +341,7 @@ func TestCheck(t *testing.T) {
 			},
 			errors.New("login is required, password is required"),
 		},
-		{
-			"create without password",
+		"create without password": {
 			App{},
 			args{
 				ctx: context.Background(),
@@ -368,8 +349,7 @@ func TestCheck(t *testing.T) {
 			},
 			errors.New("password is required"),
 		},
-		{
-			"create valid",
+		"create valid": {
 			App{},
 			args{
 				ctx: context.Background(),
@@ -380,8 +360,7 @@ func TestCheck(t *testing.T) {
 			},
 			nil,
 		},
-		{
-			"update unauthorized",
+		"update unauthorized": {
 			App{},
 			args{
 				ctx: context.Background(),
@@ -390,8 +369,7 @@ func TestCheck(t *testing.T) {
 			},
 			errors.New("you must be logged in for interacting, you're not authorized to interact with other user, login is required"),
 		},
-		{
-			"update forbidden",
+		"update forbidden": {
 			App{},
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "guest")),
@@ -400,8 +378,7 @@ func TestCheck(t *testing.T) {
 			},
 			errors.New("you're not authorized to interact with other user, login is required"),
 		},
-		{
-			"update empty login",
+		"update empty login": {
 			App{},
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(2, "guest")),
@@ -410,8 +387,7 @@ func TestCheck(t *testing.T) {
 			},
 			errors.New("login is required"),
 		},
-		{
-			"update valid",
+		"update valid": {
 			App{},
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(2, "guest")),
@@ -420,8 +396,7 @@ func TestCheck(t *testing.T) {
 			},
 			nil,
 		},
-		{
-			"update as admin",
+		"update as admin": {
 			App{},
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "admin")),
@@ -430,8 +405,7 @@ func TestCheck(t *testing.T) {
 			},
 			nil,
 		},
-		{
-			"delete unauthorized",
+		"delete unauthorized": {
 			App{},
 			args{
 				ctx: context.Background(),
@@ -439,8 +413,7 @@ func TestCheck(t *testing.T) {
 			},
 			errors.New("you must be logged in for interacting, you must be an admin for deleting"),
 		},
-		{
-			"delete forbidden",
+		"delete forbidden": {
 			App{},
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "guest")),
@@ -448,8 +421,7 @@ func TestCheck(t *testing.T) {
 			},
 			errors.New("you must be an admin for deleting"),
 		},
-		{
-			"delete self",
+		"delete self": {
 			App{},
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(2, "guest")),
@@ -457,8 +429,7 @@ func TestCheck(t *testing.T) {
 			},
 			errors.New("you must be an admin for deleting"),
 		},
-		{
-			"delete admin",
+		"delete admin": {
 			App{},
 			args{
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "admin")),
@@ -468,8 +439,8 @@ func TestCheck(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -479,7 +450,7 @@ func TestCheck(t *testing.T) {
 			tc.instance.storeApp = authStorage
 			tc.instance.authApp = authProvider
 
-			switch tc.intention {
+			switch intention {
 			case "empty":
 				authProvider.EXPECT().IsAuthorized(gomock.Any(), gomock.Any(), gomock.Any()).Return(false)
 			case "update unauthorized":

@@ -18,14 +18,12 @@ func TestLogin(t *testing.T) {
 		password string
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		want      model.User
-		wantErr   error
+	cases := map[string]struct {
+		args    args
+		want    model.User
+		wantErr error
 	}{
-		{
-			"simple",
+		"simple": {
 			args{
 				login:    "vibioh",
 				password: "secret",
@@ -33,8 +31,7 @@ func TestLogin(t *testing.T) {
 			model.NewUser(1, "vibioh"),
 			nil,
 		},
-		{
-			"not found",
+		"not found": {
 			args{
 				login:    "vibioh",
 				password: "secret",
@@ -42,8 +39,7 @@ func TestLogin(t *testing.T) {
 			model.User{},
 			ident.ErrInvalidCredentials,
 		},
-		{
-			"error",
+		"error": {
 			args{
 				login:    "vibioh",
 				password: "secret",
@@ -53,8 +49,8 @@ func TestLogin(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -62,7 +58,7 @@ func TestLogin(t *testing.T) {
 
 			instance := App{db: mockDatabase}
 
-			switch tc.intention {
+			switch intention {
 			case "simple":
 				mockRow := mocks.NewRow(ctrl)
 				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
@@ -112,21 +108,18 @@ func TestIsAuthorized(t *testing.T) {
 		profile string
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		want      bool
+	cases := map[string]struct {
+		args args
+		want bool
 	}{
-		{
-			"simple",
+		"simple": {
 			args{
 				user:    model.NewUser(1, "vibioh"),
 				profile: "admin",
 			},
 			true,
 		},
-		{
-			"error",
+		"error": {
 			args{
 				user:    model.NewUser(1, "vibioh"),
 				profile: "admin",
@@ -135,8 +128,8 @@ func TestIsAuthorized(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -144,7 +137,7 @@ func TestIsAuthorized(t *testing.T) {
 
 			instance := App{db: mockDatabase}
 
-			switch tc.intention {
+			switch intention {
 			case "simple":
 				mockRow := mocks.NewRow(ctrl)
 				mockRow.EXPECT().Scan(gomock.Any()).DoAndReturn(func(pointers ...any) error {

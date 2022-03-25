@@ -17,14 +17,12 @@ func TestGet(t *testing.T) {
 		id uint64
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		want      model.User
-		wantErr   error
+	cases := map[string]struct {
+		args    args
+		want    model.User
+		wantErr error
 	}{
-		{
-			"create",
+		"create": {
 			args{
 				id: 1,
 			},
@@ -33,8 +31,8 @@ func TestGet(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -42,7 +40,7 @@ func TestGet(t *testing.T) {
 
 			instance := App{db: mockDatabase}
 
-			switch tc.intention {
+			switch intention {
 			case "create":
 				mockRow := mocks.NewRow(ctrl)
 				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
@@ -81,14 +79,12 @@ func TestCreate(t *testing.T) {
 		o model.User
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		want      uint64
-		wantErr   error
+	cases := map[string]struct {
+		args    args
+		want    uint64
+		wantErr error
 	}{
-		{
-			"create",
+		"create": {
 			args{
 				o: model.User{
 					Login:    "ViBiOh",
@@ -100,8 +96,8 @@ func TestCreate(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -109,7 +105,7 @@ func TestCreate(t *testing.T) {
 
 			instance := App{db: mockDatabase}
 
-			switch tc.intention {
+			switch intention {
 			case "create":
 				mockDatabase.EXPECT().Create(gomock.Any(), gomock.Any(), "vibioh", "secret").Return(uint64(1), nil)
 			}
@@ -138,13 +134,11 @@ func TestUpdate(t *testing.T) {
 		o model.User
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		wantErr   error
+	cases := map[string]struct {
+		args    args
+		wantErr error
 	}{
-		{
-			"update",
+		"update": {
 			args{
 				o: model.User{
 					ID:    1,
@@ -155,8 +149,8 @@ func TestUpdate(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -164,7 +158,7 @@ func TestUpdate(t *testing.T) {
 
 			instance := App{db: mockDatabase}
 
-			switch tc.intention {
+			switch intention {
 			case "update":
 				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), uint64(1), "vibioh").Return(nil)
 			}
@@ -191,13 +185,11 @@ func TestUpdatePassword(t *testing.T) {
 		o model.User
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		wantErr   error
+	cases := map[string]struct {
+		args    args
+		wantErr error
 	}{
-		{
-			"update",
+		"update": {
 			args{
 				o: model.User{
 					ID:       1,
@@ -208,8 +200,8 @@ func TestUpdatePassword(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -217,7 +209,7 @@ func TestUpdatePassword(t *testing.T) {
 
 			instance := App{db: mockDatabase}
 
-			switch tc.intention {
+			switch intention {
 			case "update":
 				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), uint64(1), "secret").Return(nil)
 			}
@@ -244,13 +236,11 @@ func TestDelete(t *testing.T) {
 		o model.User
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		wantErr   error
+	cases := map[string]struct {
+		args    args
+		wantErr error
 	}{
-		{
-			"delete",
+		"delete": {
 			args{
 				o: model.User{
 					ID: 1,
@@ -260,8 +250,8 @@ func TestDelete(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -269,7 +259,7 @@ func TestDelete(t *testing.T) {
 
 			instance := App{db: mockDatabase}
 
-			switch tc.intention {
+			switch intention {
 			case "delete":
 				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), uint64(1)).Return(nil)
 			}

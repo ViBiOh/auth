@@ -30,22 +30,19 @@ func TestLogin(t *testing.T) {
 		password string
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		want      model.User
-		wantErr   error
+	cases := map[string]struct {
+		args    args
+		want    model.User
+		wantErr error
 	}{
-		{
-			"unknown",
+		"unknown": {
 			args{
 				login: "anonymous",
 			},
 			model.User{},
 			ident.ErrInvalidCredentials,
 		},
-		{
-			"invalid password",
+		"invalid password": {
 			args{
 				login:    "admin",
 				password: "admin",
@@ -53,8 +50,7 @@ func TestLogin(t *testing.T) {
 			model.User{},
 			ident.ErrInvalidCredentials,
 		},
-		{
-			"success",
+		"success": {
 			args{
 				login:    "admin",
 				password: "password",
@@ -64,8 +60,8 @@ func TestLogin(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			got, gotErr := instance.Login(context.Background(), tc.args.login, tc.args.password)
 
 			failed := false
@@ -98,36 +94,31 @@ func TestIsAuthorized(t *testing.T) {
 		profile string
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		want      bool
+	cases := map[string]struct {
+		args args
+		want bool
 	}{
-		{
-			"unknown",
+		"unknown": {
 			args{
 				user: model.NewUser(8000, "vibioh"),
 			},
 			false,
 		},
-		{
-			"no wanted profile",
+		"no wanted profile": {
 			args{
 				user:    model.NewUser(1, "vibioh"),
 				profile: "",
 			},
 			true,
 		},
-		{
-			"no matching profile",
+		"no matching profile": {
 			args{
 				user:    model.NewUser(2, "guest"),
 				profile: "admin",
 			},
 			false,
 		},
-		{
-			"success",
+		"success": {
 			args{
 				user:    model.NewUser(1, "vibioh"),
 				profile: "admin",
@@ -136,8 +127,8 @@ func TestIsAuthorized(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			if got := instance.IsAuthorized(context.Background(), tc.args.user, tc.args.profile); got != tc.want {
 				t.Errorf("IsAuthorized() = %t, want %t", got, tc.want)
 			}

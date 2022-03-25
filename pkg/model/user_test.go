@@ -12,13 +12,11 @@ func TestNewUser(t *testing.T) {
 		login string
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		want      User
+	cases := map[string]struct {
+		args args
+		want User
 	}{
-		{
-			"simple",
+		"simple": {
 			args{
 				id:    1,
 				login: "vibioh",
@@ -27,8 +25,8 @@ func TestNewUser(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			if got := NewUser(tc.args.id, tc.args.login); !reflect.DeepEqual(got, tc.want) {
 				t.Errorf("NewUser() = %v, want %v", got, tc.want)
 			}
@@ -41,27 +39,23 @@ func TestReadUser(t *testing.T) {
 		ctx context.Context
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		want      User
+	cases := map[string]struct {
+		args args
+		want User
 	}{
-		{
-			"empty",
+		"empty": {
 			args{
 				ctx: context.Background(),
 			},
 			User{},
 		},
-		{
-			"with User",
+		"with User": {
 			args{
 				ctx: StoreUser(context.Background(), NewUser(8000, "vibioh")),
 			},
 			NewUser(8000, "vibioh"),
 		},
-		{
-			"not an User",
+		"not an User": {
 			args{
 				ctx: context.WithValue(context.Background(), ctxUserKey, args{}),
 			},
@@ -69,8 +63,8 @@ func TestReadUser(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			if got := ReadUser(tc.args.ctx); got != tc.want {
 				t.Errorf("ReadUser() = %v, want %v", got, tc.want)
 			}

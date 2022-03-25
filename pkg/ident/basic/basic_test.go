@@ -29,27 +29,23 @@ func TestIsMatching(t *testing.T) {
 		content string
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		want      bool
+	cases := map[string]struct {
+		args args
+		want bool
 	}{
-		{
-			"short",
+		"short": {
 			args{
 				content: "Bas",
 			},
 			false,
 		},
-		{
-			"invalid",
+		"invalid": {
 			args{
 				content: "c2VjcmV0Cg==",
 			},
 			false,
 		},
-		{
-			"valid",
+		"valid": {
 			args{
 				content: "Basic c2VjcmV0Cg==",
 			},
@@ -57,8 +53,8 @@ func TestIsMatching(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			if got := New(testProvider{}, "").IsMatching(tc.args.content); got != tc.want {
 				t.Errorf("IsMatching() = %t, want %t", got, tc.want)
 			}
@@ -79,46 +75,40 @@ func TestGetUser(t *testing.T) {
 		content string
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		want      model.User
-		wantErr   error
+	cases := map[string]struct {
+		args    args
+		want    model.User
+		wantErr error
 	}{
-		{
-			"invalid string",
+		"invalid string": {
 			args{
 				content: "",
 			},
 			model.User{},
 			ident.ErrMalformedAuth,
 		},
-		{
-			"invalid base64",
+		"invalid base64": {
 			args{
 				content: "Basic 🤪",
 			},
 			model.User{},
 			ident.ErrMalformedAuth,
 		},
-		{
-			"invalid auth",
+		"invalid auth": {
 			args{
 				content: "Basic c2VjcmV0Cg==",
 			},
 			model.User{},
 			ident.ErrMalformedAuth,
 		},
-		{
-			"valid",
+		"valid": {
 			args{
 				content: "Basic YWRtaW46c2VjcmV0Cg==",
 			},
 			model.NewUser(1, "admin"),
 			nil,
 		},
-		{
-			"invalid",
+		"invalid": {
 			args{
 				content: "Basic YWRtaW46YWRtaW4K",
 			},
@@ -127,8 +117,8 @@ func TestGetUser(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			got, gotErr := New(testProvider{}, "").GetUser(context.Background(), tc.args.content)
 
 			failed := false
@@ -160,16 +150,14 @@ func TestOnError(t *testing.T) {
 	wantedRealmHeader := http.Header{}
 	wantedRealmHeader.Add("WWW-Authenticate", "Basic realm=\"Testing\" charset=\"UTF-8\"")
 
-	cases := []struct {
-		intention  string
+	cases := map[string]struct {
 		request    *http.Request
 		args       args
 		want       string
 		wantStatus int
 		wantHeader http.Header
 	}{
-		{
-			"simple",
+		"simple": {
 			httptest.NewRequest(http.MethodGet, "/", nil),
 			args{
 				err: errInvalidCredentials,
@@ -178,8 +166,7 @@ func TestOnError(t *testing.T) {
 			http.StatusUnauthorized,
 			wantedHeader,
 		},
-		{
-			"realm",
+		"realm": {
 			httptest.NewRequest(http.MethodGet, "/", nil),
 			args{
 				realm: "Testing",
@@ -191,8 +178,8 @@ func TestOnError(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			writer := httptest.NewRecorder()
 			New(testProvider{}, tc.args.realm).OnError(writer, tc.request, tc.args.err)
 

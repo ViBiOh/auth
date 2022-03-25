@@ -11,27 +11,25 @@ import (
 )
 
 func TestFlags(t *testing.T) {
-	cases := []struct {
-		intention string
-		want      string
+	cases := map[string]struct {
+		want string
 	}{
-		{
-			"simple",
+		"simple": {
 			"Usage of simple:\n  -profiles string\n    \t[memory] Users profiles in the form 'id:profile1|profile2,id2:profile1' {SIMPLE_PROFILES}\n  -users string\n    \t[memory] Users credentials in the form 'id:login:password,id2:login2:password2' {SIMPLE_USERS}\n",
 		},
 	}
 
-	for _, testCase := range cases {
-		t.Run(testCase.intention, func(t *testing.T) {
-			fs := flag.NewFlagSet(testCase.intention, flag.ContinueOnError)
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
+			fs := flag.NewFlagSet(intention, flag.ContinueOnError)
 			Flags(fs, "")
 
 			var writer strings.Builder
 			fs.SetOutput(&writer)
 			fs.Usage()
 
-			if got := writer.String(); got != testCase.want {
-				t.Errorf("Flags() = `%s`, want `%s`", got, testCase.want)
+			if got := writer.String(); got != tc.want {
+				t.Errorf("Flags() = `%s`, want `%s`", got, tc.want)
 			}
 		})
 	}
@@ -42,46 +40,40 @@ func TestLoadIdent(t *testing.T) {
 		ident string
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		want      map[string]basicUser
-		wantErr   error
+	cases := map[string]struct {
+		args    args
+		want    map[string]basicUser
+		wantErr error
 	}{
-		{
-			"empty",
+		"empty": {
 			args{
 				ident: "",
 			},
 			nil,
 			nil,
 		},
-		{
-			"invalid format",
+		"invalid format": {
 			args{
 				ident: "1:vibioh",
 			},
 			nil,
 			errors.New("invalid format for user ident `1:vibioh`"),
 		},
-		{
-			"invalid number",
+		"invalid number": {
 			args{
 				ident: "first:vibioh:secret",
 			},
 			nil,
 			errors.New("strconv.ParseUint: parsing \"first\": invalid syntax"),
 		},
-		{
-			"same id",
+		"same id": {
 			args{
 				ident: "1:vibioh:secret,1:guest:password",
 			},
 			nil,
 			errors.New("id already exists for user ident `1:guest:password`"),
 		},
-		{
-			"multiple",
+		"multiple": {
 			args{
 				ident: "1:VIBIOH:secret,2:guest:password",
 			},
@@ -99,8 +91,8 @@ func TestLoadIdent(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			got, gotErr := loadIdent(tc.args.ident)
 
 			failed := false
@@ -127,38 +119,33 @@ func TestLoadAuth(t *testing.T) {
 		auth string
 	}
 
-	cases := []struct {
-		intention string
-		args      args
-		want      map[uint64][]string
-		wantErr   error
+	cases := map[string]struct {
+		args    args
+		want    map[uint64][]string
+		wantErr error
 	}{
-		{
-			"empty",
+		"empty": {
 			args{
 				auth: "",
 			},
 			nil,
 			nil,
 		},
-		{
-			"invalid format",
+		"invalid format": {
 			args{
 				auth: "admin",
 			},
 			nil,
 			errors.New("invalid format of user auth `admin`"),
 		},
-		{
-			"invalid number",
+		"invalid number": {
 			args{
 				auth: "first:admin",
 			},
 			nil,
 			errors.New("strconv.ParseUint: parsing \"first\": invalid syntax"),
 		},
-		{
-			"multiple",
+		"multiple": {
 			args{
 				auth: "1:admin|user,2:guest",
 			},
@@ -170,8 +157,8 @@ func TestLoadAuth(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.intention, func(t *testing.T) {
+	for intention, tc := range cases {
+		t.Run(intention, func(t *testing.T) {
 			got, gotErr := loadAuth(tc.args.auth)
 
 			failed := false
