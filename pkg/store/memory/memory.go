@@ -32,8 +32,8 @@ type Config struct {
 // Flags adds flags for configuring package
 func Flags(fs *flag.FlagSet, prefix string, overrides ...flags.Override) Config {
 	return Config{
-		ident: flags.New(prefix, "memory", "Users").Default("", overrides).Label("Users credentials in the form 'id:login:password,id2:login2:password2'").ToString(fs),
-		auth:  flags.New(prefix, "memory", "Profiles").Default("", overrides).Label("Users profiles in the form 'id:profile1|profile2,id2:profile1'").ToString(fs),
+		ident: flags.String(fs, prefix, "memory", "Users", "Users credentials in the form 'id:login:password,id2:login2:password2'", "", overrides),
+		auth:  flags.String(fs, prefix, "memory", "Profiles", "Users profiles in the form 'id:profile1|profile2,id2:profile1'", "", overrides),
 	}
 }
 
