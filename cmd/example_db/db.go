@@ -37,7 +37,7 @@ func main() {
 
 	appServer := server.New(appServerConfig)
 
-	appDB, err := db.New(dbConfig, tracer.App{})
+	appDB, err := db.New(dbConfig, nil)
 	logger.Fatal(err)
 	defer appDB.Close()
 
