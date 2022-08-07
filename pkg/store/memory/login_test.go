@@ -13,7 +13,7 @@ import (
 func TestLogin(t *testing.T) {
 	passwordValue, err := bcrypt.GenerateFromPassword([]byte("password"), bcrypt.DefaultCost)
 	if err != nil {
-		t.Errorf("unable to generate password: %s", err)
+		t.Errorf("generate password: %s", err)
 	}
 
 	instance := App{

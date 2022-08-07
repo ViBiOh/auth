@@ -33,7 +33,7 @@ func (a App) Get(ctx context.Context, ID uint64) (model.User, error) {
 
 	item, err := a.storeApp.Get(ctx, ID)
 	if err != nil {
-		return model.User{}, fmt.Errorf("unable to get: %w", err)
+		return model.User{}, fmt.Errorf("get: %w", err)
 	}
 
 	if item.IsZero() {
@@ -47,7 +47,7 @@ func (a App) Get(ctx context.Context, ID uint64) (model.User, error) {
 func (a App) Create(ctx context.Context, user model.User) (model.User, error) {
 	id, err := a.storeApp.Create(ctx, user)
 	if err != nil {
-		return model.User{}, fmt.Errorf("unable to create: %w", err)
+		return model.User{}, fmt.Errorf("create: %w", err)
 	}
 
 	user.ID = id
@@ -59,7 +59,7 @@ func (a App) Create(ctx context.Context, user model.User) (model.User, error) {
 // Update User
 func (a App) Update(ctx context.Context, user model.User) (model.User, error) {
 	if err := a.storeApp.Update(ctx, user); err != nil {
-		return user, fmt.Errorf("unable to update: %w", err)
+		return user, fmt.Errorf("update: %w", err)
 	}
 
 	return user, nil
@@ -68,7 +68,7 @@ func (a App) Update(ctx context.Context, user model.User) (model.User, error) {
 // Delete User
 func (a App) Delete(ctx context.Context, user model.User) error {
 	if err := a.storeApp.Delete(ctx, user); err != nil {
-		return fmt.Errorf("unable to delete: %w", err)
+		return fmt.Errorf("delete: %w", err)
 	}
 
 	return nil

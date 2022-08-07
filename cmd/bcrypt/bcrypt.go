@@ -19,13 +19,13 @@ func main() {
 
 	cost, err := strconv.ParseInt(os.Args[2], 10, 32)
 	if err != nil {
-		fmt.Printf("unable to parse cost: %s", err)
+		fmt.Printf("parse cost: %s", err)
 		os.Exit(1)
 	}
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(os.Args[1]), int(cost))
 	if err != nil {
-		fmt.Printf("unable to generate password: %s", err)
+		fmt.Printf("generate password: %s", err)
 		os.Exit(1)
 	}
 	fmt.Print(string(hash))

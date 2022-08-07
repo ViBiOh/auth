@@ -49,7 +49,7 @@ func TestGet(t *testing.T) {
 				ctx: model.StoreUser(context.Background(), model.NewUser(1, "admin")),
 			},
 			model.User{},
-			errors.New("unable to get: failed"),
+			errors.New("get: failed"),
 		},
 		"not found": {
 			App{},
@@ -133,7 +133,7 @@ func TestCreate(t *testing.T) {
 				o: model.NewUser(1, "admin"),
 			},
 			model.User{},
-			errors.New("unable to create: failed"),
+			errors.New("create: failed"),
 		},
 		"success": {
 			App{},
@@ -199,7 +199,7 @@ func TestUpdate(t *testing.T) {
 				o: model.NewUser(1, "admin"),
 			},
 			model.NewUser(1, "admin"),
-			errors.New("unable to update: failed"),
+			errors.New("update: failed"),
 		},
 		"success": {
 			App{},
@@ -265,7 +265,7 @@ func TestDelete(t *testing.T) {
 				o: model.NewUser(0, "admin"),
 			},
 			model.NewUser(0, "admin"),
-			errors.New("unable to delete: failed"),
+			errors.New("delete: failed"),
 		},
 		"success": {
 			App{},

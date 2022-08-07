@@ -15,7 +15,7 @@ import (
 	"github.com/ViBiOh/httputils/v4/pkg/tracer"
 )
 
-var errTestProvider = errors.New("unable to decode")
+var errTestProvider = errors.New("decode")
 
 type testProvider struct {
 	matching bool
@@ -81,7 +81,7 @@ func TestMiddleware(t *testing.T) {
 		t.Run(intention, func(t *testing.T) {
 			handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if _, err := w.Write([]byte(r.Method)); err != nil {
-					t.Errorf("unable to write: %s", err)
+					t.Errorf("write: %s", err)
 				}
 			})
 
