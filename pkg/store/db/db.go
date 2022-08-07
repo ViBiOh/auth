@@ -9,6 +9,7 @@ import (
 )
 
 // Database interface needed
+//
 //go:generate mockgen -destination ../../mocks/database.go -mock_names Database=Database -package mocks github.com/ViBiOh/auth/v2/pkg/store/db Database
 type Database interface {
 	Get(context.Context, func(pgx.Row) error, string, ...any) error
