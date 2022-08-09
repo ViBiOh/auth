@@ -87,8 +87,8 @@ style:
 .PHONY: mocks
 mocks:
 	find . -name "mocks" -type d -exec rm -r "{}" \+
-	go generate $(PACKAGES)
-	mockgen -destination pkg/mocks/pgx.go -mock_names Row=Row -package mocks github.com/jackc/pgx/v4 Row
+	go generate -run mockgen $(PACKAGES)
+	mockgen -destination pkg/mocks/pgx.go -package mocks  -mock_names Row=Row github.com/jackc/pgx/v4 Row
 
 ## test: Shortcut to launch all the test tasks (unit, functional and integration).
 .PHONY: test
