@@ -23,7 +23,7 @@ WHERE
   id = $1
 `
 
-// Get get an user
+// Get a user
 func (a App) Get(ctx context.Context, id uint64) (model.User, error) {
 	var item model.User
 	scanner := func(row pgx.Row) error {
@@ -51,7 +51,7 @@ INSERT INTO
 ) RETURNING id
 `
 
-// Create an user
+// Create a user
 func (a App) Create(ctx context.Context, o model.User) (uint64, error) {
 	return a.db.Create(ctx, insertQuery, strings.ToLower(o.Login), o.Password)
 }
@@ -79,7 +79,7 @@ WHERE
   id = $1
 `
 
-// UpdatePassword of an user
+// UpdatePassword of a user
 func (a App) UpdatePassword(ctx context.Context, o model.User) error {
 	return a.db.One(ctx, updatePasswordQuery, o.ID, o.Password)
 }
