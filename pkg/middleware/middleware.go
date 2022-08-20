@@ -33,11 +33,11 @@ type App struct {
 }
 
 // New creates new App for given providers
-func New(authProvider auth.Provider, tracerApp tracer.App, identProviders ...ident.Provider) App {
+func New(authProvider auth.Provider, tracer trace.Tracer, identProviders ...ident.Provider) App {
 	return App{
 		authProvider:   authProvider,
 		identProviders: identProviders,
-		tracer:         tracerApp.GetTracer("auth"),
+		tracer:         tracer,
 	}
 }
 

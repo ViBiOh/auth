@@ -13,6 +13,8 @@ import (
 )
 
 func TestLogin(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		login    string
 		password string
@@ -49,8 +51,12 @@ func TestLogin(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -86,23 +92,25 @@ func TestLogin(t *testing.T) {
 				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), "vibioh", "secret").Return(errors.New("timeout"))
 			}
 
-			got, gotErr := instance.Login(context.Background(), tc.args.login, tc.args.password)
+			got, gotErr := instance.Login(context.Background(), testCase.args.login, testCase.args.password)
 			failed := false
 
-			if tc.wantErr != nil && !errors.Is(gotErr, tc.wantErr) {
+			if testCase.wantErr != nil && !errors.Is(gotErr, testCase.wantErr) {
 				failed = true
-			} else if got != tc.want {
+			} else if got != testCase.want {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("Login() = (%v, `%s`), want (%v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				t.Errorf("Login() = (%v, `%s`), want (%v, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
 			}
 		})
 	}
 }
 
 func TestIsAuthorized(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		user    model.User
 		profile string
@@ -128,8 +136,12 @@ func TestIsAuthorized(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -153,8 +165,8 @@ func TestIsAuthorized(t *testing.T) {
 				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), uint64(1), "admin").Return(errors.New("timeout"))
 			}
 
-			if got := instance.IsAuthorized(context.Background(), tc.args.user, tc.args.profile); got != tc.want {
-				t.Errorf("IsAuthorized() = %t, want %t", got, tc.want)
+			if got := instance.IsAuthorized(context.Background(), testCase.args.user, testCase.args.profile); got != testCase.want {
+				t.Errorf("IsAuthorized() = %t, want %t", got, testCase.want)
 			}
 		})
 	}

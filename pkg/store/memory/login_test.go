@@ -11,6 +11,8 @@ import (
 )
 
 func TestLogin(t *testing.T) {
+	t.Parallel()
+
 	passwordValue, err := bcrypt.GenerateFromPassword([]byte("password"), bcrypt.DefaultCost)
 	if err != nil {
 		t.Errorf("generate password: %s", err)
@@ -60,28 +62,34 @@ func TestLogin(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
-			got, gotErr := instance.Login(context.Background(), tc.args.login, tc.args.password)
+			t.Parallel()
+
+			got, gotErr := instance.Login(context.Background(), testCase.args.login, testCase.args.password)
 
 			failed := false
 
-			if tc.wantErr == nil && gotErr != nil {
+			if testCase.wantErr == nil && gotErr != nil {
 				failed = true
-			} else if tc.wantErr != nil && !errors.Is(gotErr, tc.wantErr) {
+			} else if testCase.wantErr != nil && !errors.Is(gotErr, testCase.wantErr) {
 				failed = true
-			} else if got != tc.want {
+			} else if got != testCase.want {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("Login() = (%v, `%s`), want (%v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				t.Errorf("Login() = (%v, `%s`), want (%v, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
 			}
 		})
 	}
 }
 
 func TestIsAuthorized(t *testing.T) {
+	t.Parallel()
+
 	instance := App{
 		auth: map[uint64][]string{
 			1: {"admin"},
@@ -127,10 +135,14 @@ func TestIsAuthorized(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
-			if got := instance.IsAuthorized(context.Background(), tc.args.user, tc.args.profile); got != tc.want {
-				t.Errorf("IsAuthorized() = %t, want %t", got, tc.want)
+			t.Parallel()
+
+			if got := instance.IsAuthorized(context.Background(), testCase.args.user, testCase.args.profile); got != testCase.want {
+				t.Errorf("IsAuthorized() = %t, want %t", got, testCase.want)
 			}
 		})
 	}

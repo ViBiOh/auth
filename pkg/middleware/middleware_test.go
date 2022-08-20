@@ -12,7 +12,6 @@ import (
 	"github.com/ViBiOh/auth/v2/pkg/ident"
 	"github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/httputils/v4/pkg/request"
-	"github.com/ViBiOh/httputils/v4/pkg/tracer"
 )
 
 var errTestProvider = errors.New("decode")
@@ -43,6 +42,8 @@ func (t testProvider) OnError(w http.ResponseWriter, _ *http.Request, err error)
 }
 
 func TestMiddleware(t *testing.T) {
+	t.Parallel()
+
 	basicAuthRequest, _ := request.Get("/").BasicAuth("admin", "password").Build(context.Background(), nil)
 
 	cases := map[string]struct {
@@ -52,33 +53,37 @@ func TestMiddleware(t *testing.T) {
 		wantStatus int
 	}{
 		"no provider": {
-			New(nil, tracer.App{}),
+			New(nil, nil),
 			httptest.NewRequest(http.MethodOptions, "/", nil),
 			"OPTIONS",
 			http.StatusOK,
 		},
 		"options": {
-			New(nil, tracer.App{}, testProvider{}),
+			New(nil, nil, testProvider{}),
 			httptest.NewRequest(http.MethodOptions, "/", nil),
 			"",
 			http.StatusNoContent,
 		},
 		"failure": {
-			New(nil, tracer.App{}, testProvider{}),
+			New(nil, nil, testProvider{}),
 			httptest.NewRequest(http.MethodGet, "/", nil),
 			"empty authorization content\n",
 			http.StatusTeapot,
 		},
 		"success": {
-			New(nil, tracer.App{}, testProvider{matching: true}),
+			New(nil, nil, testProvider{matching: true}),
 			basicAuthRequest,
 			"GET",
 			http.StatusOK,
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if _, err := w.Write([]byte(r.Method)); err != nil {
 					t.Errorf("write: %s", err)
@@ -86,20 +91,22 @@ func TestMiddleware(t *testing.T) {
 			})
 
 			writer := httptest.NewRecorder()
-			tc.instance.Middleware(handler).ServeHTTP(writer, tc.request)
+			testCase.instance.Middleware(handler).ServeHTTP(writer, testCase.request)
 
-			if got := writer.Code; got != tc.wantStatus {
-				t.Errorf("Middleware = %d, want %d", got, tc.wantStatus)
+			if got := writer.Code; got != testCase.wantStatus {
+				t.Errorf("Middleware = %d, want %d", got, testCase.wantStatus)
 			}
 
-			if got, _ := request.ReadBodyResponse(writer.Result()); string(got) != tc.want {
-				t.Errorf("Middleware = `%s`, want `%s`", string(got), tc.want)
+			if got, _ := request.ReadBodyResponse(writer.Result()); string(got) != testCase.want {
+				t.Errorf("Middleware = `%s`, want `%s`", string(got), testCase.want)
 			}
 		})
 	}
 }
 
 func TestIsAuthenticated(t *testing.T) {
+	t.Parallel()
+
 	basicAuthRequest, _ := request.Get("/").BasicAuth("admin", "password").Build(context.Background(), nil)
 	errorRequest, _ := request.Get("/").Header("Authorization", "Basic").Build(context.Background(), nil)
 
@@ -110,59 +117,65 @@ func TestIsAuthenticated(t *testing.T) {
 		wantErr  error
 	}{
 		"no provider": {
-			New(nil, tracer.App{}),
+			New(nil, nil),
 			httptest.NewRequest(http.MethodGet, "/", nil),
 			model.User{},
 			ErrNoMatchingProvider,
 		},
 		"empty request": {
-			New(testProvider{}, tracer.App{}, testProvider{}),
+			New(testProvider{}, nil, testProvider{}),
 			httptest.NewRequest(http.MethodGet, "/", nil),
 			model.User{},
 			ErrEmptyAuth,
 		},
 		"no match": {
-			New(testProvider{}, tracer.App{}, testProvider{}),
+			New(testProvider{}, nil, testProvider{}),
 			basicAuthRequest,
 			model.User{},
 			ErrNoMatchingProvider,
 		},
 		"error on get user": {
-			New(testProvider{}, tracer.App{}, testProvider{matching: true}),
+			New(testProvider{}, nil, testProvider{matching: true}),
 			errorRequest,
 			model.User{},
 			errTestProvider,
 		},
 		"valid": {
-			New(testProvider{}, tracer.App{}, testProvider{matching: true}),
+			New(testProvider{}, nil, testProvider{matching: true}),
 			basicAuthRequest,
 			model.NewUser(8000, "admin"),
 			nil,
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
-			_, got, gotErr := tc.instance.IsAuthenticated(tc.request)
+			t.Parallel()
+
+			_, got, gotErr := testCase.instance.IsAuthenticated(testCase.request)
 
 			failed := false
 
-			if tc.wantErr == nil && gotErr != nil {
+			if testCase.wantErr == nil && gotErr != nil {
 				failed = true
-			} else if tc.wantErr != nil && !errors.Is(gotErr, tc.wantErr) {
+			} else if testCase.wantErr != nil && !errors.Is(gotErr, testCase.wantErr) {
 				failed = true
-			} else if !reflect.DeepEqual(got, tc.want) {
+			} else if !reflect.DeepEqual(got, testCase.want) {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("IsAuthenticated() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				t.Errorf("IsAuthenticated() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
 			}
 		})
 	}
 }
 
 func TestIsAuthorized(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		context context.Context
 		profile string
@@ -174,7 +187,7 @@ func TestIsAuthorized(t *testing.T) {
 		want     bool
 	}{
 		"no provider": {
-			New(nil, tracer.App{}),
+			New(nil, nil),
 			args{
 				context: model.StoreUser(context.Background(), model.User{}),
 				profile: "admin",
@@ -182,7 +195,7 @@ func TestIsAuthorized(t *testing.T) {
 			false,
 		},
 		"call provider": {
-			New(testProvider{}, tracer.App{}),
+			New(testProvider{}, nil),
 			args{
 				context: model.StoreUser(context.Background(), model.User{}),
 				profile: "admin",
@@ -191,16 +204,22 @@ func TestIsAuthorized(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
-			if got := tc.instance.IsAuthorized(tc.args.context, tc.args.profile); got != tc.want {
-				t.Errorf("IsAuthorized() = %t, want %t", got, tc.want)
+			t.Parallel()
+
+			if got := testCase.instance.IsAuthorized(testCase.args.context, testCase.args.profile); got != testCase.want {
+				t.Errorf("IsAuthorized() = %t, want %t", got, testCase.want)
 			}
 		})
 	}
 }
 
 func TestOnHandlerFail(t *testing.T) {
+	t.Parallel()
+
 	cases := map[string]struct {
 		request    *http.Request
 		err        error
@@ -231,17 +250,21 @@ func TestOnHandlerFail(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
-		t.Run(intention, func(t *testing.T) {
-			writer := httptest.NewRecorder()
-			onHandlerFail(writer, tc.request, tc.err, tc.provider)
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
 
-			if got := writer.Code; got != tc.wantStatus {
-				t.Errorf("onHandlerFail = %d, want %d", got, tc.wantStatus)
+		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
+			writer := httptest.NewRecorder()
+			onHandlerFail(writer, testCase.request, testCase.err, testCase.provider)
+
+			if got := writer.Code; got != testCase.wantStatus {
+				t.Errorf("onHandlerFail = %d, want %d", got, testCase.wantStatus)
 			}
 
-			if got, _ := request.ReadBodyResponse(writer.Result()); string(got) != tc.want {
-				t.Errorf("onHandlerFail = `%s`, want `%s`", string(got), tc.want)
+			if got, _ := request.ReadBodyResponse(writer.Result()); string(got) != testCase.want {
+				t.Errorf("onHandlerFail = `%s`, want `%s`", string(got), testCase.want)
 			}
 		})
 	}

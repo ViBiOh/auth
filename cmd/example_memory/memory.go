@@ -41,7 +41,7 @@ func main() {
 	logger.Fatal(err)
 
 	identProvider := basic.New(authProvider, "Example Memory")
-	middlewareApp := middleware.New(authProvider, tracerApp, identProvider)
+	middlewareApp := middleware.New(authProvider, tracerApp.GetTracer("auth"), identProvider)
 
 	go appServer.Start("http", healthApp.End(), httputils.Handler(nil, healthApp, tracerApp.Middleware, middlewareApp.Middleware))
 

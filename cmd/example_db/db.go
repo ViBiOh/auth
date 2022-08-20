@@ -45,7 +45,7 @@ func main() {
 
 	authProvider := dbStore.New(appDB)
 	identProvider := basic.New(authProvider, "Example with a DB")
-	middlewareApp := middleware.New(authProvider, tracerApp, identProvider)
+	middlewareApp := middleware.New(authProvider, tracerApp.GetTracer("auth"), identProvider)
 
 	go appServer.Start("http", healthApp.End(), httputils.Handler(nil, healthApp, tracerApp.Middleware, middlewareApp.Middleware))
 

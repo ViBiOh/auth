@@ -25,6 +25,8 @@ func (tp testProvider) Login(_ context.Context, login, password string) (model.U
 }
 
 func TestIsMatching(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		content string
 	}
@@ -53,10 +55,14 @@ func TestIsMatching(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
-			if got := New(testProvider{}, "").IsMatching(tc.args.content); got != tc.want {
-				t.Errorf("IsMatching() = %t, want %t", got, tc.want)
+			t.Parallel()
+
+			if got := New(testProvider{}, "").IsMatching(testCase.args.content); got != testCase.want {
+				t.Errorf("IsMatching() = %t, want %t", got, testCase.want)
 			}
 		})
 	}
@@ -71,6 +77,8 @@ func BenchmarkIsMatching(b *testing.B) {
 }
 
 func TestGetUser(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		content string
 	}
@@ -117,28 +125,34 @@ func TestGetUser(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
-			got, gotErr := New(testProvider{}, "").GetUser(context.Background(), tc.args.content)
+			t.Parallel()
+
+			got, gotErr := New(testProvider{}, "").GetUser(context.Background(), testCase.args.content)
 
 			failed := false
 
-			if tc.wantErr == nil && gotErr != nil {
+			if testCase.wantErr == nil && gotErr != nil {
 				failed = true
-			} else if tc.wantErr != nil && !errors.Is(gotErr, tc.wantErr) {
+			} else if testCase.wantErr != nil && !errors.Is(gotErr, testCase.wantErr) {
 				failed = true
-			} else if !reflect.DeepEqual(got, tc.want) {
+			} else if !reflect.DeepEqual(got, testCase.want) {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("GetUser() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, tc.want, tc.wantErr)
+				t.Errorf("GetUser() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
 			}
 		})
 	}
 }
 
 func TestOnError(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		realm string
 		err   error
@@ -178,21 +192,25 @@ func TestOnError(t *testing.T) {
 		},
 	}
 
-	for intention, tc := range cases {
+	for intention, testCase := range cases {
+		intention, testCase := intention, testCase
+
 		t.Run(intention, func(t *testing.T) {
+			t.Parallel()
+
 			writer := httptest.NewRecorder()
-			New(testProvider{}, tc.args.realm).OnError(writer, tc.request, tc.args.err)
+			New(testProvider{}, testCase.args.realm).OnError(writer, testCase.request, testCase.args.err)
 
-			if got := writer.Code; got != tc.wantStatus {
-				t.Errorf("OnError = %d, want %d", got, tc.wantStatus)
+			if got := writer.Code; got != testCase.wantStatus {
+				t.Errorf("OnError = %d, want %d", got, testCase.wantStatus)
 			}
 
-			if got, _ := request.ReadBodyResponse(writer.Result()); string(got) != tc.want {
-				t.Errorf("OnError = `%s`, want `%s`", string(got), tc.want)
+			if got, _ := request.ReadBodyResponse(writer.Result()); string(got) != testCase.want {
+				t.Errorf("OnError = `%s`, want `%s`", string(got), testCase.want)
 			}
 
-			for key := range tc.wantHeader {
-				want := tc.wantHeader.Get(key)
+			for key := range testCase.wantHeader {
+				want := testCase.wantHeader.Get(key)
 				if got := writer.Header().Get(key); got != want {
 					t.Errorf("`%s` Header = `%s`, want `%s`", key, got, want)
 				}
