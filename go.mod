@@ -4,11 +4,11 @@ go 1.19
 
 require (
 	github.com/ViBiOh/flags v1.2.0
-	github.com/ViBiOh/httputils/v4 v4.47.2
+	github.com/ViBiOh/httputils/v4 v4.47.3
 	github.com/golang/mock v1.6.0
 	github.com/jackc/pgx/v4 v4.17.1
 	go.opentelemetry.io/otel/trace v1.9.0
-	golang.org/x/crypto v0.0.0-20220824171710-5757bc0c5503
+	golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90
 )
 
 require (
