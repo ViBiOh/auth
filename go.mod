@@ -7,7 +7,7 @@ require (
 	github.com/ViBiOh/httputils/v4 v4.47.8
 	github.com/golang/mock v1.6.0
 	github.com/jackc/pgx/v4 v4.17.2
-	go.opentelemetry.io/otel/trace v1.9.0
+	go.opentelemetry.io/otel/trace v1.10.0
 	golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90
 )
 
@@ -24,7 +24,7 @@ require (
 	github.com/jackc/pgtype v1.12.0 // indirect
 	github.com/jackc/puddle v1.3.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.34.0 // indirect
-	go.opentelemetry.io/otel v1.9.0 // indirect
+	go.opentelemetry.io/otel v1.10.0 // indirect
 	go.opentelemetry.io/otel/exporters/jaeger v1.9.0 // indirect
 	go.opentelemetry.io/otel/metric v0.31.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.9.0 // indirect
