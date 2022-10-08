@@ -8,7 +8,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/jackc/pgx/v4 v4.17.2
 	go.opentelemetry.io/otel/trace v1.10.0
-	golang.org/x/crypto v0.0.0-20220926161630-eccd6366d1be
+	golang.org/x/crypto v0.0.0-20221005025214-4161e89ecf1b
 )
 
 require (
