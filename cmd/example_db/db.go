@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"os"
 
@@ -31,13 +32,15 @@ func main() {
 	logger.Global(logger.New(loggerConfig))
 	defer logger.Close()
 
-	tracerApp, err := tracer.New(tracerConfig)
+	ctx := context.Background()
+
+	tracerApp, err := tracer.New(ctx, tracerConfig)
 	logger.Fatal(err)
-	defer tracerApp.Close()
+	defer tracerApp.Close(ctx)
 
 	appServer := server.New(appServerConfig)
 
-	appDB, err := db.New(dbConfig, nil)
+	appDB, err := db.New(ctx, dbConfig, nil)
 	logger.Fatal(err)
 	defer appDB.Close()
 
@@ -47,7 +50,7 @@ func main() {
 	identProvider := basic.New(authProvider, "Example with a DB")
 	middlewareApp := middleware.New(authProvider, tracerApp.GetTracer("auth"), identProvider)
 
-	go appServer.Start("http", healthApp.End(), httputils.Handler(nil, healthApp, tracerApp.Middleware, middlewareApp.Middleware))
+	go appServer.Start(healthApp.ContextEnd(), "http", httputils.Handler(nil, healthApp, tracerApp.Middleware, middlewareApp.Middleware))
 
 	healthApp.WaitForTermination(appServer.Done())
 	server.GracefulWait(appServer.Done())
