@@ -50,7 +50,9 @@ func main() {
 	identProvider := basic.New(authProvider, "Example with a DB")
 	middlewareApp := middleware.New(authProvider, tracerApp.GetTracer("auth"), identProvider)
 
-	go appServer.Start(healthApp.ContextEnd(), "http", httputils.Handler(nil, healthApp, tracerApp.Middleware, middlewareApp.Middleware))
+	endCtx := healthApp.End(ctx)
+
+	go appServer.Start(endCtx, "http", httputils.Handler(nil, healthApp, tracerApp.Middleware, middlewareApp.Middleware))
 
 	healthApp.WaitForTermination(appServer.Done())
 	server.GracefulWait(appServer.Done())
