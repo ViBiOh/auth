@@ -131,7 +131,7 @@ func TestGetUser(t *testing.T) {
 		t.Run(intention, func(t *testing.T) {
 			t.Parallel()
 
-			got, gotErr := New(testProvider{}, "").GetUser(context.Background(), testCase.args.content)
+			got, gotErr := New(testProvider{}, "").GetUser(context.TODO(), testCase.args.content)
 
 			failed := false
 

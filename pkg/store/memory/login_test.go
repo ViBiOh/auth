@@ -68,7 +68,7 @@ func TestLogin(t *testing.T) {
 		t.Run(intention, func(t *testing.T) {
 			t.Parallel()
 
-			got, gotErr := instance.Login(context.Background(), testCase.args.login, testCase.args.password)
+			got, gotErr := instance.Login(context.TODO(), testCase.args.login, testCase.args.password)
 
 			failed := false
 
@@ -141,7 +141,7 @@ func TestIsAuthorized(t *testing.T) {
 		t.Run(intention, func(t *testing.T) {
 			t.Parallel()
 
-			if got := instance.IsAuthorized(context.Background(), testCase.args.user, testCase.args.profile); got != testCase.want {
+			if got := instance.IsAuthorized(context.TODO(), testCase.args.user, testCase.args.profile); got != testCase.want {
 				t.Errorf("IsAuthorized() = %t, want %t", got, testCase.want)
 			}
 		})

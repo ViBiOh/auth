@@ -44,7 +44,7 @@ func (t testProvider) OnError(w http.ResponseWriter, _ *http.Request, err error)
 func TestMiddleware(t *testing.T) {
 	t.Parallel()
 
-	basicAuthRequest, _ := request.Get("/").BasicAuth("admin", "password").Build(context.Background(), nil)
+	basicAuthRequest, _ := request.Get("/").BasicAuth("admin", "password").Build(context.TODO(), nil)
 
 	cases := map[string]struct {
 		instance   App
@@ -107,8 +107,8 @@ func TestMiddleware(t *testing.T) {
 func TestIsAuthenticated(t *testing.T) {
 	t.Parallel()
 
-	basicAuthRequest, _ := request.Get("/").BasicAuth("admin", "password").Build(context.Background(), nil)
-	errorRequest, _ := request.Get("/").Header("Authorization", "Basic").Build(context.Background(), nil)
+	basicAuthRequest, _ := request.Get("/").BasicAuth("admin", "password").Build(context.TODO(), nil)
+	errorRequest, _ := request.Get("/").Header("Authorization", "Basic").Build(context.TODO(), nil)
 
 	cases := map[string]struct {
 		instance App
@@ -189,7 +189,7 @@ func TestIsAuthorized(t *testing.T) {
 		"no provider": {
 			New(nil, nil),
 			args{
-				context: model.StoreUser(context.Background(), model.User{}),
+				context: model.StoreUser(context.TODO(), model.User{}),
 				profile: "admin",
 			},
 			false,
@@ -197,7 +197,7 @@ func TestIsAuthorized(t *testing.T) {
 		"call provider": {
 			New(testProvider{}, nil),
 			args{
-				context: model.StoreUser(context.Background(), model.User{}),
+				context: model.StoreUser(context.TODO(), model.User{}),
 				profile: "admin",
 			},
 			true,

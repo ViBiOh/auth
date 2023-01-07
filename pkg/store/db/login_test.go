@@ -92,7 +92,7 @@ func TestLogin(t *testing.T) {
 				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), "vibioh", "secret").Return(errors.New("timeout"))
 			}
 
-			got, gotErr := instance.Login(context.Background(), testCase.args.login, testCase.args.password)
+			got, gotErr := instance.Login(context.TODO(), testCase.args.login, testCase.args.password)
 			failed := false
 
 			if testCase.wantErr != nil && !errors.Is(gotErr, testCase.wantErr) {
@@ -165,7 +165,7 @@ func TestIsAuthorized(t *testing.T) {
 				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), uint64(1), "admin").Return(errors.New("timeout"))
 			}
 
-			if got := instance.IsAuthorized(context.Background(), testCase.args.user, testCase.args.profile); got != testCase.want {
+			if got := instance.IsAuthorized(context.TODO(), testCase.args.user, testCase.args.profile); got != testCase.want {
 				t.Errorf("IsAuthorized() = %t, want %t", got, testCase.want)
 			}
 		})
