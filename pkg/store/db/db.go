@@ -5,7 +5,7 @@ import (
 
 	"github.com/ViBiOh/auth/v2/pkg/auth"
 	"github.com/ViBiOh/auth/v2/pkg/ident/basic"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v5"
 )
 
 //go:generate mockgen -source db.go -destination ../../mocks/db.go -package mocks -mock_names Database=Database

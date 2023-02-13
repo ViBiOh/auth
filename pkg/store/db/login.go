@@ -7,7 +7,7 @@ import (
 	"github.com/ViBiOh/auth/v2/pkg/ident"
 	"github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v5"
 )
 
 const readUserQuery = `

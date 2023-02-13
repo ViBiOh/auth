@@ -90,7 +90,7 @@ style:
 mocks:
 	find . -name "mocks" -type d -exec rm -r "{}" \+
 	go generate -run mockgen $(PACKAGES)
-	mockgen -destination pkg/mocks/pgx.go -package mocks  -mock_names Row=Row github.com/jackc/pgx/v4 Row
+	mockgen -destination pkg/mocks/pgx.go -package mocks  -mock_names Row=Row github.com/jackc/pgx/v5 Row
 
 ## test: Shortcut to launch all the test tasks (unit, functional and integration).
 .PHONY: test

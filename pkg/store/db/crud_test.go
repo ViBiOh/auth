@@ -9,7 +9,7 @@ import (
 	"github.com/ViBiOh/auth/v2/pkg/mocks"
 	"github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/golang/mock/gomock"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v5"
 )
 
 func TestGet(t *testing.T) {

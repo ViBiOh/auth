@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/ViBiOh/auth/v2/pkg/model"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v5"
 )
 
 // DoAtomic do things in a transaction
