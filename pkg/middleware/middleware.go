@@ -71,8 +71,10 @@ func (a App) IsAuthenticated(r *http.Request) (ident.Provider, model.User, error
 		return nil, model.User{}, ErrNoMatchingProvider
 	}
 
+	var err error
+
 	ctx, end := tracer.StartSpan(r.Context(), a.tracer, "check_auth", trace.WithSpanKind(trace.SpanKindInternal))
-	defer end()
+	defer end(&err)
 
 	authContent := strings.TrimSpace(r.Header.Get("Authorization"))
 	if len(authContent) == 0 {
