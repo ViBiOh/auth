@@ -36,8 +36,8 @@ github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/ViBiOh/flags v1.3.0 h1:onBzSsBXTAFus6l5RyjwrZ7vH7uKd54GtLoWHBF9XF0=
 github.com/ViBiOh/flags v1.3.0/go.mod h1:dwBidG6lR5ki7dkavuehBq3OTcV3S/i6yVvHhxxZv8o=
-github.com/ViBiOh/httputils/v4 v4.55.2 h1:y6QA4bfJdoNtaKm6ccQh6b2i/6i1SBZbyzwLZyVpL2I=
-github.com/ViBiOh/httputils/v4 v4.55.2/go.mod h1:FUK40ERaJFjePmyYSBvBYFnx7rwL1eBvSb8rGKKbfvo=
+github.com/ViBiOh/httputils/v4 v4.56.1 h1:XvGASUIJZr2sydKUW6D4ekn74bC8bKZGLr+1ZPzhVZE=
+github.com/ViBiOh/httputils/v4 v4.56.1/go.mod h1:eF+GKH+ZJs++0E1lSXfUAamFhbxxDGJcQfVowTAcbHg=
 github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
 github.com/cenkalti/backoff/v4 v4.2.0 h1:HN5dHm3WBOgndBH6E8V0q2jIYIR3s9yglV8k/+MN3u4=
 github.com/cenkalti/backoff/v4 v4.2.0/go.mod h1:Y3VNntkOUPxTVeUxJ/G5vcM//AlwfmyYozVcomhLiZE=
