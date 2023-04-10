@@ -3,7 +3,7 @@ module github.com/ViBiOh/auth/v2
 go 1.20
 
 require (
-	github.com/ViBiOh/flags v1.2.0
+	github.com/ViBiOh/flags v1.3.0
 	github.com/ViBiOh/httputils/v4 v4.55.2
 	github.com/golang/mock v1.6.0
 	github.com/jackc/pgx/v5 v5.3.1
