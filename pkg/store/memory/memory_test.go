@@ -17,7 +17,7 @@ func TestFlags(t *testing.T) {
 		want string
 	}{
 		"simple": {
-			"Usage of simple:\n  -profiles string\n    \t[memory] Users profiles in the form 'id:profile1|profile2,id2:profile1' {SIMPLE_PROFILES}\n  -users string\n    \t[memory] Users credentials in the form 'id:login:password,id2:login2:password2' {SIMPLE_USERS}\n",
+			"Usage of simple:\n  -profiles string\n    \t[memory] Users profiles in the form 'id:profile1|profile2,id2:profile1' ${SIMPLE_PROFILES}\n  -users string\n    \t[memory] Users credentials in the form 'id:login:password,id2:login2:password2' ${SIMPLE_USERS}\n",
 		},
 	}
 
