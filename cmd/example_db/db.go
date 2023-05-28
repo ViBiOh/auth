@@ -8,6 +8,7 @@ import (
 	"github.com/ViBiOh/auth/v2/pkg/ident/basic"
 	"github.com/ViBiOh/auth/v2/pkg/middleware"
 	dbStore "github.com/ViBiOh/auth/v2/pkg/store/db"
+	"github.com/ViBiOh/flags"
 	"github.com/ViBiOh/httputils/v4/pkg/db"
 	"github.com/ViBiOh/httputils/v4/pkg/health"
 	"github.com/ViBiOh/httputils/v4/pkg/httputils"
@@ -18,6 +19,7 @@ import (
 
 func main() {
 	fs := flag.NewFlagSet("example", flag.ExitOnError)
+	fs.Usage = flags.Usage(fs)
 
 	appServerConfig := server.Flags(fs, "")
 	healthConfig := health.Flags(fs, "")
