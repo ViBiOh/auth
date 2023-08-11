@@ -9,7 +9,7 @@ import (
 	reflect "reflect"
 
 	model "github.com/ViBiOh/auth/v2/pkg/model"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // Provider is a mock of Provider interface.

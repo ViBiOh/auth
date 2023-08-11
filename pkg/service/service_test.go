@@ -10,7 +10,7 @@ import (
 	"github.com/ViBiOh/auth/v2/pkg/mocks"
 	"github.com/ViBiOh/auth/v2/pkg/model"
 	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 )
 
 func TestGet(t *testing.T) {
