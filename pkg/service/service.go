@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 
 	"github.com/ViBiOh/auth/v2/pkg/auth"
 	"github.com/ViBiOh/auth/v2/pkg/model"
-	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
 )
 
@@ -117,7 +117,7 @@ func (a App) CheckRights(ctx context.Context, id uint64) error {
 		return nil
 	}
 
-	logger.WithField("login", user.Login).Info("unauthorized access")
+	slog.Info("unauthorized access", "login", user.Login)
 
 	return httpModel.WrapForbidden(errors.New("unauthorized"))
 }

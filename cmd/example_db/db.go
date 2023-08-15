@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"log/slog"
 	"os"
 
 	"github.com/ViBiOh/auth/v2/pkg/ident/basic"
@@ -29,21 +30,31 @@ func main() {
 
 	dbConfig := db.Flags(fs, "db")
 
-	logger.Fatal(fs.Parse(os.Args[1:]))
+	if err := fs.Parse(os.Args[1:]); err != nil {
+		slog.Error("parse flags", "err", err)
+		os.Exit(1)
+	}
 
-	logger.Global(logger.New(loggerConfig))
-	defer logger.Close()
+	logger.New(loggerConfig)
 
 	ctx := context.Background()
 
 	tracerApp, err := tracer.New(ctx, tracerConfig)
-	logger.Fatal(err)
+	if err != nil {
+		slog.Error("create tracer", "err", err)
+		os.Exit(1)
+	}
+
 	defer tracerApp.Close(ctx)
 
 	appServer := server.New(appServerConfig)
 
 	appDB, err := db.New(ctx, dbConfig, nil)
-	logger.Fatal(err)
+	if err != nil {
+		slog.Error("create db", "err", err)
+		os.Exit(1)
+	}
+
 	defer appDB.Close()
 
 	healthApp := health.New(healthConfig, appDB.Ping)

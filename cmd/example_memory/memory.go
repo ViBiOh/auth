@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"log/slog"
 	"os"
 
 	"github.com/ViBiOh/auth/v2/pkg/ident/basic"
@@ -28,22 +29,31 @@ func main() {
 
 	basicConfig := memoryStore.Flags(fs, "")
 
-	logger.Fatal(fs.Parse(os.Args[1:]))
+	if err := fs.Parse(os.Args[1:]); err != nil {
+		slog.Error("parse flags", "err", err)
+		os.Exit(1)
+	}
 
-	logger.Global(logger.New(loggerConfig))
-	defer logger.Close()
+	logger.New(loggerConfig)
 
 	ctx := context.Background()
 
 	tracerApp, err := tracer.New(ctx, tracerConfig)
-	logger.Fatal(err)
+	if err != nil {
+		slog.Error("create tracer", "err", err)
+		os.Exit(1)
+	}
+
 	defer tracerApp.Close(ctx)
 
 	appServer := server.New(appServerConfig)
 	healthApp := health.New(healthConfig)
 
 	authProvider, err := memoryStore.New(basicConfig)
-	logger.Fatal(err)
+	if err != nil {
+		slog.Error("create memory store", "err", err)
+		os.Exit(1)
+	}
 
 	identProvider := basic.New(authProvider, "Example Memory")
 	middlewareApp := middleware.New(authProvider, tracerApp.GetTracer("auth"), identProvider)
