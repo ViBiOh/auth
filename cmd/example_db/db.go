@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"log"
 	"log/slog"
 	"os"
 
@@ -31,8 +32,7 @@ func main() {
 	dbConfig := db.Flags(fs, "db")
 
 	if err := fs.Parse(os.Args[1:]); err != nil {
-		slog.Error("parse flags", "err", err)
-		os.Exit(1)
+		log.Fatal(err)
 	}
 
 	logger.New(loggerConfig)
