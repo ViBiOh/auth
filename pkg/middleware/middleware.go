@@ -11,7 +11,7 @@ import (
 	"github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/httputils/v4/pkg/httperror"
 	httpmodel "github.com/ViBiOh/httputils/v4/pkg/model"
-	"github.com/ViBiOh/httputils/v4/pkg/tracer"
+	"github.com/ViBiOh/httputils/v4/pkg/telemetry"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -73,7 +73,7 @@ func (a App) IsAuthenticated(r *http.Request) (ident.Provider, model.User, error
 
 	var err error
 
-	ctx, end := tracer.StartSpan(r.Context(), a.tracer, "check_auth", trace.WithSpanKind(trace.SpanKindInternal))
+	ctx, end := telemetry.StartSpan(r.Context(), a.tracer, "check_auth", trace.WithSpanKind(trace.SpanKindInternal))
 	defer end(&err)
 
 	authContent := strings.TrimSpace(r.Header.Get("Authorization"))
