@@ -15,7 +15,7 @@ import (
 	"github.com/ViBiOh/httputils/v4/pkg/httputils"
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	"github.com/ViBiOh/httputils/v4/pkg/server"
-	"github.com/ViBiOh/httputils/v4/pkg/tracer"
+	"github.com/ViBiOh/httputils/v4/pkg/telemetry"
 )
 
 func main() {
@@ -26,7 +26,7 @@ func main() {
 	healthConfig := health.Flags(fs, "")
 
 	loggerConfig := logger.Flags(fs, "logger")
-	tracerConfig := tracer.Flags(fs, "tracer")
+	telemetryConfig := telemetry.Flags(fs, "telemetry")
 
 	basicConfig := memoryStore.Flags(fs, "")
 
@@ -34,17 +34,17 @@ func main() {
 		log.Fatal(err)
 	}
 
-	logger.New(loggerConfig)
+	logger.Init(loggerConfig)
 
 	ctx := context.Background()
 
-	tracerApp, err := tracer.New(ctx, tracerConfig)
+	telemetryApp, err := telemetry.New(ctx, telemetryConfig)
 	if err != nil {
 		slog.Error("create tracer", "err", err)
 		os.Exit(1)
 	}
 
-	defer tracerApp.Close(ctx)
+	defer telemetryApp.Close(ctx)
 
 	appServer := server.New(appServerConfig)
 	healthApp := health.New(healthConfig)
@@ -56,11 +56,11 @@ func main() {
 	}
 
 	identProvider := basic.New(authProvider, "Example Memory")
-	middlewareApp := middleware.New(authProvider, tracerApp.GetTracer("auth"), identProvider)
+	middlewareApp := middleware.New(authProvider, telemetryApp.GetTracer("auth"), identProvider)
 
 	endCtx := healthApp.End(ctx)
 
-	go appServer.Start(endCtx, "http", httputils.Handler(nil, healthApp, tracerApp.Middleware, middlewareApp.Middleware))
+	go appServer.Start(endCtx, "http", httputils.Handler(nil, healthApp, telemetryApp.Middleware("http"), middlewareApp.Middleware))
 
 	healthApp.WaitForTermination(appServer.Done())
 	server.GracefulWait(appServer.Done())

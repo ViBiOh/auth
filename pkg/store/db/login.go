@@ -7,7 +7,6 @@ import (
 
 	"github.com/ViBiOh/auth/v2/pkg/ident"
 	"github.com/ViBiOh/auth/v2/pkg/model"
-	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -31,7 +30,7 @@ func (a App) Login(ctx context.Context, login, password string) (model.User, err
 	}
 
 	if err := a.db.Get(ctx, scanner, readUserQuery, strings.ToLower(login), password); err != nil {
-		logger.Error("login", "err", err, "login", login)
+		slog.Error("login", "err", err, "login", login)
 
 		if err == pgx.ErrNoRows {
 			return model.User{}, ident.ErrInvalidCredentials
