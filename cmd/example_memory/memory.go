@@ -56,7 +56,7 @@ func main() {
 	}
 
 	identProvider := basic.New(authProvider, "Example Memory")
-	middlewareApp := middleware.New(authProvider, telemetryApp.GetTracer("auth"), identProvider)
+	middlewareApp := middleware.New(authProvider, telemetryApp.TracerProvider(), identProvider)
 
 	endCtx := healthApp.End(ctx)
 

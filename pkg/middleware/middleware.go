@@ -33,12 +33,17 @@ type App struct {
 }
 
 // New creates new App for given providers
-func New(authProvider auth.Provider, tracer trace.Tracer, identProviders ...ident.Provider) App {
-	return App{
+func New(authProvider auth.Provider, tracerProvider trace.TracerProvider, identProviders ...ident.Provider) App {
+	app := App{
 		authProvider:   authProvider,
 		identProviders: identProviders,
-		tracer:         tracer,
 	}
+
+	if tracerProvider != nil {
+		app.tracer = tracerProvider.Tracer("auth")
+	}
+
+	return app
 }
 
 // Middleware wraps next authenticated handler

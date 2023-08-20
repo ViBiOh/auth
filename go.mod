@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/ViBiOh/flags v1.3.1
-	github.com/ViBiOh/httputils/v4 v4.63.1
+	github.com/ViBiOh/httputils/v4 v4.63.2
 	github.com/jackc/pgx/v5 v5.4.3
 	go.opentelemetry.io/otel/trace v1.16.0
 	go.uber.org/mock v0.2.0

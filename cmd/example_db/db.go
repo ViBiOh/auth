@@ -61,7 +61,7 @@ func main() {
 
 	authProvider := dbStore.New(appDB)
 	identProvider := basic.New(authProvider, "Example with a DB")
-	middlewareApp := middleware.New(authProvider, telemetryApp.GetTracer("auth"), identProvider)
+	middlewareApp := middleware.New(authProvider, telemetryApp.TracerProvider(), identProvider)
 
 	endCtx := healthApp.End(ctx)
 
