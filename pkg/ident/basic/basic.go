@@ -34,7 +34,7 @@ func New(provider Provider, realm string) Service {
 	}
 }
 
-func (a Service) IsMatching(content string) bool {
+func (s Service) IsMatching(content string) bool {
 	if len(content) < len(authPrefix) {
 		return false
 	}
@@ -42,7 +42,7 @@ func (a Service) IsMatching(content string) bool {
 	return content[:len(authPrefix)] == authPrefix
 }
 
-func (a Service) GetUser(ctx context.Context, content string) (model.User, error) {
+func (s Service) GetUser(ctx context.Context, content string) (model.User, error) {
 	if len(content) < len(authPrefix) {
 		return model.User{}, ident.ErrMalformedAuth
 	}
@@ -62,13 +62,13 @@ func (a Service) GetUser(ctx context.Context, content string) (model.User, error
 	login := strings.ToLower(data[:sepIndex])
 	password := strings.TrimSuffix(data[sepIndex+1:], "\n")
 
-	return a.provider.Login(ctx, login, password)
+	return s.provider.Login(ctx, login, password)
 }
 
-func (a Service) OnError(w http.ResponseWriter, _ *http.Request, err error) {
+func (s Service) OnError(w http.ResponseWriter, _ *http.Request, err error) {
 	realm := ""
-	if len(a.realm) != 0 {
-		realm = fmt.Sprintf("realm=\"%s\" ", a.realm)
+	if len(s.realm) != 0 {
+		realm = fmt.Sprintf("realm=\"%s\" ", s.realm)
 	}
 
 	w.Header().Add("WWW-Authenticate", fmt.Sprintf("Basic %scharset=\"UTF-8\"", realm))

@@ -8,9 +8,8 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-// DoAtomic do things in a transaction
-func (a Service) DoAtomic(ctx context.Context, action func(context.Context) error) error {
-	return a.db.DoAtomic(ctx, action)
+func (s Service) DoAtomic(ctx context.Context, action func(context.Context) error) error {
+	return s.db.DoAtomic(ctx, action)
 }
 
 const getByIDQuery = `
@@ -23,8 +22,7 @@ WHERE
   id = $1
 `
 
-// Get a user
-func (a Service) Get(ctx context.Context, id uint64) (model.User, error) {
+func (s Service) Get(ctx context.Context, id uint64) (model.User, error) {
 	var item model.User
 	scanner := func(row pgx.Row) error {
 		err := row.Scan(&item.ID, &item.Login)
@@ -36,7 +34,7 @@ func (a Service) Get(ctx context.Context, id uint64) (model.User, error) {
 		return err
 	}
 
-	return item, a.db.Get(ctx, scanner, getByIDQuery, id)
+	return item, s.db.Get(ctx, scanner, getByIDQuery, id)
 }
 
 const insertQuery = `
@@ -51,9 +49,8 @@ INSERT INTO
 ) RETURNING id
 `
 
-// Create a user
-func (a Service) Create(ctx context.Context, o model.User) (uint64, error) {
-	return a.db.Create(ctx, insertQuery, strings.ToLower(o.Login), o.Password)
+func (s Service) Create(ctx context.Context, o model.User) (uint64, error) {
+	return s.db.Create(ctx, insertQuery, strings.ToLower(o.Login), o.Password)
 }
 
 const updateQuery = `
@@ -65,9 +62,8 @@ WHERE
   id = $1
 `
 
-// Update user
-func (a Service) Update(ctx context.Context, o model.User) error {
-	return a.db.One(ctx, updateQuery, o.ID, strings.ToLower(o.Login))
+func (s Service) Update(ctx context.Context, o model.User) error {
+	return s.db.One(ctx, updateQuery, o.ID, strings.ToLower(o.Login))
 }
 
 const updatePasswordQuery = `
@@ -79,9 +75,8 @@ WHERE
   id = $1
 `
 
-// UpdatePassword of a user
-func (a Service) UpdatePassword(ctx context.Context, o model.User) error {
-	return a.db.One(ctx, updatePasswordQuery, o.ID, o.Password)
+func (s Service) UpdatePassword(ctx context.Context, o model.User) error {
+	return s.db.One(ctx, updatePasswordQuery, o.ID, o.Password)
 }
 
 const deleteQuery = `
@@ -91,7 +86,6 @@ WHERE
   id = $1
 `
 
-// Delete an user
-func (a Service) Delete(ctx context.Context, o model.User) error {
-	return a.db.One(ctx, deleteQuery, o.ID)
+func (s Service) Delete(ctx context.Context, o model.User) error {
+	return s.db.One(ctx, deleteQuery, o.ID)
 }

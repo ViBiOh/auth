@@ -21,15 +21,14 @@ WHERE
   AND password = crypt($2, password)
 `
 
-// Login checks given credentials
-func (a Service) Login(ctx context.Context, login, password string) (model.User, error) {
+func (s Service) Login(ctx context.Context, login, password string) (model.User, error) {
 	var user model.User
 
 	scanner := func(row pgx.Row) error {
 		return row.Scan(&user.ID, &user.Login)
 	}
 
-	if err := a.db.Get(ctx, scanner, readUserQuery, strings.ToLower(login), password); err != nil {
+	if err := s.db.Get(ctx, scanner, readUserQuery, strings.ToLower(login), password); err != nil {
 		slog.Error("login", "err", err, "login", login)
 
 		if err == pgx.ErrNoRows {
@@ -53,15 +52,14 @@ WHER
   AND lp.login_id = $1
 `
 
-// IsAuthorized checks user on profile
-func (a Service) IsAuthorized(ctx context.Context, user model.User, profile string) bool {
+func (s Service) IsAuthorized(ctx context.Context, user model.User, profile string) bool {
 	var id uint64
 
 	scanner := func(row pgx.Row) error {
 		return row.Scan(&id)
 	}
 
-	if err := a.db.Get(ctx, scanner, readLoginProfile, user.ID, profile); err != nil {
+	if err := s.db.Get(ctx, scanner, readLoginProfile, user.ID, profile); err != nil {
 		slog.Error("authorized", "err", err, "login", user.Login)
 
 		return false

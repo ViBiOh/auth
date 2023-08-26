@@ -44,8 +44,8 @@ func New(authProvider auth.Provider, tracerProvider trace.TracerProvider, identP
 	return service
 }
 
-func (a Service) Middleware(next http.Handler) http.Handler {
-	if len(a.identProviders) == 0 {
+func (s Service) Middleware(next http.Handler) http.Handler {
+	if len(s.identProviders) == 0 {
 		return next
 	}
 
@@ -55,7 +55,7 @@ func (a Service) Middleware(next http.Handler) http.Handler {
 			return
 		}
 
-		provider, user, err := a.IsAuthenticated(r)
+		provider, user, err := s.IsAuthenticated(r)
 		if err != nil {
 			onHandlerFail(w, r, err, provider)
 			return
@@ -67,22 +67,22 @@ func (a Service) Middleware(next http.Handler) http.Handler {
 	})
 }
 
-func (a Service) IsAuthenticated(r *http.Request) (ident.Provider, model.User, error) {
-	if len(a.identProviders) == 0 {
+func (s Service) IsAuthenticated(r *http.Request) (ident.Provider, model.User, error) {
+	if len(s.identProviders) == 0 {
 		return nil, model.User{}, ErrNoMatchingProvider
 	}
 
 	var err error
 
-	ctx, end := telemetry.StartSpan(r.Context(), a.tracer, "check_auth", trace.WithSpanKind(trace.SpanKindInternal))
+	ctx, end := telemetry.StartSpan(r.Context(), s.tracer, "check_auth", trace.WithSpanKind(trace.SpanKindInternal))
 	defer end(&err)
 
 	authContent := strings.TrimSpace(r.Header.Get("Authorization"))
 	if len(authContent) == 0 {
-		return a.identProviders[0], model.User{}, ErrEmptyAuth
+		return s.identProviders[0], model.User{}, ErrEmptyAuth
 	}
 
-	for _, provider := range a.identProviders {
+	for _, provider := range s.identProviders {
 		if !provider.IsMatching(authContent) {
 			continue
 		}
@@ -98,12 +98,12 @@ func (a Service) IsAuthenticated(r *http.Request) (ident.Provider, model.User, e
 	return nil, model.User{}, ErrNoMatchingProvider
 }
 
-func (a Service) IsAuthorized(ctx context.Context, profile string) bool {
-	if a.authProvider == nil {
+func (s Service) IsAuthorized(ctx context.Context, profile string) bool {
+	if s.authProvider == nil {
 		return false
 	}
 
-	return a.authProvider.IsAuthorized(ctx, model.ReadUser(ctx), profile)
+	return s.authProvider.IsAuthorized(ctx, model.ReadUser(ctx), profile)
 }
 
 func onHandlerFail(w http.ResponseWriter, r *http.Request, err error, provider ident.Provider) {

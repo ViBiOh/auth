@@ -23,12 +23,12 @@ func New(storeService auth.Storage, authService auth.Provider) Service {
 	}
 }
 
-func (a Service) Get(ctx context.Context, ID uint64) (model.User, error) {
-	if err := a.CheckRights(ctx, ID); err != nil {
+func (s Service) Get(ctx context.Context, ID uint64) (model.User, error) {
+	if err := s.CheckRights(ctx, ID); err != nil {
 		return model.User{}, err
 	}
 
-	item, err := a.storeService.Get(ctx, ID)
+	item, err := s.storeService.Get(ctx, ID)
 	if err != nil {
 		return model.User{}, fmt.Errorf("get: %w", err)
 	}
@@ -40,8 +40,8 @@ func (a Service) Get(ctx context.Context, ID uint64) (model.User, error) {
 	return item, nil
 }
 
-func (a Service) Create(ctx context.Context, user model.User) (model.User, error) {
-	id, err := a.storeService.Create(ctx, user)
+func (s Service) Create(ctx context.Context, user model.User) (model.User, error) {
+	id, err := s.storeService.Create(ctx, user)
 	if err != nil {
 		return model.User{}, fmt.Errorf("create: %w", err)
 	}
@@ -52,23 +52,23 @@ func (a Service) Create(ctx context.Context, user model.User) (model.User, error
 	return user, nil
 }
 
-func (a Service) Update(ctx context.Context, user model.User) (model.User, error) {
-	if err := a.storeService.Update(ctx, user); err != nil {
+func (s Service) Update(ctx context.Context, user model.User) (model.User, error) {
+	if err := s.storeService.Update(ctx, user); err != nil {
 		return user, fmt.Errorf("update: %w", err)
 	}
 
 	return user, nil
 }
 
-func (a Service) Delete(ctx context.Context, user model.User) error {
-	if err := a.storeService.Delete(ctx, user); err != nil {
+func (s Service) Delete(ctx context.Context, user model.User) error {
+	if err := s.storeService.Delete(ctx, user); err != nil {
 		return fmt.Errorf("delete: %w", err)
 	}
 
 	return nil
 }
 
-func (a Service) Check(ctx context.Context, old, new model.User) error {
+func (s Service) Check(ctx context.Context, old, new model.User) error {
 	var output []error
 
 	user := model.ReadUser(ctx)
@@ -76,7 +76,7 @@ func (a Service) Check(ctx context.Context, old, new model.User) error {
 		output = append(output, errors.New("you must be logged in for interacting"))
 	}
 
-	if new.IsZero() && !a.authService.IsAuthorized(ctx, user, "admin") {
+	if new.IsZero() && !s.authService.IsAuthorized(ctx, user, "admin") {
 		output = append(output, errors.New("you must be an admin for deleting"))
 	}
 
@@ -84,7 +84,7 @@ func (a Service) Check(ctx context.Context, old, new model.User) error {
 		return httpModel.ConcatError(output)
 	}
 
-	if !old.IsZero() && !new.IsZero() && !(user.ID == new.ID || a.authService.IsAuthorized(ctx, user, "admin")) {
+	if !old.IsZero() && !new.IsZero() && !(user.ID == new.ID || s.authService.IsAuthorized(ctx, user, "admin")) {
 		output = append(output, errors.New("you're not authorized to interact with other user"))
 	}
 
@@ -99,13 +99,13 @@ func (a Service) Check(ctx context.Context, old, new model.User) error {
 	return httpModel.ConcatError(output)
 }
 
-func (a Service) CheckRights(ctx context.Context, id uint64) error {
+func (s Service) CheckRights(ctx context.Context, id uint64) error {
 	user := model.ReadUser(ctx)
 	if user.IsZero() {
 		return httpModel.WrapUnauthorized(errors.New("no user in context"))
 	}
 
-	if id != 0 && user.ID == id || a.authService.IsAuthorized(ctx, user, "admin") {
+	if id != 0 && user.ID == id || s.authService.IsAuthorized(ctx, user, "admin") {
 		return nil
 	}
 

@@ -9,8 +9,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (a Service) Login(_ context.Context, login, password string) (model.User, error) {
-	user, ok := a.ident[login]
+func (s Service) Login(_ context.Context, login, password string) (model.User, error) {
+	user, ok := s.ident[login]
 	if !ok {
 		return model.User{}, ident.ErrInvalidCredentials
 	}
@@ -22,8 +22,8 @@ func (a Service) Login(_ context.Context, login, password string) (model.User, e
 	return user.User, nil
 }
 
-func (a Service) IsAuthorized(_ context.Context, user model.User, profile string) bool {
-	profiles, ok := a.auth[user.ID]
+func (s Service) IsAuthorized(_ context.Context, user model.User, profile string) bool {
+	profiles, ok := s.auth[user.ID]
 	if !ok {
 		return false
 	}
