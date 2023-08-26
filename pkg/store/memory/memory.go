@@ -13,43 +13,41 @@ import (
 )
 
 var (
-	_ auth.Provider  = App{}
-	_ basic.Provider = App{}
+	_ auth.Provider  = Service{}
+	_ basic.Provider = Service{}
 )
 
-// App of package
-type App struct {
+type Service struct {
 	ident map[string]basicUser
 	auth  map[uint64][]string
 }
 
-// Config of package
 type Config struct {
-	ident *string
-	auth  *string
+	Ident string
+	Auth  string
 }
 
-// Flags adds flags for configuring package
 func Flags(fs *flag.FlagSet, prefix string, overrides ...flags.Override) Config {
-	return Config{
-		ident: flags.New("Users", "Users credentials in the form 'id:login:password,id2:login2:password2'").Prefix(prefix).DocPrefix("memory").String(fs, "", overrides),
-		auth:  flags.New("Profiles", "Users profiles in the form 'id:profile1|profile2,id2:profile1'").Prefix(prefix).DocPrefix("memory").String(fs, "", overrides),
-	}
+	var config Config
+
+	flags.New("Users", "Users credentials in the form 'id:login:password,id2:login2:password2'").Prefix(prefix).DocPrefix("memory").StringVar(fs, &config.Ident, "", overrides)
+	flags.New("Profiles", "Users profiles in the form 'id:profile1|profile2,id2:profile1'").Prefix(prefix).DocPrefix("memory").StringVar(fs, &config.Auth, "", overrides)
+
+	return config
 }
 
-// New creates new App from Config
-func New(config Config) (App, error) {
-	identApp, err := loadIdent(strings.TrimSpace(*config.ident))
+func New(config Config) (Service, error) {
+	identApp, err := loadIdent(config.Ident)
 	if err != nil {
-		return App{}, err
+		return Service{}, err
 	}
 
-	authApp, err := loadAuth(strings.TrimSpace(*config.auth))
+	authApp, err := loadAuth(config.Auth)
 	if err != nil {
-		return App{}, err
+		return Service{}, err
 	}
 
-	return App{
+	return Service{
 		ident: identApp,
 		auth:  authApp,
 	}, nil
