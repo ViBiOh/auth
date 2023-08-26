@@ -44,7 +44,7 @@ func TestGet(t *testing.T) {
 
 			mockDatabase := mocks.NewDatabase(ctrl)
 
-			instance := App{db: mockDatabase}
+			instance := Service{db: mockDatabase}
 
 			switch intention {
 			case "create":
@@ -115,7 +115,7 @@ func TestCreate(t *testing.T) {
 
 			mockDatabase := mocks.NewDatabase(ctrl)
 
-			instance := App{db: mockDatabase}
+			instance := Service{db: mockDatabase}
 
 			switch intention {
 			case "create":
@@ -174,7 +174,7 @@ func TestUpdate(t *testing.T) {
 
 			mockDatabase := mocks.NewDatabase(ctrl)
 
-			instance := App{db: mockDatabase}
+			instance := Service{db: mockDatabase}
 
 			switch intention {
 			case "update":
@@ -231,7 +231,7 @@ func TestUpdatePassword(t *testing.T) {
 
 			mockDatabase := mocks.NewDatabase(ctrl)
 
-			instance := App{db: mockDatabase}
+			instance := Service{db: mockDatabase}
 
 			switch intention {
 			case "update":
@@ -287,7 +287,7 @@ func TestDelete(t *testing.T) {
 
 			mockDatabase := mocks.NewDatabase(ctrl)
 
-			instance := App{db: mockDatabase}
+			instance := Service{db: mockDatabase}
 
 			switch intention {
 			case "delete":

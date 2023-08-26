@@ -16,30 +16,25 @@ const (
 	authPrefix = "Basic "
 )
 
-var _ ident.Provider = &App{}
+var _ ident.Provider = &Service{}
 
-// Provider check user credentials
 type Provider interface {
-	// Login user with its credentials
 	Login(ctx context.Context, login, password string) (model.User, error)
 }
 
-// App of the package
-type App struct {
+type Service struct {
 	provider Provider
 	realm    string
 }
 
-// New creates new App from Config
-func New(provider Provider, realm string) App {
-	return App{
+func New(provider Provider, realm string) Service {
+	return Service{
 		provider: provider,
 		realm:    realm,
 	}
 }
 
-// IsMatching checks if header content match provider
-func (a App) IsMatching(content string) bool {
+func (a Service) IsMatching(content string) bool {
 	if len(content) < len(authPrefix) {
 		return false
 	}
@@ -47,8 +42,7 @@ func (a App) IsMatching(content string) bool {
 	return content[:len(authPrefix)] == authPrefix
 }
 
-// GetUser returns User found in content header
-func (a App) GetUser(ctx context.Context, content string) (model.User, error) {
+func (a Service) GetUser(ctx context.Context, content string) (model.User, error) {
 	if len(content) < len(authPrefix) {
 		return model.User{}, ident.ErrMalformedAuth
 	}
@@ -71,8 +65,7 @@ func (a App) GetUser(ctx context.Context, content string) (model.User, error) {
 	return a.provider.Login(ctx, login, password)
 }
 
-// OnError handles HTTP request when login fails
-func (a App) OnError(w http.ResponseWriter, _ *http.Request, err error) {
+func (a Service) OnError(w http.ResponseWriter, _ *http.Request, err error) {
 	realm := ""
 	if len(a.realm) != 0 {
 		realm = fmt.Sprintf("realm=\"%s\" ", a.realm)

@@ -62,7 +62,7 @@ func TestLogin(t *testing.T) {
 
 			mockDatabase := mocks.NewDatabase(ctrl)
 
-			instance := App{db: mockDatabase}
+			instance := Service{db: mockDatabase}
 
 			switch intention {
 			case "simple":
@@ -147,7 +147,7 @@ func TestIsAuthorized(t *testing.T) {
 
 			mockDatabase := mocks.NewDatabase(ctrl)
 
-			instance := App{db: mockDatabase}
+			instance := Service{db: mockDatabase}
 
 			switch intention {
 			case "simple":

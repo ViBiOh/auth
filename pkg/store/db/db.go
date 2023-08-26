@@ -10,7 +10,6 @@ import (
 
 //go:generate mockgen -source db.go -destination ../../mocks/db.go -package mocks -mock_names Database=Database
 
-// Database interface needed
 type Database interface {
 	Get(context.Context, func(pgx.Row) error, string, ...any) error
 	Create(context.Context, string, ...any) (uint64, error)
@@ -18,20 +17,18 @@ type Database interface {
 	DoAtomic(context.Context, func(context.Context) error) error
 }
 
-// App of package
-type App struct {
+type Service struct {
 	db Database
 }
 
 var (
-	_ auth.Provider  = App{}
-	_ auth.Storage   = App{}
-	_ basic.Provider = App{}
+	_ auth.Provider  = Service{}
+	_ auth.Storage   = Service{}
+	_ basic.Provider = Service{}
 )
 
-// New creates new App from dependencies
-func New(db Database) App {
-	return App{
+func New(db Database) Service {
+	return Service{
 		db: db,
 	}
 }

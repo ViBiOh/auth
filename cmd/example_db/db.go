@@ -39,13 +39,13 @@ func main() {
 
 	ctx := context.Background()
 
-	telemetryApp, err := telemetry.New(ctx, telemetryConfig)
+	telemetryService, err := telemetry.New(ctx, telemetryConfig)
 	if err != nil {
 		slog.Error("create tracer", "err", err)
 		os.Exit(1)
 	}
 
-	defer telemetryApp.Close(ctx)
+	defer telemetryService.Close(ctx)
 
 	appServer := server.New(appServerConfig)
 
@@ -57,16 +57,16 @@ func main() {
 
 	defer appDB.Close()
 
-	healthApp := health.New(healthConfig, appDB.Ping)
+	healthService := health.New(healthConfig, appDB.Ping)
 
 	authProvider := dbStore.New(appDB)
 	identProvider := basic.New(authProvider, "Example with a DB")
-	middlewareApp := middleware.New(authProvider, telemetryApp.TracerProvider(), identProvider)
+	middlewareApp := middleware.New(authProvider, telemetryService.TracerProvider(), identProvider)
 
-	endCtx := healthApp.End(ctx)
+	endCtx := healthService.End(ctx)
 
-	go appServer.Start(endCtx, "http", httputils.Handler(nil, healthApp, telemetryApp.Middleware("http"), middlewareApp.Middleware))
+	go appServer.Start(endCtx, "http", httputils.Handler(nil, healthService, telemetryService.Middleware("http"), middlewareApp.Middleware))
 
-	healthApp.WaitForTermination(appServer.Done())
+	healthService.WaitForTermination(appServer.Done())
 	server.GracefulWait(appServer.Done())
 }

@@ -9,7 +9,7 @@ import (
 )
 
 // DoAtomic do things in a transaction
-func (a App) DoAtomic(ctx context.Context, action func(context.Context) error) error {
+func (a Service) DoAtomic(ctx context.Context, action func(context.Context) error) error {
 	return a.db.DoAtomic(ctx, action)
 }
 
@@ -24,7 +24,7 @@ WHERE
 `
 
 // Get a user
-func (a App) Get(ctx context.Context, id uint64) (model.User, error) {
+func (a Service) Get(ctx context.Context, id uint64) (model.User, error) {
 	var item model.User
 	scanner := func(row pgx.Row) error {
 		err := row.Scan(&item.ID, &item.Login)
@@ -52,7 +52,7 @@ INSERT INTO
 `
 
 // Create a user
-func (a App) Create(ctx context.Context, o model.User) (uint64, error) {
+func (a Service) Create(ctx context.Context, o model.User) (uint64, error) {
 	return a.db.Create(ctx, insertQuery, strings.ToLower(o.Login), o.Password)
 }
 
@@ -66,7 +66,7 @@ WHERE
 `
 
 // Update user
-func (a App) Update(ctx context.Context, o model.User) error {
+func (a Service) Update(ctx context.Context, o model.User) error {
 	return a.db.One(ctx, updateQuery, o.ID, strings.ToLower(o.Login))
 }
 
@@ -80,7 +80,7 @@ WHERE
 `
 
 // UpdatePassword of a user
-func (a App) UpdatePassword(ctx context.Context, o model.User) error {
+func (a Service) UpdatePassword(ctx context.Context, o model.User) error {
 	return a.db.One(ctx, updatePasswordQuery, o.ID, o.Password)
 }
 
@@ -92,6 +92,6 @@ WHERE
 `
 
 // Delete an user
-func (a App) Delete(ctx context.Context, o model.User) error {
+func (a Service) Delete(ctx context.Context, o model.User) error {
 	return a.db.One(ctx, deleteQuery, o.ID)
 }

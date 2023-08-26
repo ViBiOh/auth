@@ -69,10 +69,10 @@ func TestIsMatching(t *testing.T) {
 }
 
 func BenchmarkIsMatching(b *testing.B) {
-	var app App
+	var service Service
 
 	for i := 0; i < b.N; i++ {
-		app.IsMatching("Basic abcdef1234567890")
+		service.IsMatching("Basic abcdef1234567890")
 	}
 }
 

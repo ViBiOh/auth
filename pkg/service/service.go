@@ -11,27 +11,24 @@ import (
 	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
 )
 
-// App of package
-type App struct {
-	storeApp auth.Storage
-	authApp  auth.Provider
+type Service struct {
+	storeService auth.Storage
+	authService  auth.Provider
 }
 
-// New creates new App from Config
-func New(storeApp auth.Storage, authApp auth.Provider) App {
-	return App{
-		storeApp: storeApp,
-		authApp:  authApp,
+func New(storeService auth.Storage, authService auth.Provider) Service {
+	return Service{
+		storeService: storeService,
+		authService:  authService,
 	}
 }
 
-// Get User
-func (a App) Get(ctx context.Context, ID uint64) (model.User, error) {
+func (a Service) Get(ctx context.Context, ID uint64) (model.User, error) {
 	if err := a.CheckRights(ctx, ID); err != nil {
 		return model.User{}, err
 	}
 
-	item, err := a.storeApp.Get(ctx, ID)
+	item, err := a.storeService.Get(ctx, ID)
 	if err != nil {
 		return model.User{}, fmt.Errorf("get: %w", err)
 	}
@@ -43,9 +40,8 @@ func (a App) Get(ctx context.Context, ID uint64) (model.User, error) {
 	return item, nil
 }
 
-// Create User
-func (a App) Create(ctx context.Context, user model.User) (model.User, error) {
-	id, err := a.storeApp.Create(ctx, user)
+func (a Service) Create(ctx context.Context, user model.User) (model.User, error) {
+	id, err := a.storeService.Create(ctx, user)
 	if err != nil {
 		return model.User{}, fmt.Errorf("create: %w", err)
 	}
@@ -56,26 +52,23 @@ func (a App) Create(ctx context.Context, user model.User) (model.User, error) {
 	return user, nil
 }
 
-// Update User
-func (a App) Update(ctx context.Context, user model.User) (model.User, error) {
-	if err := a.storeApp.Update(ctx, user); err != nil {
+func (a Service) Update(ctx context.Context, user model.User) (model.User, error) {
+	if err := a.storeService.Update(ctx, user); err != nil {
 		return user, fmt.Errorf("update: %w", err)
 	}
 
 	return user, nil
 }
 
-// Delete User
-func (a App) Delete(ctx context.Context, user model.User) error {
-	if err := a.storeApp.Delete(ctx, user); err != nil {
+func (a Service) Delete(ctx context.Context, user model.User) error {
+	if err := a.storeService.Delete(ctx, user); err != nil {
 		return fmt.Errorf("delete: %w", err)
 	}
 
 	return nil
 }
 
-// Check user values
-func (a App) Check(ctx context.Context, old, new model.User) error {
+func (a Service) Check(ctx context.Context, old, new model.User) error {
 	var output []error
 
 	user := model.ReadUser(ctx)
@@ -83,7 +76,7 @@ func (a App) Check(ctx context.Context, old, new model.User) error {
 		output = append(output, errors.New("you must be logged in for interacting"))
 	}
 
-	if new.IsZero() && !a.authApp.IsAuthorized(ctx, user, "admin") {
+	if new.IsZero() && !a.authService.IsAuthorized(ctx, user, "admin") {
 		output = append(output, errors.New("you must be an admin for deleting"))
 	}
 
@@ -91,7 +84,7 @@ func (a App) Check(ctx context.Context, old, new model.User) error {
 		return httpModel.ConcatError(output)
 	}
 
-	if !old.IsZero() && !new.IsZero() && !(user.ID == new.ID || a.authApp.IsAuthorized(ctx, user, "admin")) {
+	if !old.IsZero() && !new.IsZero() && !(user.ID == new.ID || a.authService.IsAuthorized(ctx, user, "admin")) {
 		output = append(output, errors.New("you're not authorized to interact with other user"))
 	}
 
@@ -106,14 +99,13 @@ func (a App) Check(ctx context.Context, old, new model.User) error {
 	return httpModel.ConcatError(output)
 }
 
-// CheckRights of user ID
-func (a App) CheckRights(ctx context.Context, id uint64) error {
+func (a Service) CheckRights(ctx context.Context, id uint64) error {
 	user := model.ReadUser(ctx)
 	if user.IsZero() {
 		return httpModel.WrapUnauthorized(errors.New("no user in context"))
 	}
 
-	if id != 0 && user.ID == id || a.authApp.IsAuthorized(ctx, user, "admin") {
+	if id != 0 && user.ID == id || a.authService.IsAuthorized(ctx, user, "admin") {
 		return nil
 	}
 

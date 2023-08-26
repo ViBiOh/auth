@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	_ httpmodel.Middleware = App{}.Middleware
+	_ httpmodel.Middleware = Service{}.Middleware
 
 	// ErrEmptyAuth occurs when authorization content is not found
 	ErrEmptyAuth = errors.New("empty authorization content")
@@ -25,29 +25,26 @@ var (
 	ErrNoMatchingProvider = errors.New("no matching provider for Authorization content")
 )
 
-// App of package
-type App struct {
+type Service struct {
 	tracer         trace.Tracer
 	authProvider   auth.Provider
 	identProviders []ident.Provider
 }
 
-// New creates new App for given providers
-func New(authProvider auth.Provider, tracerProvider trace.TracerProvider, identProviders ...ident.Provider) App {
-	app := App{
+func New(authProvider auth.Provider, tracerProvider trace.TracerProvider, identProviders ...ident.Provider) Service {
+	service := Service{
 		authProvider:   authProvider,
 		identProviders: identProviders,
 	}
 
 	if tracerProvider != nil {
-		app.tracer = tracerProvider.Tracer("auth")
+		service.tracer = tracerProvider.Tracer("auth")
 	}
 
-	return app
+	return service
 }
 
-// Middleware wraps next authenticated handler
-func (a App) Middleware(next http.Handler) http.Handler {
+func (a Service) Middleware(next http.Handler) http.Handler {
 	if len(a.identProviders) == 0 {
 		return next
 	}
@@ -70,8 +67,7 @@ func (a App) Middleware(next http.Handler) http.Handler {
 	})
 }
 
-// IsAuthenticated check if request has correct headers for authentification
-func (a App) IsAuthenticated(r *http.Request) (ident.Provider, model.User, error) {
+func (a Service) IsAuthenticated(r *http.Request) (ident.Provider, model.User, error) {
 	if len(a.identProviders) == 0 {
 		return nil, model.User{}, ErrNoMatchingProvider
 	}
@@ -102,8 +98,7 @@ func (a App) IsAuthenticated(r *http.Request) (ident.Provider, model.User, error
 	return nil, model.User{}, ErrNoMatchingProvider
 }
 
-// IsAuthorized checks if User in context has given profile
-func (a App) IsAuthorized(ctx context.Context, profile string) bool {
+func (a Service) IsAuthorized(ctx context.Context, profile string) bool {
 	if a.authProvider == nil {
 		return false
 	}

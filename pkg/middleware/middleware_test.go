@@ -47,7 +47,7 @@ func TestMiddleware(t *testing.T) {
 	basicAuthRequest, _ := request.Get("/").BasicAuth("admin", "password").Build(context.TODO(), nil)
 
 	cases := map[string]struct {
-		instance   App
+		instance   Service
 		request    *http.Request
 		want       string
 		wantStatus int
@@ -111,7 +111,7 @@ func TestIsAuthenticated(t *testing.T) {
 	errorRequest, _ := request.Get("/").Header("Authorization", "Basic").Build(context.TODO(), nil)
 
 	cases := map[string]struct {
-		instance App
+		instance Service
 		request  *http.Request
 		want     model.User
 		wantErr  error
@@ -182,7 +182,7 @@ func TestIsAuthorized(t *testing.T) {
 	}
 
 	cases := map[string]struct {
-		instance App
+		instance Service
 		args     args
 		want     bool
 	}{

@@ -37,19 +37,19 @@ func Flags(fs *flag.FlagSet, prefix string, overrides ...flags.Override) Config 
 }
 
 func New(config Config) (Service, error) {
-	identApp, err := loadIdent(config.Ident)
+	identService, err := loadIdent(config.Ident)
 	if err != nil {
-		return Service{}, err
+		return Service{}, fmt.Errorf("load ident: %w", err)
 	}
 
-	authApp, err := loadAuth(config.Auth)
+	authService, err := loadAuth(config.Auth)
 	if err != nil {
-		return Service{}, err
+		return Service{}, fmt.Errorf("load auth: %w", err)
 	}
 
 	return Service{
-		ident: identApp,
-		auth:  authApp,
+		ident: identService,
+		auth:  authService,
 	}, nil
 }
 

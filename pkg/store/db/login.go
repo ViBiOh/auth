@@ -22,7 +22,7 @@ WHERE
 `
 
 // Login checks given credentials
-func (a App) Login(ctx context.Context, login, password string) (model.User, error) {
+func (a Service) Login(ctx context.Context, login, password string) (model.User, error) {
 	var user model.User
 
 	scanner := func(row pgx.Row) error {
@@ -54,7 +54,7 @@ WHER
 `
 
 // IsAuthorized checks user on profile
-func (a App) IsAuthorized(ctx context.Context, user model.User, profile string) bool {
+func (a Service) IsAuthorized(ctx context.Context, user model.User, profile string) bool {
 	var id uint64
 
 	scanner := func(row pgx.Row) error {
