@@ -27,16 +27,16 @@ type Config struct {
 	Auth  string
 }
 
-func Flags(fs *flag.FlagSet, prefix string, overrides ...flags.Override) Config {
+func Flags(fs *flag.FlagSet, prefix string, overrides ...flags.Override) *Config {
 	var config Config
 
 	flags.New("Users", "Users credentials in the form 'id:login:password,id2:login2:password2'").Prefix(prefix).DocPrefix("memory").StringVar(fs, &config.Ident, "", overrides)
 	flags.New("Profiles", "Users profiles in the form 'id:profile1|profile2,id2:profile1'").Prefix(prefix).DocPrefix("memory").StringVar(fs, &config.Auth, "", overrides)
 
-	return config
+	return &config
 }
 
-func New(config Config) (Service, error) {
+func New(config *Config) (Service, error) {
 	identService, err := loadIdent(config.Ident)
 	if err != nil {
 		return Service{}, fmt.Errorf("load ident: %w", err)
