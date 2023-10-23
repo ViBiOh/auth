@@ -47,7 +47,7 @@ func main() {
 	defer telemetryService.Close(ctx)
 
 	appServer := server.New(appServerConfig)
-	healthService := health.New(healthConfig)
+	healthService := health.New(ctx, healthConfig)
 
 	authProvider, err := memoryStore.New(basicConfig)
 	if err != nil {
@@ -58,9 +58,7 @@ func main() {
 	identProvider := basic.New(authProvider, "Example Memory")
 	middlewareApp := middleware.New(authProvider, telemetryService.TracerProvider(), identProvider)
 
-	endCtx := healthService.End(ctx)
-
-	go appServer.Start(endCtx, "http", httputils.Handler(nil, healthService, telemetryService.Middleware("http"), middlewareApp.Middleware))
+	go appServer.Start(healthService.EndCtx(), httputils.Handler(nil, healthService, telemetryService.Middleware("http"), middlewareApp.Middleware))
 
 	healthService.WaitForTermination(appServer.Done())
 	server.GracefulWait(appServer.Done())
