@@ -57,15 +57,13 @@ func main() {
 
 	defer appDB.Close()
 
-	healthService := health.New(healthConfig, appDB.Ping)
+	healthService := health.New(ctx, healthConfig, appDB.Ping)
 
 	authProvider := dbStore.New(appDB)
 	identProvider := basic.New(authProvider, "Example with a DB")
 	middlewareApp := middleware.New(authProvider, telemetryService.TracerProvider(), identProvider)
 
-	endCtx := healthService.End(ctx)
-
-	go appServer.Start(endCtx, "http", httputils.Handler(nil, healthService, telemetryService.Middleware("http"), middlewareApp.Middleware))
+	go appServer.Start(healthService.EndCtx(), httputils.Handler(nil, healthService, telemetryService.Middleware("http"), middlewareApp.Middleware))
 
 	healthService.WaitForTermination(appServer.Done())
 	server.GracefulWait(appServer.Done())
