@@ -6,7 +6,7 @@ toolchain go1.21.0
 
 require (
 	github.com/ViBiOh/flags v1.4.1
-	github.com/ViBiOh/httputils/v4 v4.68.3
+	github.com/ViBiOh/httputils/v4 v4.68.4
 	github.com/jackc/pgx/v5 v5.5.0
 	go.opentelemetry.io/otel/trace v1.21.0
 	go.uber.org/mock v0.3.0
@@ -23,15 +23,15 @@ require (
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
 	github.com/jackc/puddle/v2 v2.2.1 // indirect
-	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.46.0 // indirect
-	go.opentelemetry.io/contrib/instrumentation/runtime v0.46.0 // indirect
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.46.1 // indirect
+	go.opentelemetry.io/contrib/instrumentation/runtime v0.46.1 // indirect
 	go.opentelemetry.io/otel v1.21.0 // indirect
-	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc v0.43.0 // indirect
-	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.20.0 // indirect
-	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.20.0 // indirect
+	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc v0.44.0 // indirect
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.21.0 // indirect
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.21.0 // indirect
 	go.opentelemetry.io/otel/metric v1.21.0 // indirect
-	go.opentelemetry.io/otel/sdk v1.20.0 // indirect
-	go.opentelemetry.io/otel/sdk/metric v1.20.0 // indirect
+	go.opentelemetry.io/otel/sdk v1.21.0 // indirect
+	go.opentelemetry.io/otel/sdk/metric v1.21.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.0.0 // indirect
 	golang.org/x/net v0.18.0 // indirect
 	golang.org/x/sync v0.3.0 // indirect
