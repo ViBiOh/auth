@@ -29,7 +29,7 @@ func (s Service) Login(ctx context.Context, login, password string) (model.User,
 	}
 
 	if err := s.db.Get(ctx, scanner, readUserQuery, strings.ToLower(login), password); err != nil {
-		slog.Error("login", "err", err, "login", login)
+		slog.ErrorContext(ctx, "login", "err", err, "login", login)
 
 		if err == pgx.ErrNoRows {
 			return model.User{}, ident.ErrInvalidCredentials
@@ -60,7 +60,7 @@ func (s Service) IsAuthorized(ctx context.Context, user model.User, profile stri
 	}
 
 	if err := s.db.Get(ctx, scanner, readLoginProfile, user.ID, profile); err != nil {
-		slog.Error("authorized", "err", err, "login", user.Login)
+		slog.ErrorContext(ctx, "authorized", "err", err, "login", user.Login)
 
 		return false
 	}

@@ -108,10 +108,10 @@ func (s Service) IsAuthorized(ctx context.Context, profile string) bool {
 
 func onHandlerFail(w http.ResponseWriter, r *http.Request, err error, provider ident.Provider) {
 	if err == auth.ErrForbidden {
-		httperror.Forbidden(w)
+		httperror.Forbidden(r.Context(), w)
 	} else if provider != nil {
 		provider.OnError(w, r, err)
 	} else {
-		httperror.BadRequest(w, err)
+		httperror.BadRequest(r.Context(), w, err)
 	}
 }

@@ -109,7 +109,7 @@ func (s Service) CheckRights(ctx context.Context, id uint64) error {
 		return nil
 	}
 
-	slog.Info("unauthorized access", "login", user.Login)
+	slog.InfoContext(ctx, "unauthorized access", "login", user.Login)
 
 	return httpModel.WrapForbidden(errors.New("unauthorized"))
 }

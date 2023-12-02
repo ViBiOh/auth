@@ -65,12 +65,12 @@ func (s Service) GetUser(ctx context.Context, content string) (model.User, error
 	return s.provider.Login(ctx, login, password)
 }
 
-func (s Service) OnError(w http.ResponseWriter, _ *http.Request, err error) {
+func (s Service) OnError(w http.ResponseWriter, r *http.Request, err error) {
 	realm := ""
 	if len(s.realm) != 0 {
 		realm = fmt.Sprintf("realm=\"%s\" ", s.realm)
 	}
 
 	w.Header().Add("WWW-Authenticate", fmt.Sprintf("Basic %scharset=\"UTF-8\"", realm))
-	httperror.Unauthorized(w, err)
+	httperror.Unauthorized(r.Context(), w, err)
 }
