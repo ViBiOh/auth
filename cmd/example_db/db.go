@@ -41,7 +41,7 @@ func main() {
 
 	telemetryService, err := telemetry.New(ctx, telemetryConfig)
 	if err != nil {
-		slog.ErrorContext(ctx, "create tracer", "err", err)
+		slog.ErrorContext(ctx, "create tracer", "error", err)
 		os.Exit(1)
 	}
 
@@ -51,7 +51,7 @@ func main() {
 
 	appDB, err := db.New(ctx, dbConfig, nil)
 	if err != nil {
-		slog.ErrorContext(ctx, "create db", "err", err)
+		slog.ErrorContext(ctx, "create db", "error", err)
 		os.Exit(1)
 	}
 

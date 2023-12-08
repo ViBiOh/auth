@@ -40,7 +40,7 @@ func main() {
 
 	telemetryService, err := telemetry.New(ctx, telemetryConfig)
 	if err != nil {
-		slog.ErrorContext(ctx, "create tracer", "err", err)
+		slog.ErrorContext(ctx, "create tracer", "error", err)
 		os.Exit(1)
 	}
 
@@ -51,7 +51,7 @@ func main() {
 
 	authProvider, err := memoryStore.New(basicConfig)
 	if err != nil {
-		slog.ErrorContext(ctx, "create memory store", "err", err)
+		slog.ErrorContext(ctx, "create memory store", "error", err)
 		os.Exit(1)
 	}
 
