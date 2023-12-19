@@ -10,7 +10,7 @@ require (
 	github.com/jackc/pgx/v5 v5.5.1
 	go.opentelemetry.io/otel/trace v1.21.0
 	go.uber.org/mock v0.3.0
-	golang.org/x/crypto v0.16.0
+	golang.org/x/crypto v0.17.0
 )
 
 require (
