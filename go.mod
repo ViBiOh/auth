@@ -9,7 +9,7 @@ require (
 	github.com/ViBiOh/httputils/v4 v4.69.10
 	github.com/jackc/pgx/v5 v5.5.1
 	go.opentelemetry.io/otel/trace v1.21.0
-	go.uber.org/mock v0.3.0
+	go.uber.org/mock v0.4.0
 	golang.org/x/crypto v0.17.0
 )
 
