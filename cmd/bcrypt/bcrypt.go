@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
 	"strconv"
 
+	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -18,15 +20,10 @@ func main() {
 	}
 
 	cost, err := strconv.ParseInt(os.Args[2], 10, 32)
-	if err != nil {
-		fmt.Printf("parse cost: %s", err)
-		os.Exit(1)
-	}
+	logger.FatalfOnErr(context.Background(), err, "parse cost")
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(os.Args[1]), int(cost))
-	if err != nil {
-		fmt.Printf("generate password: %s", err)
-		os.Exit(1)
-	}
+	logger.FatalfOnErr(context.Background(), err, "generate password")
+
 	fmt.Print(string(hash))
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"log"
-	"log/slog"
 	"os"
 
 	"github.com/ViBiOh/auth/v2/pkg/ident/basic"
@@ -39,10 +38,7 @@ func main() {
 	ctx := context.Background()
 
 	telemetryService, err := telemetry.New(ctx, telemetryConfig)
-	if err != nil {
-		slog.ErrorContext(ctx, "create tracer", "error", err)
-		os.Exit(1)
-	}
+	logger.FatalfOnErr(ctx, err, "create tracer")
 
 	defer telemetryService.Close(ctx)
 
@@ -50,10 +46,7 @@ func main() {
 	healthService := health.New(ctx, healthConfig)
 
 	authProvider, err := memoryStore.New(basicConfig)
-	if err != nil {
-		slog.ErrorContext(ctx, "create memory store", "error", err)
-		os.Exit(1)
-	}
+	logger.FatalfOnErr(ctx, err, "create memory store")
 
 	identProvider := basic.New(authProvider, "Example Memory")
 	middlewareApp := middleware.New(authProvider, telemetryService.TracerProvider(), identProvider)

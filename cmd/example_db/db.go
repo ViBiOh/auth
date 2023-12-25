@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"log"
-	"log/slog"
 	"os"
 
 	"github.com/ViBiOh/auth/v2/pkg/ident/basic"
@@ -40,20 +39,14 @@ func main() {
 	ctx := context.Background()
 
 	telemetryService, err := telemetry.New(ctx, telemetryConfig)
-	if err != nil {
-		slog.ErrorContext(ctx, "create tracer", "error", err)
-		os.Exit(1)
-	}
+	logger.FatalfOnErr(ctx, err, "create tracer")
 
 	defer telemetryService.Close(ctx)
 
 	appServer := server.New(appServerConfig)
 
 	appDB, err := db.New(ctx, dbConfig, nil)
-	if err != nil {
-		slog.ErrorContext(ctx, "create db", "error", err)
-		os.Exit(1)
-	}
+	logger.FatalfOnErr(ctx, err, "create db")
 
 	defer appDB.Close()
 
