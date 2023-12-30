@@ -61,7 +61,7 @@ func TestGet(t *testing.T) {
 				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), uint64(1)).DoAndReturn(dummyFn)
 			}
 
-			got, gotErr := instance.Get(context.TODO(), testCase.args.id)
+			got, gotErr := instance.Get(context.Background(), testCase.args.id)
 
 			failed := false
 
@@ -119,10 +119,10 @@ func TestCreate(t *testing.T) {
 
 			switch intention {
 			case "create":
-				mockDatabase.EXPECT().Create(gomock.Any(), gomock.Any(), "vibioh", "secret").Return(uint64(1), nil)
+				mockDatabase.EXPECT().Create(gomock.Any(), gomock.Any(), "vibioh", gomock.Any()).Return(uint64(1), nil)
 			}
 
-			got, gotErr := instance.Create(context.TODO(), testCase.args.o)
+			got, gotErr := instance.Create(context.Background(), testCase.args.o)
 
 			failed := false
 
@@ -181,7 +181,7 @@ func TestUpdate(t *testing.T) {
 				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), uint64(1), "vibioh").Return(nil)
 			}
 
-			gotErr := instance.Update(context.TODO(), testCase.args.o)
+			gotErr := instance.Update(context.Background(), testCase.args.o)
 
 			failed := false
 
@@ -235,10 +235,10 @@ func TestUpdatePassword(t *testing.T) {
 
 			switch intention {
 			case "update":
-				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), uint64(1), "secret").Return(nil)
+				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), uint64(1), gomock.Any()).Return(nil)
 			}
 
-			gotErr := instance.UpdatePassword(context.TODO(), testCase.args.o)
+			gotErr := instance.UpdatePassword(context.Background(), testCase.args.o)
 
 			failed := false
 
@@ -294,7 +294,7 @@ func TestDelete(t *testing.T) {
 				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), uint64(1)).Return(nil)
 			}
 
-			gotErr := instance.Delete(context.TODO(), testCase.args.o)
+			gotErr := instance.Delete(context.Background(), testCase.args.o)
 
 			failed := false
 

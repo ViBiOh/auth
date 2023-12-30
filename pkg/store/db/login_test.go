@@ -67,32 +67,33 @@ func TestLogin(t *testing.T) {
 			switch intention {
 			case "simple":
 				mockRow := mocks.NewRow(ctrl)
-				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
+				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
 					*pointers[0].(*uint64) = 1
 					*pointers[1].(*string) = "vibioh"
+					*pointers[2].(*string) = "$argon2id$v=19$m=7168,t=5,p=1$Fh3xnr+CV5ymbbx9hnfWQsEZOzSc0nI$/NU9AeurqbuHYx75qNFNDJxsUDqevR2eJnQSLNw8OMA"
 
 					return nil
 				})
 				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...any) error {
 					return scanner(mockRow)
 				}
-				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), "vibioh", "secret").DoAndReturn(dummyFn)
+				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), "vibioh").DoAndReturn(dummyFn)
 
 			case "not found":
 				mockRow := mocks.NewRow(ctrl)
-				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
+				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
 					return pgx.ErrNoRows
 				})
 				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...any) error {
 					return scanner(mockRow)
 				}
-				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), "vibioh", "secret").DoAndReturn(dummyFn)
+				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), "vibioh").DoAndReturn(dummyFn)
 
 			case "error":
-				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), "vibioh", "secret").Return(errors.New("timeout"))
+				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), "vibioh").Return(errors.New("timeout"))
 			}
 
-			got, gotErr := instance.Login(context.TODO(), testCase.args.login, testCase.args.password)
+			got, gotErr := instance.Login(context.Background(), testCase.args.login, testCase.args.password)
 			failed := false
 
 			if testCase.wantErr != nil && !errors.Is(gotErr, testCase.wantErr) {
@@ -165,7 +166,7 @@ func TestIsAuthorized(t *testing.T) {
 				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), uint64(1), "admin").Return(errors.New("timeout"))
 			}
 
-			if got := instance.IsAuthorized(context.TODO(), testCase.args.user, testCase.args.profile); got != testCase.want {
+			if got := instance.IsAuthorized(context.Background(), testCase.args.user, testCase.args.profile); got != testCase.want {
 				t.Errorf("IsAuthorized() = %t, want %t", got, testCase.want)
 			}
 		})

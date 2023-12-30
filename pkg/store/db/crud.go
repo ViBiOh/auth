@@ -2,8 +2,10 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
+	"github.com/ViBiOh/auth/v2/pkg/argon"
 	"github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/jackc/pgx/v5"
 )
@@ -45,12 +47,17 @@ INSERT INTO
   password
 ) VALUES (
   $1,
-  crypt($2, gen_salt('bf',10))
+  $2
 ) RETURNING id
 `
 
 func (s Service) Create(ctx context.Context, o model.User) (uint64, error) {
-	return s.db.Create(ctx, insertQuery, strings.ToLower(o.Login), o.Password)
+	password, err := argon.GenerateFromPassword(o.Password)
+	if err != nil {
+		return 0, fmt.Errorf("hash password: %w", err)
+	}
+
+	return s.db.Create(ctx, insertQuery, strings.ToLower(o.Login), password)
 }
 
 const updateQuery = `
@@ -70,13 +77,18 @@ const updatePasswordQuery = `
 UPDATE
   auth.login
 SET
-  password = crypt($2, gen_salt('bf',10))
+  password = $2
 WHERE
   id = $1
 `
 
 func (s Service) UpdatePassword(ctx context.Context, o model.User) error {
-	return s.db.One(ctx, updatePasswordQuery, o.ID, o.Password)
+	password, err := argon.GenerateFromPassword(o.Password)
+	if err != nil {
+		return fmt.Errorf("hash password: %w", err)
+	}
+
+	return s.db.One(ctx, updatePasswordQuery, o.ID, password)
 }
 
 const deleteQuery = `

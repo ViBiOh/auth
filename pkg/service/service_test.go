@@ -30,7 +30,7 @@ func TestGet(t *testing.T) {
 		"no context": {
 			Service{},
 			args{
-				ctx: context.TODO(),
+				ctx: context.Background(),
 			},
 			model.User{},
 			httpModel.ErrUnauthorized,
@@ -39,7 +39,7 @@ func TestGet(t *testing.T) {
 			Service{},
 			args{
 				id:  1,
-				ctx: model.StoreUser(context.TODO(), model.NewUser(2, "guest")),
+				ctx: model.StoreUser(context.Background(), model.NewUser(2, "guest")),
 			},
 			model.User{},
 			httpModel.ErrForbidden,
@@ -48,7 +48,7 @@ func TestGet(t *testing.T) {
 			Service{},
 			args{
 				id:  8000,
-				ctx: model.StoreUser(context.TODO(), model.NewUser(1, "admin")),
+				ctx: model.StoreUser(context.Background(), model.NewUser(1, "admin")),
 			},
 			model.User{},
 			errors.New("get: failed"),
@@ -57,7 +57,7 @@ func TestGet(t *testing.T) {
 			Service{},
 			args{
 				id:  2,
-				ctx: model.StoreUser(context.TODO(), model.NewUser(2, "guest")),
+				ctx: model.StoreUser(context.Background(), model.NewUser(2, "guest")),
 			},
 			model.User{},
 			httpModel.ErrNotFound,
@@ -66,7 +66,7 @@ func TestGet(t *testing.T) {
 			Service{},
 			args{
 				id:  1,
-				ctx: model.StoreUser(context.TODO(), model.NewUser(2, "admin")),
+				ctx: model.StoreUser(context.Background(), model.NewUser(2, "admin")),
 			},
 			model.NewUser(1, "admin"),
 			nil,
@@ -88,11 +88,14 @@ func TestGet(t *testing.T) {
 			switch intention {
 			case "not self":
 				authProvider.EXPECT().IsAuthorized(gomock.Any(), gomock.Any(), gomock.Any()).Return(false)
+
 			case "error on get":
 				authStorage.EXPECT().Get(gomock.Any(), gomock.Any()).Return(model.User{}, errors.New("failed"))
 				authProvider.EXPECT().IsAuthorized(gomock.Any(), gomock.Any(), gomock.Any()).Return(true)
+
 			case "not found":
 				authStorage.EXPECT().Get(gomock.Any(), gomock.Any()).Return(model.User{}, nil)
+
 			case "found":
 				authStorage.EXPECT().Get(gomock.Any(), gomock.Any()).Return(model.NewUser(1, "admin"), nil)
 				authProvider.EXPECT().IsAuthorized(gomock.Any(), gomock.Any(), gomock.Any()).Return(true)
@@ -173,7 +176,7 @@ func TestCreate(t *testing.T) {
 				authStorage.EXPECT().Create(gomock.Any(), gomock.Any()).Return(uint64(1), nil)
 			}
 
-			got, gotErr := testCase.instance.Create(context.TODO(), testCase.args.o)
+			got, gotErr := testCase.instance.Create(context.Background(), testCase.args.o)
 
 			failed := false
 
@@ -245,7 +248,7 @@ func TestUpdate(t *testing.T) {
 				authStorage.EXPECT().Update(gomock.Any(), gomock.Any()).Return(nil)
 			}
 
-			got, gotErr := testCase.instance.Update(context.TODO(), testCase.args.o)
+			got, gotErr := testCase.instance.Update(context.Background(), testCase.args.o)
 
 			failed := false
 
@@ -317,7 +320,7 @@ func TestDelete(t *testing.T) {
 				authStorage.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(nil)
 			}
 
-			gotErr := testCase.instance.Delete(context.TODO(), testCase.args.o)
+			gotErr := testCase.instance.Delete(context.Background(), testCase.args.o)
 
 			failed := false
 
@@ -353,14 +356,14 @@ func TestCheck(t *testing.T) {
 		"empty": {
 			Service{},
 			args{
-				ctx: context.TODO(),
+				ctx: context.Background(),
 			},
 			errors.New("you must be an admin for deleting"),
 		},
 		"create empty": {
 			Service{},
 			args{
-				ctx: context.TODO(),
+				ctx: context.Background(),
 				new: model.User{
 					ID: 1,
 				},
@@ -370,7 +373,7 @@ func TestCheck(t *testing.T) {
 		"create without password": {
 			Service{},
 			args{
-				ctx: context.TODO(),
+				ctx: context.Background(),
 				new: model.NewUser(0, "guest"),
 			},
 			errors.New("password is required"),
@@ -378,7 +381,7 @@ func TestCheck(t *testing.T) {
 		"create valid": {
 			Service{},
 			args{
-				ctx: context.TODO(),
+				ctx: context.Background(),
 				new: model.User{
 					Login:    "guest",
 					Password: "secret",
@@ -389,7 +392,7 @@ func TestCheck(t *testing.T) {
 		"update unauthorized": {
 			Service{},
 			args{
-				ctx: context.TODO(),
+				ctx: context.Background(),
 				old: model.NewUser(2, "guest"),
 				new: model.NewUser(2, ""),
 			},
@@ -398,7 +401,7 @@ func TestCheck(t *testing.T) {
 		"update forbidden": {
 			Service{},
 			args{
-				ctx: model.StoreUser(context.TODO(), model.NewUser(1, "guest")),
+				ctx: model.StoreUser(context.Background(), model.NewUser(1, "guest")),
 				old: model.NewUser(2, "guest"),
 				new: model.NewUser(2, ""),
 			},
@@ -407,7 +410,7 @@ func TestCheck(t *testing.T) {
 		"update empty login": {
 			Service{},
 			args{
-				ctx: model.StoreUser(context.TODO(), model.NewUser(2, "guest")),
+				ctx: model.StoreUser(context.Background(), model.NewUser(2, "guest")),
 				old: model.NewUser(2, "guest"),
 				new: model.NewUser(2, ""),
 			},
@@ -416,7 +419,7 @@ func TestCheck(t *testing.T) {
 		"update valid": {
 			Service{},
 			args{
-				ctx: model.StoreUser(context.TODO(), model.NewUser(2, "guest")),
+				ctx: model.StoreUser(context.Background(), model.NewUser(2, "guest")),
 				old: model.NewUser(2, "guest"),
 				new: model.NewUser(2, "guest_new"),
 			},
@@ -425,7 +428,7 @@ func TestCheck(t *testing.T) {
 		"update as admin": {
 			Service{},
 			args{
-				ctx: model.StoreUser(context.TODO(), model.NewUser(1, "admin")),
+				ctx: model.StoreUser(context.Background(), model.NewUser(1, "admin")),
 				old: model.NewUser(2, "guest"),
 				new: model.NewUser(2, "guest_new"),
 			},
@@ -434,7 +437,7 @@ func TestCheck(t *testing.T) {
 		"delete unauthorized": {
 			Service{},
 			args{
-				ctx: context.TODO(),
+				ctx: context.Background(),
 				old: model.NewUser(2, "guest"),
 			},
 			errors.New("you must be logged in for interacting, you must be an admin for deleting"),
@@ -442,7 +445,7 @@ func TestCheck(t *testing.T) {
 		"delete forbidden": {
 			Service{},
 			args{
-				ctx: model.StoreUser(context.TODO(), model.NewUser(1, "guest")),
+				ctx: model.StoreUser(context.Background(), model.NewUser(1, "guest")),
 				old: model.NewUser(2, "guest"),
 			},
 			errors.New("you must be an admin for deleting"),
@@ -450,7 +453,7 @@ func TestCheck(t *testing.T) {
 		"delete self": {
 			Service{},
 			args{
-				ctx: model.StoreUser(context.TODO(), model.NewUser(2, "guest")),
+				ctx: model.StoreUser(context.Background(), model.NewUser(2, "guest")),
 				old: model.NewUser(2, "guest"),
 			},
 			errors.New("you must be an admin for deleting"),
@@ -458,7 +461,7 @@ func TestCheck(t *testing.T) {
 		"delete admin": {
 			Service{},
 			args{
-				ctx: model.StoreUser(context.TODO(), model.NewUser(1, "admin")),
+				ctx: model.StoreUser(context.Background(), model.NewUser(1, "admin")),
 				old: model.NewUser(2, "guest"),
 			},
 			nil,

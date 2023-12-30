@@ -53,19 +53,19 @@ func TestReadUser(t *testing.T) {
 	}{
 		"empty": {
 			args{
-				ctx: context.TODO(),
+				ctx: context.Background(),
 			},
 			User{},
 		},
 		"with User": {
 			args{
-				ctx: StoreUser(context.TODO(), NewUser(8000, "vibioh")),
+				ctx: StoreUser(context.Background(), NewUser(8000, "vibioh")),
 			},
 			NewUser(8000, "vibioh"),
 		},
 		"not an User": {
 			args{
-				ctx: context.WithValue(context.TODO(), ctxUserKey, args{}),
+				ctx: context.WithValue(context.Background(), ctxUserKey, args{}),
 			},
 			User{},
 		},
