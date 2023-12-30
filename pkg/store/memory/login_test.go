@@ -5,6 +5,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/ViBiOh/auth/v2/pkg/argon"
 	"github.com/ViBiOh/auth/v2/pkg/ident"
 	"github.com/ViBiOh/auth/v2/pkg/model"
 	"golang.org/x/crypto/bcrypt"
@@ -13,7 +14,12 @@ import (
 func TestLogin(t *testing.T) {
 	t.Parallel()
 
-	passwordValue, err := bcrypt.GenerateFromPassword([]byte("password"), bcrypt.DefaultCost)
+	bcryptPassword, err := bcrypt.GenerateFromPassword([]byte("password"), bcrypt.DefaultCost)
+	if err != nil {
+		t.Errorf("generate password: %s", err)
+	}
+
+	argonPassword, err := argon.GenerateFromPassword("password")
 	if err != nil {
 		t.Errorf("generate password: %s", err)
 	}
@@ -22,7 +28,11 @@ func TestLogin(t *testing.T) {
 		ident: map[string]basicUser{
 			"admin": {
 				model.NewUser(1, "admin"),
-				passwordValue,
+				bcryptPassword,
+			},
+			"admin_migrated": {
+				model.NewUser(1, "admin"),
+				[]byte(argonPassword),
 			},
 		},
 	}
@@ -68,6 +78,14 @@ func TestLogin(t *testing.T) {
 			model.NewUser(1, "admin"),
 			nil,
 		},
+		"success argon": {
+			args{
+				login:    "admin_migrated",
+				password: "password",
+			},
+			model.NewUser(1, "admin"),
+			nil,
+		},
 	}
 
 	for intention, testCase := range cases {
@@ -76,7 +94,7 @@ func TestLogin(t *testing.T) {
 		t.Run(intention, func(t *testing.T) {
 			t.Parallel()
 
-			got, gotErr := instance.Login(context.TODO(), testCase.args.login, testCase.args.password)
+			got, gotErr := instance.Login(context.Background(), testCase.args.login, testCase.args.password)
 
 			failed := false
 
@@ -149,7 +167,7 @@ func TestIsAuthorized(t *testing.T) {
 		t.Run(intention, func(t *testing.T) {
 			t.Parallel()
 
-			if got := instance.IsAuthorized(context.TODO(), testCase.args.user, testCase.args.profile); got != testCase.want {
+			if got := instance.IsAuthorized(context.Background(), testCase.args.user, testCase.args.profile); got != testCase.want {
 				t.Errorf("IsAuthorized() = %t, want %t", got, testCase.want)
 			}
 		})
