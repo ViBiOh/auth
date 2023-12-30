@@ -52,6 +52,14 @@ func TestLogin(t *testing.T) {
 			model.User{},
 			ident.ErrInvalidCredentials,
 		},
+		"too long password": {
+			args{
+				login:    "admin",
+				password: "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod1",
+			},
+			model.User{},
+			ident.ErrTooLongPassword,
+		},
 		"success": {
 			args{
 				login:    "admin",

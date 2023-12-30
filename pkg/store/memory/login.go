@@ -15,6 +15,11 @@ func (s Service) Login(_ context.Context, login, password string) (model.User, e
 		return model.User{}, ident.ErrInvalidCredentials
 	}
 
+	rawPassword := []byte(password)
+	if len(rawPassword) > ident.MaxPasswordLength {
+		return model.User{}, ident.ErrTooLongPassword
+	}
+
 	if err := bcrypt.CompareHashAndPassword(user.password, []byte(password)); err != nil {
 		return model.User{}, ident.ErrInvalidCredentials
 	}

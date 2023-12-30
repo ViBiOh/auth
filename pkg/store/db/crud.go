@@ -45,7 +45,7 @@ INSERT INTO
   password
 ) VALUES (
   $1,
-  crypt($2, gen_salt('bf',8))
+  crypt($2, gen_salt('bf',10))
 ) RETURNING id
 `
 
@@ -70,7 +70,7 @@ const updatePasswordQuery = `
 UPDATE
   auth.login
 SET
-  password = crypt($2, gen_salt('bf',8))
+  password = crypt($2, gen_salt('bf',10))
 WHERE
   id = $1
 `

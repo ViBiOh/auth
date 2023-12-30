@@ -8,6 +8,8 @@ import (
 	"github.com/ViBiOh/auth/v2/pkg/model"
 )
 
+const MaxPasswordLength = 72
+
 var (
 	// ErrMalformedAuth occurs when authorization content is malformed
 	ErrMalformedAuth = errors.New("malformed authorization content")
@@ -17,6 +19,9 @@ var (
 
 	// ErrInvalidCredentials occurs when credentials failed
 	ErrInvalidCredentials = errors.New("invalid credentials")
+
+	// ErrTooLongPassword occurs when password is too long
+	ErrTooLongPassword = errors.New("password is too long, limit is 72 bytes")
 )
 
 // Provider provides methods for dealing with identification

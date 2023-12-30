@@ -17,7 +17,7 @@ func TestFlags(t *testing.T) {
 		want string
 	}{
 		"simple": {
-			"Usage of simple:\n  -profiles string\n    \t[memory] Users profiles in the form 'id:profile1|profile2,id2:profile1' ${SIMPLE_PROFILES}\n  -users string\n    \t[memory] Users credentials in the form 'id:login:password,id2:login2:password2' ${SIMPLE_USERS}\n",
+			"Usage of simple:\n  -profiles string slice\n    \t[memory] Users profiles in the form 'id:profile1|profile2' ${SIMPLE_PROFILES}, as a string slice, environment variable separated by \",\"\n  -users string slice\n    \t[memory] Users credentials in the form 'id:login:password' ${SIMPLE_USERS}, as a string slice, environment variable separated by \",\"\n",
 		},
 	}
 
@@ -45,7 +45,7 @@ func TestLoadIdent(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
-		ident string
+		idents []string
 	}
 
 	cases := map[string]struct {
@@ -54,36 +54,34 @@ func TestLoadIdent(t *testing.T) {
 		wantErr error
 	}{
 		"empty": {
-			args{
-				ident: "",
-			},
+			args{},
 			nil,
 			nil,
 		},
 		"invalid format": {
 			args{
-				ident: "1:vibioh",
+				idents: []string{"1:vibioh"},
 			},
 			nil,
 			errors.New("invalid format for user ident `1:vibioh`"),
 		},
 		"invalid number": {
 			args{
-				ident: "first:vibioh:secret",
+				idents: []string{"first:vibioh:secret"},
 			},
 			nil,
 			errors.New("strconv.ParseUint: parsing \"first\": invalid syntax"),
 		},
 		"same id": {
 			args{
-				ident: "1:vibioh:secret,1:guest:password",
+				idents: []string{"1:vibioh:secret", "1:guest:password"},
 			},
 			nil,
 			errors.New("id already exists for user ident `1:guest:password`"),
 		},
 		"multiple": {
 			args{
-				ident: "1:VIBIOH:secret,2:guest:password",
+				idents: []string{"1:VIBIOH:secret", "2:guest:password"},
 			},
 			map[string]basicUser{
 				"vibioh": {
@@ -105,7 +103,7 @@ func TestLoadIdent(t *testing.T) {
 		t.Run(intention, func(t *testing.T) {
 			t.Parallel()
 
-			got, gotErr := loadIdent(testCase.args.ident)
+			got, gotErr := loadIdent(testCase.args.idents)
 
 			failed := false
 
@@ -130,7 +128,7 @@ func TestLoadAuth(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
-		auth string
+		auths []string
 	}
 
 	cases := map[string]struct {
@@ -139,29 +137,27 @@ func TestLoadAuth(t *testing.T) {
 		wantErr error
 	}{
 		"empty": {
-			args{
-				auth: "",
-			},
+			args{},
 			nil,
 			nil,
 		},
 		"invalid format": {
 			args{
-				auth: "admin",
+				auths: []string{"admin"},
 			},
 			nil,
 			errors.New("invalid format of user auth `admin`"),
 		},
 		"invalid number": {
 			args{
-				auth: "first:admin",
+				auths: []string{"first:admin"},
 			},
 			nil,
 			errors.New("strconv.ParseUint: parsing \"first\": invalid syntax"),
 		},
 		"multiple": {
 			args{
-				auth: "1:admin|user,2:guest",
+				auths: []string{"1:admin|user", "2:guest"},
 			},
 			map[uint64][]string{
 				1: {"admin", "user"},
@@ -177,7 +173,7 @@ func TestLoadAuth(t *testing.T) {
 		t.Run(intention, func(t *testing.T) {
 			t.Parallel()
 
-			got, gotErr := loadAuth(testCase.args.auth)
+			got, gotErr := loadAuth(testCase.args.auths)
 
 			failed := false
 
