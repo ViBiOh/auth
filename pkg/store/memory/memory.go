@@ -30,7 +30,7 @@ type Config struct {
 func Flags(fs *flag.FlagSet, prefix string, overrides ...flags.Override) *Config {
 	var config Config
 
-	flags.New("Users", "Users credentials in the form 'id:login:password'").Prefix(prefix).DocPrefix("memory").StringSliceVar(fs, &config.Idents, nil, overrides)
+	flags.New("Users", "Users credentials in the form 'id:login:password'").Prefix(prefix).DocPrefix("memory").EnvSeparator("|").StringSliceVar(fs, &config.Idents, nil, overrides)
 	flags.New("Profiles", "Users profiles in the form 'id:profile1|profile2'").Prefix(prefix).DocPrefix("memory").StringSliceVar(fs, &config.Auths, nil, overrides)
 
 	return &config

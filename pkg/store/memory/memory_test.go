@@ -17,7 +17,7 @@ func TestFlags(t *testing.T) {
 		want string
 	}{
 		"simple": {
-			"Usage of simple:\n  -profiles string slice\n    \t[memory] Users profiles in the form 'id:profile1|profile2' ${SIMPLE_PROFILES}, as a string slice, environment variable separated by \",\"\n  -users string slice\n    \t[memory] Users credentials in the form 'id:login:password' ${SIMPLE_USERS}, as a string slice, environment variable separated by \",\"\n",
+			"Usage of simple:\n  -profiles string slice\n    \t[memory] Users profiles in the form 'id:profile1|profile2' ${SIMPLE_PROFILES}, as a string slice, environment variable separated by \",\"\n  -users string slice\n    \t[memory] Users credentials in the form 'id:login:password' ${SIMPLE_USERS}, as a string slice, environment variable separated by \"|\"\n",
 		},
 	}
 

@@ -121,7 +121,7 @@ run:
 ## run-memory: Run memory app
 .PHONY: run-memory
 run-memory:
-	$(MEMORY_RUNNER) -users "1:`htpasswd -nBb admin password`"
+	$(MEMORY_RUNNER) -users "1:admin:`go run ./cmd/argon/ password`"
 
 ## run-db: Run db app
 .PHONY: run-db
