@@ -31,7 +31,7 @@ func (s Service) Login(ctx context.Context, login, password string) (model.User,
 	}
 
 	if err := s.db.Get(ctx, scanner, readUserQuery, strings.ToLower(login)); err != nil {
-		slog.ErrorContext(ctx, "login", "error", err, "login", login)
+		slog.LogAttrs(ctx, slog.LevelError, "login", slog.String("login", login), slog.Any("error", err))
 
 		if err == pgx.ErrNoRows {
 			return model.User{}, ident.ErrInvalidCredentials
@@ -52,7 +52,7 @@ func (s Service) Login(ctx context.Context, login, password string) (model.User,
 			user.Password = password
 
 			if err := s.UpdatePassword(ctx, user); err != nil {
-				slog.ErrorContext(ctx, "update password to argon2", "error", err)
+				slog.LogAttrs(ctx, slog.LevelError, "update password to argon2", slog.Any("error", err))
 			}
 
 			user.Password = ""
@@ -84,7 +84,7 @@ func (s Service) IsAuthorized(ctx context.Context, user model.User, profile stri
 	}
 
 	if err := s.db.Get(ctx, scanner, readLoginProfile, user.ID, profile); err != nil {
-		slog.ErrorContext(ctx, "authorized", "error", err, "login", user.Login)
+		slog.LogAttrs(ctx, slog.LevelError, "authorized", slog.String("login", user.Login), slog.Any("error", err))
 
 		return false
 	}
