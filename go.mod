@@ -11,7 +11,7 @@ require (
 	github.com/stretchr/testify v1.8.4
 	go.opentelemetry.io/otel/trace v1.23.1
 	go.uber.org/mock v0.4.0
-	golang.org/x/crypto v0.18.0
+	golang.org/x/crypto v0.19.0
 )
 
 require (
@@ -39,7 +39,7 @@ require (
 	go.opentelemetry.io/proto/otlp v1.1.0 // indirect
 	golang.org/x/net v0.20.0 // indirect
 	golang.org/x/sync v0.5.0 // indirect
-	golang.org/x/sys v0.16.0 // indirect
+	golang.org/x/sys v0.17.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240125205218-1f4bbc51befe // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240125205218-1f4bbc51befe // indirect
