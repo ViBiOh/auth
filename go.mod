@@ -7,7 +7,7 @@ toolchain go1.22.0
 require (
 	github.com/ViBiOh/flags v1.5.0
 	github.com/ViBiOh/httputils/v4 v4.72.0
-	github.com/jackc/pgx/v5 v5.5.3
+	github.com/jackc/pgx/v5 v5.5.4
 	github.com/stretchr/testify v1.9.0
 	go.opentelemetry.io/otel/trace v1.24.0
 	go.uber.org/mock v0.4.0
