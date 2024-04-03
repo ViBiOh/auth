@@ -56,8 +56,6 @@ func TestIsMatching(t *testing.T) {
 	}
 
 	for intention, testCase := range cases {
-		intention, testCase := intention, testCase
-
 		t.Run(intention, func(t *testing.T) {
 			t.Parallel()
 
@@ -126,8 +124,6 @@ func TestGetUser(t *testing.T) {
 	}
 
 	for intention, testCase := range cases {
-		intention, testCase := intention, testCase
-
 		t.Run(intention, func(t *testing.T) {
 			t.Parallel()
 
@@ -193,8 +189,6 @@ func TestOnError(t *testing.T) {
 	}
 
 	for intention, testCase := range cases {
-		intention, testCase := intention, testCase
-
 		t.Run(intention, func(t *testing.T) {
 			t.Parallel()
 

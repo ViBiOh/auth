@@ -74,8 +74,6 @@ func TestGet(t *testing.T) {
 	}
 
 	for intention, testCase := range cases {
-		intention, testCase := intention, testCase
-
 		t.Run(intention, func(t *testing.T) {
 			t.Parallel()
 
@@ -157,8 +155,6 @@ func TestCreate(t *testing.T) {
 	}
 
 	for intention, testCase := range cases {
-		intention, testCase := intention, testCase
-
 		t.Run(intention, func(t *testing.T) {
 			t.Parallel()
 
@@ -229,8 +225,6 @@ func TestUpdate(t *testing.T) {
 	}
 
 	for intention, testCase := range cases {
-		intention, testCase := intention, testCase
-
 		t.Run(intention, func(t *testing.T) {
 			t.Parallel()
 
@@ -301,8 +295,6 @@ func TestDelete(t *testing.T) {
 	}
 
 	for intention, testCase := range cases {
-		intention, testCase := intention, testCase
-
 		t.Run(intention, func(t *testing.T) {
 			t.Parallel()
 
@@ -469,8 +461,6 @@ func TestCheck(t *testing.T) {
 	}
 
 	for intention, testCase := range cases {
-		intention, testCase := intention, testCase
-
 		t.Run(intention, func(t *testing.T) {
 			t.Parallel()
 
