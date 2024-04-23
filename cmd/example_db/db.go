@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"flag"
-	"log"
 	"os"
 
 	"github.com/ViBiOh/auth/v2/pkg/ident/basic"
@@ -30,9 +29,7 @@ func main() {
 
 	dbConfig := db.Flags(fs, "db")
 
-	if err := fs.Parse(os.Args[1:]); err != nil {
-		log.Fatal(err)
-	}
+	_ = fs.Parse(os.Args[1:])
 
 	logger.Init(loggerConfig)
 
