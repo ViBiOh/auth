@@ -1,7 +1,6 @@
 # auth
 
 [![Build](https://github.com/ViBiOh/auth/workflows/Build/badge.svg)](https://github.com/ViBiOh/auth/actions)
-[![codecov](https://codecov.io/gh/ViBiOh/auth/branch/main/graph/badge.svg)](https://codecov.io/gh/ViBiOh/auth)
 
 Authentification for apps in microservices.
 
