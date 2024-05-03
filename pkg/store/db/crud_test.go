@@ -38,7 +38,6 @@ func TestGet(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mockDatabase := mocks.NewDatabase(ctrl)
 
@@ -107,7 +106,6 @@ func TestCreate(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mockDatabase := mocks.NewDatabase(ctrl)
 
@@ -164,7 +162,6 @@ func TestUpdate(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mockDatabase := mocks.NewDatabase(ctrl)
 
@@ -219,7 +216,6 @@ func TestUpdatePassword(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mockDatabase := mocks.NewDatabase(ctrl)
 
@@ -273,7 +269,6 @@ func TestDelete(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mockDatabase := mocks.NewDatabase(ctrl)
 

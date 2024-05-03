@@ -78,7 +78,6 @@ func TestGet(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			authStorage := mocks.NewStorage(ctrl)
 			authProvider := mocks.NewProvider(ctrl)
@@ -159,7 +158,6 @@ func TestCreate(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			authStorage := mocks.NewStorage(ctrl)
 
@@ -229,7 +227,6 @@ func TestUpdate(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			authStorage := mocks.NewStorage(ctrl)
 
@@ -299,7 +296,6 @@ func TestDelete(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			authStorage := mocks.NewStorage(ctrl)
 
@@ -465,7 +461,6 @@ func TestCheck(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			authStorage := mocks.NewStorage(ctrl)
 			authProvider := mocks.NewProvider(ctrl)
