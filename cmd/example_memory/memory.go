@@ -30,9 +30,9 @@ func main() {
 
 	_ = fs.Parse(os.Args[1:])
 
-	logger.Init(loggerConfig)
-
 	ctx := context.Background()
+
+	logger.Init(ctx, loggerConfig)
 
 	telemetryService, err := telemetry.New(ctx, telemetryConfig)
 	logger.FatalfOnErr(ctx, err, "create tracer")
