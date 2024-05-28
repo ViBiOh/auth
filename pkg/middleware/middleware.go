@@ -88,11 +88,7 @@ func (s Service) IsAuthenticated(r *http.Request) (ident.Provider, model.User, e
 		}
 
 		user, err := provider.GetUser(ctx, authContent)
-		if err != nil {
-			return provider, user, err
-		}
-
-		return provider, user, nil
+		return provider, user, err
 	}
 
 	return nil, model.User{}, ErrNoMatchingProvider
@@ -112,6 +108,6 @@ func onHandlerFail(w http.ResponseWriter, r *http.Request, err error, provider i
 	} else if provider != nil {
 		provider.OnError(w, r, err)
 	} else {
-		httperror.BadRequest(r.Context(), w, err)
+		httperror.Unauthorized(r.Context(), w, err)
 	}
 }

@@ -3,11 +3,13 @@ package basic
 import (
 	"context"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/ViBiOh/auth/v2/pkg/ident"
+	"github.com/ViBiOh/auth/v2/pkg/middleware"
 	"github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/httputils/v4/pkg/httperror"
 )
@@ -69,6 +71,10 @@ func (s Service) OnError(w http.ResponseWriter, r *http.Request, err error) {
 	realm := ""
 	if len(s.realm) != 0 {
 		realm = fmt.Sprintf("realm=\"%s\" ", s.realm)
+	}
+
+	if errors.Is(err, middleware.ErrEmptyAuth) {
+		err = nil // We don't want to log it
 	}
 
 	w.Header().Add("WWW-Authenticate", fmt.Sprintf("Basic %scharset=\"UTF-8\"", realm))

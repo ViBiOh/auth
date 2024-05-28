@@ -240,7 +240,7 @@ func TestOnHandlerFail(t *testing.T) {
 			ErrNoMatchingProvider,
 			nil,
 			"no matching provider for Authorization content\n",
-			http.StatusBadRequest,
+			http.StatusUnauthorized,
 		},
 	}
 
