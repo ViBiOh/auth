@@ -22,9 +22,9 @@ type Service struct {
 }
 
 var (
-	_ auth.Provider  = Service{}
-	_ auth.Storage   = Service{}
-	_ basic.Provider = Service{}
+	_ auth.Provider       = Service{}
+	_ auth.Storage        = Service{}
+	_ basic.LoginProvider = Service{}
 )
 
 func New(db Database) Service {

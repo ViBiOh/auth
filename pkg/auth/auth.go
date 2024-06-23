@@ -14,11 +14,9 @@ var ErrForbidden = errors.New("forbidden access")
 
 // Provider provides methods for dealing with identification
 type Provider interface {
-	// IsAuthorized checks if given user is authorized
 	IsAuthorized(context.Context, model.User, string) bool
 }
 
-// Storage defines interaction with storage from User
 type Storage interface {
 	DoAtomic(context.Context, func(context.Context) error) error
 	Get(context.Context, uint64) (model.User, error)
@@ -27,7 +25,6 @@ type Storage interface {
 	Delete(context.Context, model.User) error
 }
 
-// Service defines interaction with storage and provider from User
 type Service interface {
 	Get(context.Context, uint64) (model.User, error)
 	Create(context.Context, model.User) (model.User, error)

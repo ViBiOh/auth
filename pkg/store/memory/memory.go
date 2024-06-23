@@ -13,8 +13,8 @@ import (
 )
 
 var (
-	_ auth.Provider  = Service{}
-	_ basic.Provider = Service{}
+	_ auth.Provider       = Service{}
+	_ basic.LoginProvider = Service{}
 )
 
 type Service struct {

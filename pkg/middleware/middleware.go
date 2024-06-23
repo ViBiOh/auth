@@ -18,10 +18,7 @@ import (
 var (
 	_ httpmodel.Middleware = Service{}.Middleware
 
-	// ErrEmptyAuth occurs when authorization content is not found
-	ErrEmptyAuth = errors.New("empty authorization content")
-
-	// ErrNoMatchingProvider occurs no provider is found for given auth
+	ErrEmptyAuth          = errors.New("empty authorization content")
 	ErrNoMatchingProvider = errors.New("no matching provider for Authorization content")
 )
 

@@ -5,31 +5,25 @@ ifneq ("$(wildcard .env)","")
 	export
 endif
 
-APP_NAME = bcrypt
+APP_NAME = argon
 PACKAGES ?= ./...
 
-MAIN_SOURCE = cmd/bcrypt/bcrypt.go
+MAIN_SOURCE = ./cmd/argon/
 MAIN_RUNNER = go run $(MAIN_SOURCE)
 ifeq ($(DEBUG), true)
 	MAIN_RUNNER = dlv debug $(MAIN_SOURCE) --
 endif
 
-MEMORY_SOURCE = cmd/example_memory/memory.go
+MEMORY_SOURCE = ./cmd/example_memory/
 MEMORY_RUNNER = go run $(MEMORY_SOURCE)
 ifeq ($(DEBUG), true)
 	MEMORY_RUNNER = dlv debug $(MEMORY_SOURCE)) --
 endif
 
-DB_SOURCE = cmd/example_db/db.go
+DB_SOURCE = ./cmd/example_db/
 DB_RUNNER = go run $(DB_SOURCE)
 ifeq ($(DEBUG), true)
 	DB_RUNNER = dlv debug $(DB_SOURCE)) --
-endif
-
-SCORE_SOURCE = cmd/bcrypt_score/bcrypt_score.go
-SCORE_RUNNER = go run $(SCORE_SOURCE)
-ifeq ($(DEBUG), true)
-	SCORE_RUNNER = dlv debug $(SCORE_SOURCE)) --
 endif
 
 .DEFAULT_GOAL := app
@@ -127,8 +121,3 @@ run-memory:
 .PHONY: run-db
 run-db:
 	$(DB_RUNNER)
-
-## run: Locally compute the best bcrypt score
-.PHONY: run-score
-run-score:
-	$(SCORE_RUNNER)

@@ -13,10 +13,10 @@ You can use a simple login/password file for authentication.
 Write user's credentials with the following format :
 
 ```bash
-[id]:[login]:[bcrypt password],[id2]:[login2]:[bcrypt password2]
+[id]:[login]:[argon2id password],[id2]:[login2]:[argon2id password2]
 ```
 
-You can generate bcrypted password using `go run cmd/bcrypt/bcrypt.go "password"`.
+You can generate argon2id password using `go run ./cmd/argon/ "password"`.
 
 ## Build
 
@@ -26,4 +26,4 @@ In order to build the whole stuff, run the following command.
 make
 ```
 
-Password encrypter accepts one argument, the password, and output the bcrypted one.
+Password encrypter accepts one argument, the password, and output the argon2id one.

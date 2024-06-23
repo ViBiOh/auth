@@ -9,7 +9,6 @@ import (
 	"github.com/ViBiOh/auth/v2/pkg/ident"
 	"github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/jackc/pgx/v5"
-	"golang.org/x/crypto/bcrypt"
 )
 
 const readUserQuery = `
@@ -39,22 +38,8 @@ func (s Service) Login(ctx context.Context, login, password string) (model.User,
 		return model.User{}, ident.ErrUnavailableService
 	}
 
-	switch {
-	case strings.HasPrefix(string(user.Password), "$argon2id"):
+	if strings.HasPrefix(string(user.Password), "$argon2id") {
 		if argon.CompareHashAndPassword(user.Password, password) == nil {
-			user.Password = ""
-
-			return user, nil
-		}
-
-	default:
-		if bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) == nil {
-			user.Password = password
-
-			if err := s.UpdatePassword(ctx, user); err != nil {
-				slog.LogAttrs(ctx, slog.LevelError, "update password to argon2", slog.Any("error", err))
-			}
-
 			user.Password = ""
 
 			return user, nil

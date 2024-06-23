@@ -8,16 +8,10 @@ import (
 	"github.com/ViBiOh/auth/v2/pkg/argon"
 	"github.com/ViBiOh/auth/v2/pkg/ident"
 	"github.com/ViBiOh/auth/v2/pkg/model"
-	"golang.org/x/crypto/bcrypt"
 )
 
 func TestLogin(t *testing.T) {
 	t.Parallel()
-
-	bcryptPassword, err := bcrypt.GenerateFromPassword([]byte("password"), bcrypt.DefaultCost)
-	if err != nil {
-		t.Errorf("generate password: %s", err)
-	}
 
 	argonPassword, err := argon.GenerateFromPassword("password")
 	if err != nil {
@@ -27,10 +21,6 @@ func TestLogin(t *testing.T) {
 	instance := Service{
 		ident: map[string]basicUser{
 			"admin": {
-				model.NewUser(1, "admin"),
-				bcryptPassword,
-			},
-			"admin_migrated": {
 				model.NewUser(1, "admin"),
 				[]byte(argonPassword),
 			},
@@ -72,7 +62,7 @@ func TestLogin(t *testing.T) {
 		},
 		"success argon": {
 			args{
-				login:    "admin_migrated",
+				login:    "admin",
 				password: "password",
 			},
 			model.NewUser(1, "admin"),

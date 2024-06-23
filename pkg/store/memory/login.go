@@ -7,7 +7,6 @@ import (
 	"github.com/ViBiOh/auth/v2/pkg/argon"
 	"github.com/ViBiOh/auth/v2/pkg/ident"
 	"github.com/ViBiOh/auth/v2/pkg/model"
-	"golang.org/x/crypto/bcrypt"
 )
 
 func (s Service) Login(_ context.Context, login, password string) (model.User, error) {
@@ -16,14 +15,8 @@ func (s Service) Login(_ context.Context, login, password string) (model.User, e
 		return model.User{}, ident.ErrInvalidCredentials
 	}
 
-	switch {
-	case strings.HasPrefix(string(user.password), "$argon2id"):
+	if strings.HasPrefix(string(user.password), "$argon2id") {
 		if argon.CompareHashAndPassword(string(user.password), password) == nil {
-			return user.User, nil
-		}
-
-	default:
-		if bcrypt.CompareHashAndPassword(user.password, []byte(password)) == nil {
 			return user.User, nil
 		}
 	}

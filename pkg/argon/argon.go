@@ -13,10 +13,11 @@ import (
 
 // https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#argon2id
 const (
-	ArgonMemory      = 7 * 1024
-	ArgonIterations  = 5
-	ArgonParallelism = 1
-	ArgonKeyLength   = 32
+	Memory      = 7 * 1024
+	Iterations  = 5
+	Parallelism = 1
+	SaltLength  = 23
+	KeyLength   = 32
 )
 
 var (
@@ -27,14 +28,14 @@ var (
 )
 
 func GenerateFromPassword(password string) (string, error) {
-	salt, err := salt(23)
+	salt, err := salt(SaltLength)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("salt: %w", err)
 	}
 
-	hash := argon2.IDKey([]byte(password), salt, ArgonIterations, ArgonMemory, ArgonParallelism, ArgonKeyLength)
+	hash := argon2.IDKey([]byte(password), salt, Iterations, Memory, Parallelism, KeyLength)
 
-	return fmt.Sprintf("$argon2id$v=%d$m=%d,t=%d,p=%d$%s$%s", argon2.Version, ArgonMemory, ArgonIterations, ArgonParallelism, base64.RawStdEncoding.EncodeToString(salt), base64.RawStdEncoding.EncodeToString(hash)), nil
+	return fmt.Sprintf("$argon2id$v=%d$m=%d,t=%d,p=%d$%s$%s", argon2.Version, Memory, Iterations, Parallelism, base64.RawStdEncoding.EncodeToString(salt), base64.RawStdEncoding.EncodeToString(hash)), nil
 }
 
 func salt(length uint) ([]byte, error) {

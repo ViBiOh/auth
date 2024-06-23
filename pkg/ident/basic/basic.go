@@ -18,18 +18,18 @@ const (
 	authPrefix = "Basic "
 )
 
-var _ ident.Provider = &Service{}
+var _ ident.Provider = Service{}
 
-type Provider interface {
+type LoginProvider interface {
 	Login(ctx context.Context, login, password string) (model.User, error)
 }
 
 type Service struct {
-	provider Provider
+	provider LoginProvider
 	realm    string
 }
 
-func New(provider Provider, realm string) Service {
+func New(provider LoginProvider, realm string) Service {
 	return Service{
 		provider: provider,
 		realm:    realm,
