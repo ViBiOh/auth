@@ -47,5 +47,5 @@ func main() {
 	go appServer.Start(healthService.EndCtx(), httputils.Handler(nil, healthService, middlewareApp.Middleware))
 
 	healthService.WaitForTermination(appServer.Done())
-	server.GracefulWait(appServer.Done())
+	health.WaitAll(appServer.Done())
 }
