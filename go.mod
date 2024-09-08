@@ -6,8 +6,8 @@ toolchain go1.23.0
 
 require (
 	github.com/ViBiOh/flags v1.6.0
-	github.com/ViBiOh/httputils/v4 v4.80.4
-	github.com/jackc/pgx/v5 v5.6.0
+	github.com/ViBiOh/httputils/v4 v4.80.5
+	github.com/jackc/pgx/v5 v5.7.0
 	github.com/stretchr/testify v1.9.0
 	go.opentelemetry.io/otel/trace v1.29.0
 	go.uber.org/mock v0.4.0
@@ -37,12 +37,12 @@ require (
 	go.opentelemetry.io/otel/sdk v1.29.0 // indirect
 	go.opentelemetry.io/otel/sdk/metric v1.29.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.3.1 // indirect
-	golang.org/x/net v0.28.0 // indirect
+	golang.org/x/net v0.29.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
 	golang.org/x/sys v0.25.0 // indirect
 	golang.org/x/text v0.18.0 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20240827150818-7e3bb234dfed // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240827150818-7e3bb234dfed // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20240903143218-8af14fe29dc1 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240903143218-8af14fe29dc1 // indirect
 	google.golang.org/grpc v1.66.0 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
