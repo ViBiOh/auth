@@ -90,7 +90,7 @@ mocks:
 	find . -name "mocks" -type d -exec rm -r "{}" \+
 	go generate -run mockgen $(PACKAGES)
 	mockgen -destination pkg/mocks/pgx.go -package mocks  -mock_names Row=Row github.com/jackc/pgx/v5 Row
-	fieldalignment -fix -test=false $(PACKAGES)
+	fieldalignment -fix -test=false $(PACKAGES) || true
 
 ## test: Shortcut to launch all the test tasks (unit, functional and integration).
 .PHONY: test
