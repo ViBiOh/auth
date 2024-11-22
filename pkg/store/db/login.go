@@ -40,7 +40,7 @@ func (s Service) Login(ctx context.Context, login, password string) (model.User,
 	}
 
 	switch {
-	case strings.HasPrefix(string(user.Password), "$argon2id"):
+	case strings.HasPrefix(user.Password, "$argon2id"):
 		if argon.CompareHashAndPassword(user.Password, password) == nil {
 			user.Password = ""
 
