@@ -7,7 +7,7 @@ import (
 	"github.com/ViBiOh/auth/v2/pkg/model"
 )
 
-//go:generate mockgen -source auth.go -destination ../mocks/auth.go -package mocks -mock_names Provider=Provider,Storage=Storage
+//go:generate mockgen -source $GOFILE -destination ../mocks/$GOFILE -package mocks -mock_names Provider=Provider,Storage=Storage
 
 // ErrForbidden occurs when user is identified but not authorized
 var ErrForbidden = errors.New("forbidden access")

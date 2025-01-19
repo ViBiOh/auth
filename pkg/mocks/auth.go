@@ -19,6 +19,7 @@ import (
 
 // Provider is a mock of Provider interface.
 type Provider struct {
+	isgomock struct{}
 	ctrl     *gomock.Controller
 	recorder *ProviderMockRecorder
 }
@@ -56,6 +57,7 @@ func (mr *ProviderMockRecorder) IsAuthorized(arg0, arg1, arg2 any) *gomock.Call 
 
 // Storage is a mock of Storage interface.
 type Storage struct {
+	isgomock struct{}
 	ctrl     *gomock.Controller
 	recorder *StorageMockRecorder
 }
@@ -151,6 +153,7 @@ func (mr *StorageMockRecorder) Update(arg0, arg1 any) *gomock.Call {
 
 // MockService is a mock of Service interface.
 type MockService struct {
+	isgomock struct{}
 	ctrl     *gomock.Controller
 	recorder *MockServiceMockRecorder
 }

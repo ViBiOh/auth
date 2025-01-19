@@ -8,7 +8,7 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-//go:generate mockgen -source db.go -destination ../../mocks/db.go -package mocks -mock_names Database=Database
+//go:generate mockgen -source $GOFILE -destination ../../mocks/$GOFILE -package mocks -mock_names Database=Database
 
 type Database interface {
 	Get(context.Context, func(pgx.Row) error, string, ...any) error
