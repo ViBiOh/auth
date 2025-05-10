@@ -99,7 +99,51 @@ func parseHash(encoded string) (uint32, uint32, uint8, []byte, []byte, error) {
 			}
 
 		case 3:
-			if _, err := fmt.Sscanf(part, "m=%d,t=%d,p=%d", &memory, &iterations, &parallelism); err != nil {
+			var seen, lastEqual, lastStart int
+
+			for position := 0; position < len(part); position++ {
+				if part[position] == '=' {
+					lastEqual = position
+					continue
+				}
+
+				if part[position] == ',' {
+					switch part[lastStart:lastEqual] {
+					case "m":
+						bigMemory, err := strconv.ParseUint(part[lastEqual+1:position], 10, 32)
+						if err != nil {
+							return 0, 0, 0, nil, nil, fmt.Errorf("decode memory `%s`: %w", part, err)
+						}
+
+						seen |= 1 << 0
+						memory = uint32(bigMemory)
+
+					case "t":
+						bigIterations, err := strconv.ParseUint(part[lastEqual+1:position], 10, 32)
+						if err != nil {
+							return 0, 0, 0, nil, nil, fmt.Errorf("decode iteration `%s`: %w", part, err)
+						}
+
+						seen |= 1 << 1
+						iterations = uint32(bigIterations)
+					}
+
+					lastStart = position + 1
+					continue
+				}
+			}
+
+			if part[lastStart:lastEqual] == "p" {
+				bigParallelism, err := strconv.ParseUint(part[lastEqual+1:], 10, 8)
+				if err != nil {
+					return 0, 0, 0, nil, nil, fmt.Errorf("decode parallelism `%s`: %w", part, err)
+				}
+
+				seen |= 1 << 2
+				parallelism = uint8(bigParallelism)
+			}
+
+			if seen != 7 {
 				return 0, 0, 0, nil, nil, fmt.Errorf("decode params `%s`: %w", part, err)
 			}
 

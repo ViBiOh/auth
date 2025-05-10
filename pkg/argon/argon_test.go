@@ -63,7 +63,7 @@ func TestCompareHashAndPassowrd(t *testing.T) {
 			args{
 				content: "$argon2id$v=19$m=a,t=b,p=c$OOcpl5JoznYGLWXiCvejrHnj4KaHp0I$efHnbPwEcvonAQrQR8xBq6X7GgIEHRuii0DRM0egXZM",
 			},
-			errors.New("parse: decode params"),
+			errors.New("parse: decode memory"),
 		},
 		"decode salt": {
 			args{
