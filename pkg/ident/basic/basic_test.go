@@ -66,14 +66,6 @@ func TestIsMatching(t *testing.T) {
 	}
 }
 
-func BenchmarkIsMatching(b *testing.B) {
-	var service Service
-
-	for i := 0; i < b.N; i++ {
-		service.IsMatching("Basic abcdef1234567890")
-	}
-}
-
 func TestGetUser(t *testing.T) {
 	t.Parallel()
 
@@ -210,5 +202,22 @@ func TestOnError(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func BenchmarkIsMatching(b *testing.B) {
+	var service Service
+
+	for i := 0; i < b.N; i++ {
+		service.IsMatching("Basic abcdef1234567890")
+	}
+}
+
+func BenchmarkGetUser(b *testing.B) {
+	service := New(testProvider{}, "")
+	ctx := context.Background()
+
+	for b.Loop() {
+		_, _ = service.GetUser(ctx, "Basic YWRtaW46c2VjcmV0Cg==")
 	}
 }

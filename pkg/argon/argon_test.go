@@ -14,7 +14,7 @@ func TestReversible(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
 
-		password := "correct horse batterye staple"
+		password := "correct horse battery staple"
 
 		encodedHash, err := argon.GenerateFromPassword(password)
 		assert.NoError(t, err)

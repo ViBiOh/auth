@@ -16,6 +16,7 @@ import (
 
 const (
 	authPrefix = "Basic "
+	lenPrefix  = len(authPrefix)
 )
 
 var _ ident.Provider = Service{}
@@ -37,27 +38,27 @@ func New(provider LoginProvider, realm string) Service {
 }
 
 func (s Service) IsMatching(content string) bool {
-	if len(content) < len(authPrefix) {
+	if len(content) < lenPrefix {
 		return false
 	}
 
-	return content[:len(authPrefix)] == authPrefix
+	return content[:lenPrefix] == authPrefix
 }
 
 func (s Service) GetUser(ctx context.Context, content string) (model.User, error) {
-	if len(content) < len(authPrefix) {
+	if len(content) < lenPrefix {
 		return model.User{}, ident.ErrMalformedAuth
 	}
 
-	rawData, err := base64.StdEncoding.DecodeString(content[len(authPrefix):])
+	rawData, err := base64.StdEncoding.DecodeString(content[lenPrefix:])
 	if err != nil {
-		return model.User{}, ident.ErrMalformedAuth
+		return model.User{}, fmt.Errorf("%s: %w", err, ident.ErrMalformedAuth)
 	}
 
 	data := string(rawData)
 
 	sepIndex := strings.Index(data, ":")
-	if sepIndex < 0 {
+	if sepIndex == -1 {
 		return model.User{}, ident.ErrMalformedAuth
 	}
 

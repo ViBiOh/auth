@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"golang.org/x/crypto/argon2"
@@ -25,6 +26,8 @@ var (
 	ErrUnhandledEncodedHash = errors.New("unhandled encoded hash")
 	ErrUnhandledVersion     = errors.New("unhandled version")
 	ErrHashDontMatch        = errors.New("hashes don't match")
+
+	strictBase64Decoder = base64.RawStdEncoding.Strict()
 )
 
 func GenerateFromPassword(password string) (string, error) {
@@ -64,38 +67,58 @@ func CompareHashAndPassword(encoded, password string) error {
 }
 
 func parseHash(encoded string) (uint32, uint32, uint8, []byte, []byte, error) {
-	parts := strings.Split(encoded, "$")
-	if len(parts) != 6 {
+	var version int
+	var memory, iterations uint32
+	var parallelism uint8
+	var salt, hash []byte
+
+	var start int
+	var err error
+	var partCount int
+
+	for index := 0; index < len(encoded); index++ {
+		if encoded[index] != '$' {
+			continue
+		}
+
+		part := encoded[start:index]
+
+		switch partCount {
+		case 1:
+			if part != "argon2id" {
+				return 0, 0, 0, nil, nil, ErrUnhandledEncodedHash
+			}
+
+		case 2:
+			if version, err = strconv.Atoi(strings.TrimPrefix(part, "v=")); err != nil {
+				return 0, 0, 0, nil, nil, fmt.Errorf("decode version `%s` : %w", part, err)
+			}
+
+			if version != argon2.Version {
+				return 0, 0, 0, nil, nil, ErrUnhandledVersion
+			}
+
+		case 3:
+			if _, err := fmt.Sscanf(part, "m=%d,t=%d,p=%d", &memory, &iterations, &parallelism); err != nil {
+				return 0, 0, 0, nil, nil, fmt.Errorf("decode params `%s`: %w", part, err)
+			}
+
+		case 4:
+			salt, err = strictBase64Decoder.DecodeString(part)
+			if err != nil {
+				return 0, 0, 0, nil, nil, fmt.Errorf("decode salt: %w", err)
+			}
+		}
+
+		start = index + 1
+		partCount += 1
+	}
+
+	if partCount != 5 {
 		return 0, 0, 0, nil, nil, ErrInvalidEncodedHash
 	}
 
-	if parts[1] != "argon2id" {
-		return 0, 0, 0, nil, nil, ErrUnhandledEncodedHash
-	}
-
-	var version int
-
-	if _, err := fmt.Sscanf(parts[2], "v=%d", &version); err != nil {
-		return 0, 0, 0, nil, nil, fmt.Errorf("decode version: %w", err)
-	}
-
-	if version != argon2.Version {
-		return 0, 0, 0, nil, nil, ErrUnhandledVersion
-	}
-
-	var memory, iterations uint32
-	var parallelism uint8
-
-	if _, err := fmt.Sscanf(parts[3], "m=%d,t=%d,p=%d", &memory, &iterations, &parallelism); err != nil {
-		return 0, 0, 0, nil, nil, fmt.Errorf("decode params: %w", err)
-	}
-
-	salt, err := base64.RawStdEncoding.Strict().DecodeString(parts[4])
-	if err != nil {
-		return 0, 0, 0, nil, nil, fmt.Errorf("decode salt: %w", err)
-	}
-
-	hash, err := base64.RawStdEncoding.Strict().DecodeString(parts[5])
+	hash, err = strictBase64Decoder.DecodeString(encoded[start:])
 	if err != nil {
 		return 0, 0, 0, nil, nil, fmt.Errorf("decode hash: %w", err)
 	}
