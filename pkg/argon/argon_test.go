@@ -89,3 +89,11 @@ func TestCompareHashAndPassowrd(t *testing.T) {
 		})
 	}
 }
+
+func BenchmarkCompareHashAndPassword(b *testing.B) {
+	encodedHash, _ := argon.GenerateFromPassword("correct horse battery staple")
+
+	for b.Loop() {
+		_ = argon.CompareHashAndPassword(encodedHash, "correct horse battery staple")
+	}
+}
