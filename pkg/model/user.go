@@ -36,5 +36,5 @@ func ReadUser(ctx context.Context) (output User) {
 	}
 
 	output, _ = rawUser.(User)
-	return
+	return output
 }
