@@ -6,25 +6,40 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/ViBiOh/auth/v2/pkg/ident"
 	"github.com/ViBiOh/auth/v2/pkg/middleware"
 	"github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/flags"
+	"github.com/ViBiOh/httputils/v4/pkg/httperror"
+	"github.com/ViBiOh/httputils/v4/pkg/httpjson"
+	"github.com/ViBiOh/httputils/v4/pkg/id"
+	httpmodel "github.com/ViBiOh/httputils/v4/pkg/model"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
 )
+
+const verifierCacheKey = "auth:github:verifier:"
 
 var (
 	signMethod       = jwt.SigningMethodHS256
 	signValidMethods = []string{signMethod.Alg()}
 )
 
+type Cache interface {
+	Load(ctx context.Context, key string) ([]byte, error)
+	Store(ctx context.Context, key string, value any, ttl time.Duration) error
+	Delete(ctx context.Context, keys ...string) error
+}
+
 type Service struct {
-	config     oauth2.Config
-	hmacSecret []byte
+	cache         Cache
+	config        oauth2.Config
+	hmacSecret    []byte
+	jwtExpiration time.Duration
 }
 
 var _ ident.Provider = Service{}
@@ -49,7 +64,7 @@ func Flags(fs *flag.FlagSet, prefix string, overrides ...flags.Override) *Config
 	return &config
 }
 
-func New(config *Config) Service {
+func New(config *Config, cache Cache) Service {
 	return Service{
 		config: oauth2.Config{
 			ClientID:     config.clientID,
@@ -58,7 +73,9 @@ func New(config *Config) Service {
 			RedirectURL:  config.redirectURL,
 			Scopes:       nil,
 		},
-		hmacSecret: []byte(config.hmacSecret),
+		hmacSecret:    []byte(config.hmacSecret),
+		jwtExpiration: config.jwtExpiration,
+		cache:         cache,
 	}
 }
 
@@ -81,10 +98,85 @@ func (s Service) GetUser(ctx context.Context, r *http.Request) (model.User, erro
 	return claim.User, nil
 }
 
-func (s Service) OnError(http.ResponseWriter, *http.Request, error) {
-	panic("unimplemented")
+func (s Service) OnError(w http.ResponseWriter, r *http.Request, err error) {
+	state := id.New()
+	verifier := oauth2.GenerateVerifier()
+
+	if err := s.cache.Store(r.Context(), verifierCacheKey+state, verifier, time.Minute*5); err != nil {
+		httperror.InternalServerError(r.Context(), w, fmt.Errorf("save state: %w", err))
+		return
+	}
+
+	http.Redirect(w, r, s.config.AuthCodeURL(state, oauth2.AccessTypeOffline, oauth2.S256ChallengeOption(verifier)), http.StatusFound)
+}
+
+func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	verifier, err := s.cache.Load(ctx, verifierCacheKey+r.URL.Query().Get("state"))
+	if err != nil {
+		httperror.HandleError(ctx, w, httpmodel.WrapNotFound(fmt.Errorf("state not found: %w", err)))
+		return
+	}
+
+	oauth2Token, err := s.config.Exchange(ctx, r.URL.Query().Get("code"), oauth2.VerifierOption(string(verifier)))
+	if err != nil {
+		httperror.HandleError(ctx, w, httpmodel.WrapUnauthorized(fmt.Errorf("exchange token: %w", err)))
+		return
+	}
+
+	client := s.config.Client(ctx, oauth2Token)
+	resp, err := client.Get("https://api.github.com/user")
+	if err != nil {
+		httperror.InternalServerError(ctx, w, fmt.Errorf("get /user: %w", err))
+		return
+	}
+
+	user, err := httpjson.Read[model.User](resp)
+	if err != nil {
+		httperror.InternalServerError(ctx, w, fmt.Errorf("read /user: %w", err))
+		return
+	}
+
+	token := jwt.NewWithClaims(signMethod, s.newClaim(oauth2Token, user))
+
+	tokenString, err := token.SignedString(s.hmacSecret)
+	if err != nil {
+		httperror.InternalServerError(ctx, w, fmt.Errorf("sign JWT: %w", err))
+		return
+	}
+
+	s.setCallbackCookie(w, r, "auth", tokenString)
 }
 
 func (s Service) jwtKeyFunc(_ *jwt.Token) (any, error) {
 	return s.hmacSecret, nil
+}
+
+func (s Service) newClaim(token *oauth2.Token, user model.User) AuthClaims {
+	now := time.Now()
+
+	return AuthClaims{
+		User:  user,
+		Token: token,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(now.Add(s.jwtExpiration)),
+			IssuedAt:  jwt.NewNumericDate(now),
+			NotBefore: jwt.NewNumericDate(now),
+			Issuer:    "auth",
+			Subject:   user.Login,
+			ID:        strconv.FormatInt(int64(user.ID), 10),
+		},
+	}
+}
+
+func (s Service) setCallbackCookie(w http.ResponseWriter, r *http.Request, name, value string) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     name,
+		Value:    value,
+		MaxAge:   int(s.jwtExpiration.Seconds()),
+		SameSite: http.SameSiteStrictMode,
+		Secure:   true,
+		HttpOnly: true,
+	})
 }
