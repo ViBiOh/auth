@@ -16,25 +16,20 @@ import (
 
 var errTestProvider = errors.New("decode")
 
-type testProvider struct {
-	matching bool
-}
+type testProvider struct{}
 
 func (t testProvider) IsAuthorized(_ context.Context, _ model.User, profile string) bool {
 	return profile == "admin"
 }
 
-func (t testProvider) IsMatching(_ string) bool {
-	return t.matching
-}
-
-func (t testProvider) GetUser(_ context.Context, input string) (model.User, error) {
-	if input == "Basic YWRtaW46cGFzc3dvcmQ=" {
+func (t testProvider) GetUser(_ context.Context, r *http.Request) (model.User, error) {
+	if r.Header.Get("Authorization") == "Basic YWRtaW46cGFzc3dvcmQ=" {
 		return model.NewUser(8000, "admin"), nil
-	} else if input == "Basic" {
+	} else if r.Header.Get("Authorization") == "Basic" {
 		return model.User{}, errTestProvider
 	}
-	return model.User{}, nil
+
+	return model.User{}, ErrNoMatchingProvider
 }
 
 func (t testProvider) OnError(w http.ResponseWriter, _ *http.Request, err error) {
@@ -67,11 +62,11 @@ func TestMiddleware(t *testing.T) {
 		"failure": {
 			New(nil, nil, testProvider{}),
 			httptest.NewRequest(http.MethodGet, "/", nil),
-			"empty authorization content\n",
+			"no matching identification provider\n",
 			http.StatusTeapot,
 		},
 		"success": {
-			New(nil, nil, testProvider{matching: true}),
+			New(nil, nil, testProvider{}),
 			basicAuthRequest,
 			"GET",
 			http.StatusOK,
@@ -124,22 +119,16 @@ func TestIsAuthenticated(t *testing.T) {
 			New(testProvider{}, nil, testProvider{}),
 			httptest.NewRequest(http.MethodGet, "/", nil),
 			model.User{},
-			ErrEmptyAuth,
-		},
-		"no match": {
-			New(testProvider{}, nil, testProvider{}),
-			basicAuthRequest,
-			model.User{},
 			ErrNoMatchingProvider,
 		},
 		"error on get user": {
-			New(testProvider{}, nil, testProvider{matching: true}),
+			New(testProvider{}, nil, testProvider{}),
 			errorRequest,
 			model.User{},
 			errTestProvider,
 		},
 		"valid": {
-			New(testProvider{}, nil, testProvider{matching: true}),
+			New(testProvider{}, nil, testProvider{}),
 			basicAuthRequest,
 			model.NewUser(8000, "admin"),
 			nil,
@@ -232,14 +221,14 @@ func TestOnHandlerFail(t *testing.T) {
 			httptest.NewRequest(http.MethodOptions, "/", nil),
 			ErrNoMatchingProvider,
 			testProvider{},
-			"no matching provider for Authorization content\n",
+			"no matching identification provider\n",
 			http.StatusTeapot,
 		},
 		"no provider": {
 			httptest.NewRequest(http.MethodOptions, "/", nil),
 			ErrNoMatchingProvider,
 			nil,
-			"no matching provider for Authorization content\n",
+			"no matching identification provider\n",
 			http.StatusUnauthorized,
 		},
 	}

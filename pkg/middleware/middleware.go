@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"strings"
 
 	"github.com/ViBiOh/auth/v2/pkg/auth"
 	"github.com/ViBiOh/auth/v2/pkg/ident"
@@ -18,8 +17,8 @@ import (
 var (
 	_ httpmodel.Middleware = Service{}.Middleware
 
-	ErrEmptyAuth          = errors.New("empty authorization content")
-	ErrNoMatchingProvider = errors.New("no matching provider for Authorization content")
+	ErrEmptyAuth          = errors.New("empty identification content")
+	ErrNoMatchingProvider = errors.New("no matching identification provider")
 )
 
 type Service struct {
@@ -74,17 +73,12 @@ func (s Service) IsAuthenticated(r *http.Request) (ident.Provider, model.User, e
 	ctx, end := telemetry.StartSpan(r.Context(), s.tracer, "check_auth", trace.WithSpanKind(trace.SpanKindInternal))
 	defer end(&err)
 
-	authContent := strings.TrimSpace(r.Header.Get("Authorization"))
-	if len(authContent) == 0 {
-		return s.identProviders[0], model.User{}, ErrEmptyAuth
-	}
-
 	for _, provider := range s.identProviders {
-		if !provider.IsMatching(authContent) {
+		user, err := provider.GetUser(ctx, r)
+		if errors.Is(err, ErrEmptyAuth) {
 			continue
 		}
 
-		user, err := provider.GetUser(ctx, authContent)
 		return provider, user, err
 	}
 

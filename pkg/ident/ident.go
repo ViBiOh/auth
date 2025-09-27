@@ -17,7 +17,6 @@ var (
 
 // Provider provides methods for dealing with identification
 type Provider interface {
-	IsMatching(string) bool
-	GetUser(context.Context, string) (model.User, error)
+	GetUser(context.Context, *http.Request) (model.User, error)
 	OnError(http.ResponseWriter, *http.Request, error)
 }

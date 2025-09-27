@@ -37,15 +37,12 @@ func New(provider LoginProvider, realm string) Service {
 	}
 }
 
-func (s Service) IsMatching(content string) bool {
-	if len(content) < lenPrefix {
-		return false
+func (s Service) GetUser(ctx context.Context, r *http.Request) (model.User, error) {
+	content := r.Header.Get("Authorization")
+	if len(content) == 0 || content[:lenPrefix] != authPrefix {
+		return model.User{}, middleware.ErrEmptyAuth
 	}
 
-	return content[:lenPrefix] == authPrefix
-}
-
-func (s Service) GetUser(ctx context.Context, content string) (model.User, error) {
 	if len(content) < lenPrefix {
 		return model.User{}, ident.ErrMalformedAuth
 	}

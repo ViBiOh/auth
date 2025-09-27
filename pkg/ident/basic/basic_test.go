@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/ViBiOh/auth/v2/pkg/ident"
+	"github.com/ViBiOh/auth/v2/pkg/middleware"
 	"github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/httputils/v4/pkg/request"
 )
@@ -24,92 +25,41 @@ func (tp testProvider) Login(_ context.Context, login, password string) (model.U
 	return model.User{}, errInvalidCredentials
 }
 
-func TestIsMatching(t *testing.T) {
-	t.Parallel()
-
-	type args struct {
-		content string
-	}
-
-	cases := map[string]struct {
-		args args
-		want bool
-	}{
-		"short": {
-			args{
-				content: "Bas",
-			},
-			false,
-		},
-		"invalid": {
-			args{
-				content: "c2VjcmV0Cg==",
-			},
-			false,
-		},
-		"valid": {
-			args{
-				content: "Basic c2VjcmV0Cg==",
-			},
-			true,
-		},
-	}
-
-	for intention, testCase := range cases {
-		t.Run(intention, func(t *testing.T) {
-			t.Parallel()
-
-			if got := New(testProvider{}, "").IsMatching(testCase.args.content); got != testCase.want {
-				t.Errorf("IsMatching() = %t, want %t", got, testCase.want)
-			}
-		})
-	}
-}
-
 func TestGetUser(t *testing.T) {
 	t.Parallel()
 
-	type args struct {
-		content string
-	}
-
 	cases := map[string]struct {
-		args    args
+		request *http.Request
 		want    model.User
 		wantErr error
 	}{
-		"invalid string": {
-			args{
-				content: "",
-			},
+		"empty auth": {
+			getRequestWithAuthorization(""),
 			model.User{},
-			ident.ErrMalformedAuth,
+			middleware.ErrEmptyAuth,
+		},
+		"invalid string": {
+			getRequestWithAuthorization("c2VjcmV0Cg=="),
+			model.User{},
+			middleware.ErrEmptyAuth,
 		},
 		"invalid base64": {
-			args{
-				content: "Basic 🤪",
-			},
+			getRequestWithAuthorization("Basic 🤪"),
 			model.User{},
 			ident.ErrMalformedAuth,
 		},
 		"invalid auth": {
-			args{
-				content: "Basic c2VjcmV0Cg==",
-			},
+			getRequestWithAuthorization("Basic c2VjcmV0Cg=="),
 			model.User{},
 			ident.ErrMalformedAuth,
 		},
 		"valid": {
-			args{
-				content: "Basic YWRtaW46c2VjcmV0Cg==",
-			},
+			getRequestWithAuthorization("Basic YWRtaW46c2VjcmV0Cg=="),
 			model.NewUser(1, "admin"),
 			nil,
 		},
 		"invalid": {
-			args{
-				content: "Basic YWRtaW46YWRtaW4K",
-			},
+			getRequestWithAuthorization("Basic YWRtaW46YWRtaW4K"),
 			model.User{},
 			errInvalidCredentials,
 		},
@@ -119,7 +69,7 @@ func TestGetUser(t *testing.T) {
 		t.Run(intention, func(t *testing.T) {
 			t.Parallel()
 
-			got, gotErr := New(testProvider{}, "").GetUser(context.Background(), testCase.args.content)
+			got, gotErr := New(testProvider{}, "").GetUser(context.Background(), testCase.request)
 
 			failed := false
 
@@ -205,19 +155,23 @@ func TestOnError(t *testing.T) {
 	}
 }
 
-func BenchmarkIsMatching(b *testing.B) {
-	var service Service
-
-	for i := 0; i < b.N; i++ {
-		service.IsMatching("Basic abcdef1234567890")
-	}
-}
-
 func BenchmarkGetUser(b *testing.B) {
 	service := New(testProvider{}, "")
 	ctx := context.Background()
 
+	req := getRequestWithAuthorization("Basic YWRtaW46c2VjcmV0Cg==")
+
 	for b.Loop() {
-		_, _ = service.GetUser(ctx, "Basic YWRtaW46c2VjcmV0Cg==")
+		_, _ = service.GetUser(ctx, req)
 	}
+}
+
+func getRequestWithAuthorization(auth string) *http.Request {
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+
+	if len(auth) != 0 {
+		req.Header.Add("Authorization", auth)
+	}
+
+	return req
 }
