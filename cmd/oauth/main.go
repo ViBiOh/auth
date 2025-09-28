@@ -1,133 +1,77 @@
 package main
 
 import (
+	"context"
+	"encoding/json"
+	"flag"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
-	"strconv"
-	"time"
 
-	"github.com/ViBiOh/httputils/v4/pkg/httpjson"
-	"github.com/golang-jwt/jwt/v5"
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/github"
+	"github.com/ViBiOh/auth/v2/pkg/ident/github"
+	"github.com/ViBiOh/auth/v2/pkg/middleware"
+	"github.com/ViBiOh/auth/v2/pkg/model"
+	"github.com/ViBiOh/auth/v2/pkg/store/memory"
+	"github.com/ViBiOh/flags"
+	"github.com/ViBiOh/httputils/v4/pkg/health"
+	"github.com/ViBiOh/httputils/v4/pkg/httperror"
+	"github.com/ViBiOh/httputils/v4/pkg/httputils"
+	"github.com/ViBiOh/httputils/v4/pkg/logger"
+	"github.com/ViBiOh/httputils/v4/pkg/redis"
+	"github.com/ViBiOh/httputils/v4/pkg/server"
 )
-
-const jwtExpiration = time.Hour * 24 * 5
-
-var (
-	signMethod       = jwt.SigningMethodHS256
-	signValidMethods = []string{signMethod.Alg()}
-	cookieMaxAge     = int(jwtExpiration.Seconds())
-)
-
-var hmacSecret = []byte("strong_secret")
-
-type User struct {
-	Login string
-	ID    int
-}
-
-type AuthClaims struct {
-	Login string        `json:"login"`
-	Token *oauth2.Token `json:"token"`
-	jwt.RegisteredClaims
-}
 
 func main() {
-	config := oauth2.Config{
-		ClientID:     os.Getenv("GITHUB_CLIENT_ID"),
-		ClientSecret: os.Getenv("GITHUB_CLIENT_SECRET"),
-		Endpoint:     github.Endpoint,
-		RedirectURL:  "http://127.0.0.1:1080/auth/github/callback",
-		Scopes:       nil,
-	}
+	fs := flag.NewFlagSet("oauth", flag.ExitOnError)
+	fs.Usage = flags.Usage(fs)
 
-	verifier := oauth2.GenerateVerifier()
+	loggerConfig := logger.Flags(fs, "logger")
+	healthConfig := health.Flags(fs, "")
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, config.AuthCodeURL("state", oauth2.AccessTypeOffline, oauth2.S256ChallengeOption(verifier)), http.StatusFound)
+	serverConfig := server.Flags(fs, "")
+	redisConfig := redis.Flags(fs, "redis")
+	githubConfig := github.Flags(fs, "github")
+	memoryConfig := memory.Flags(fs, "memory")
+
+	_ = fs.Parse(os.Args[1:])
+
+	ctx := context.Background()
+
+	logger.Init(ctx, loggerConfig)
+
+	healthService := health.New(ctx, healthConfig)
+
+	redisClient, err := redis.New(ctx, redisConfig, nil, nil)
+	logger.FatalfOnErr(ctx, err, "redis")
+
+	authProvider, err := memory.New(memoryConfig)
+	logger.FatalfOnErr(ctx, err, "memory")
+
+	githubService := github.New(githubConfig, redisClient)
+	authMiddleware := middleware.New(authProvider, nil, githubService)
+
+	authMux := http.NewServeMux()
+	authMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		payload, err := json.Marshal(model.ReadUser(r.Context()))
+		if err != nil {
+			httperror.InternalServerError(r.Context(), w, err)
+			return
+		}
+
+		fmt.Fprintf(w, "%s", payload)
 	})
 
-	http.HandleFunc("/auth/github/check", func(w http.ResponseWriter, r *http.Request) {
-		auth, err := r.Cookie("auth")
-		if err != nil {
-			http.Error(w, "get auth cookie: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		var claim AuthClaims
-
-		if _, err = jwt.ParseWithClaims(auth.Value, &claim, func(token *jwt.Token) (any, error) { return hmacSecret, nil }, jwt.WithValidMethods(signValidMethods)); err != nil {
-			http.Error(w, "parse JWT: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		_, _ = fmt.Fprintf(w, "token=%s, name=%s", claim.Token.AccessToken, claim.Login)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/auth/github/callback", githubService.Callback)
+	mux.HandleFunc("/auth/github/check", func(w http.ResponseWriter, r *http.Request) {
+		user, err := githubService.GetUser(r.Context(), r)
+		fmt.Fprintf(w, "%#v - %s", user, err)
 	})
+	mux.Handle("/", authMiddleware.Middleware(authMux))
 
-	http.HandleFunc("/auth/github/callback", func(w http.ResponseWriter, r *http.Request) {
-		oauth2Token, err := config.Exchange(r.Context(), r.URL.Query().Get("code"), oauth2.VerifierOption(verifier))
-		if err != nil {
-			http.Error(w, "exchange token: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
+	appServer := server.New(serverConfig)
+	go appServer.Start(healthService.EndCtx(), httputils.Handler(mux, healthService))
 
-		client := config.Client(r.Context(), oauth2Token)
-		resp, err := client.Get("https://api.github.com/user")
-		if err != nil {
-			http.Error(w, "get /user: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		user, err := httpjson.Read[User](resp)
-		if err != nil {
-			http.Error(w, "read /user: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		token := jwt.NewWithClaims(signMethod, newClaim(oauth2Token, user))
-
-		tokenString, err := token.SignedString(hmacSecret)
-		if err != nil {
-			http.Error(w, "sign JWT: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		setCallbackCookie(w, r, "auth", tokenString)
-
-		_, _ = fmt.Fprintf(w, "Visit http://127.0.0.1:1080/auth/github/check")
-	})
-
-	log.Printf("listening on http://%s/", "127.0.0.1:1080")
-	log.Fatal(http.ListenAndServe("127.0.0.1:1080", nil))
-}
-
-func newClaim(token *oauth2.Token, user User) AuthClaims {
-	now := time.Now()
-
-	return AuthClaims{
-		Login: user.Login,
-		Token: token,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(now.Add(jwtExpiration)),
-			IssuedAt:  jwt.NewNumericDate(now),
-			NotBefore: jwt.NewNumericDate(now),
-			Issuer:    "auth",
-			Subject:   user.Login,
-			ID:        strconv.Itoa(user.ID),
-		},
-	}
-}
-
-func setCallbackCookie(w http.ResponseWriter, r *http.Request, name, value string) {
-	http.SetCookie(w, &http.Cookie{
-		Name:     name,
-		Value:    value,
-		MaxAge:   cookieMaxAge,
-		SameSite: http.SameSiteStrictMode,
-		Secure:   r.TLS != nil,
-		HttpOnly: true,
-	})
+	healthService.WaitForTermination(appServer.Done())
+	health.WaitAll(appServer.Done())
 }

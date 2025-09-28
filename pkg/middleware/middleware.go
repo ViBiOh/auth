@@ -82,7 +82,7 @@ func (s Service) IsAuthenticated(r *http.Request) (ident.Provider, model.User, e
 		return provider, user, err
 	}
 
-	return nil, model.User{}, ErrNoMatchingProvider
+	return s.identProviders[0], model.User{}, ErrNoMatchingProvider
 }
 
 func (s Service) IsAuthorized(ctx context.Context, profile string) bool {

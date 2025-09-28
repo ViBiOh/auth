@@ -22,7 +22,10 @@ import (
 	"golang.org/x/oauth2/github"
 )
 
-const verifierCacheKey = "auth:github:verifier:"
+const (
+	verifierCacheKey = "auth:github:verifier:"
+	cookieName       = "_auth"
+)
 
 var (
 	signMethod       = jwt.SigningMethodHS256
@@ -59,7 +62,7 @@ func Flags(fs *flag.FlagSet, prefix string, overrides ...flags.Override) *Config
 	flags.New("ClientSecret", "Client Secret").Prefix(prefix).DocPrefix("github").StringVar(fs, &config.clientSecret, "", overrides)
 	flags.New("HmacSecret", "HMAC Secret").Prefix(prefix).DocPrefix("github").StringVar(fs, &config.hmacSecret, "", overrides)
 	flags.New("JwtExpiration", "JWT Expiration").Prefix(prefix).DocPrefix("github").DurationVar(fs, &config.jwtExpiration, time.Hour*24*5, overrides)
-	flags.New("RedirectURL", "URL used for redirection").Prefix(prefix).DocPrefix("github").StringVar(fs, &config.redirectURL, "http://127.0.0.1/auth/github/callback", overrides)
+	flags.New("RedirectURL", "URL used for redirection").Prefix(prefix).DocPrefix("github").StringVar(fs, &config.redirectURL, "http://localhost/auth/github/callback", overrides)
 
 	return &config
 }
@@ -80,7 +83,7 @@ func New(config *Config, cache Cache) Service {
 }
 
 func (s Service) GetUser(ctx context.Context, r *http.Request) (model.User, error) {
-	auth, err := r.Cookie("auth")
+	auth, err := r.Cookie(cookieName)
 	if err != nil {
 		if errors.Is(err, http.ErrNoCookie) {
 			return model.User{}, middleware.ErrEmptyAuth
@@ -113,7 +116,9 @@ func (s Service) OnError(w http.ResponseWriter, r *http.Request, err error) {
 func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	verifier, err := s.cache.Load(ctx, verifierCacheKey+r.URL.Query().Get("state"))
+	state := verifierCacheKey + r.URL.Query().Get("state")
+
+	verifier, err := s.cache.Load(ctx, state)
 	if err != nil {
 		httperror.HandleError(ctx, w, httpmodel.WrapNotFound(fmt.Errorf("state not found: %w", err)))
 		return
@@ -122,6 +127,11 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 	oauth2Token, err := s.config.Exchange(ctx, r.URL.Query().Get("code"), oauth2.VerifierOption(string(verifier)))
 	if err != nil {
 		httperror.HandleError(ctx, w, httpmodel.WrapUnauthorized(fmt.Errorf("exchange token: %w", err)))
+		return
+	}
+
+	if err := s.cache.Delete(ctx, state); err != nil {
+		httperror.HandleError(ctx, w, httpmodel.WrapNotFound(fmt.Errorf("delete state: %w", err)))
 		return
 	}
 
@@ -146,7 +156,9 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.setCallbackCookie(w, r, "auth", tokenString)
+	s.setCallbackCookie(w, cookieName, tokenString)
+
+	http.Redirect(w, r, "http://127.0.0.1:1080/auth/github/check", http.StatusFound)
 }
 
 func (s Service) jwtKeyFunc(_ *jwt.Token) (any, error) {
@@ -170,13 +182,12 @@ func (s Service) newClaim(token *oauth2.Token, user model.User) AuthClaims {
 	}
 }
 
-func (s Service) setCallbackCookie(w http.ResponseWriter, r *http.Request, name, value string) {
+func (s Service) setCallbackCookie(w http.ResponseWriter, name, value string) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     name,
 		Value:    value,
 		MaxAge:   int(s.jwtExpiration.Seconds()),
-		SameSite: http.SameSiteStrictMode,
-		Secure:   true,
+		Secure:   false,
 		HttpOnly: true,
 	})
 }
