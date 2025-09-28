@@ -39,8 +39,9 @@ type Cache interface {
 }
 
 type Service struct {
-	cache         Cache
 	config        oauth2.Config
+	cache         Cache
+	onSuccessPath string
 	hmacSecret    []byte
 	jwtExpiration time.Duration
 }
@@ -52,6 +53,7 @@ type Config struct {
 	clientSecret  string
 	hmacSecret    string
 	redirectURL   string
+	onSuccessPath string
 	jwtExpiration time.Duration
 }
 
@@ -62,7 +64,8 @@ func Flags(fs *flag.FlagSet, prefix string, overrides ...flags.Override) *Config
 	flags.New("ClientSecret", "Client Secret").Prefix(prefix).DocPrefix("github").StringVar(fs, &config.clientSecret, "", overrides)
 	flags.New("HmacSecret", "HMAC Secret").Prefix(prefix).DocPrefix("github").StringVar(fs, &config.hmacSecret, "", overrides)
 	flags.New("JwtExpiration", "JWT Expiration").Prefix(prefix).DocPrefix("github").DurationVar(fs, &config.jwtExpiration, time.Hour*24*5, overrides)
-	flags.New("RedirectURL", "URL used for redirection").Prefix(prefix).DocPrefix("github").StringVar(fs, &config.redirectURL, "http://localhost/auth/github/callback", overrides)
+	flags.New("RedirectURL", "URL used for redirection").Prefix(prefix).DocPrefix("github").StringVar(fs, &config.redirectURL, "http://127.0.0.1/auth/github/callback", overrides)
+	flags.New("OnSuccessPath", "Path for redirecting on success").Prefix(prefix).DocPrefix("github").StringVar(fs, &config.onSuccessPath, "/", overrides)
 
 	return &config
 }
@@ -158,7 +161,7 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 
 	s.setCallbackCookie(w, cookieName, tokenString)
 
-	http.Redirect(w, r, "http://127.0.0.1:1080/auth/github/check", http.StatusFound)
+	http.Redirect(w, r, s.onSuccessPath, http.StatusFound)
 }
 
 func (s Service) jwtKeyFunc(_ *jwt.Token) (any, error) {
