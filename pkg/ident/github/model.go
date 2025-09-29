@@ -6,6 +6,11 @@ import (
 	"golang.org/x/oauth2"
 )
 
+type State struct {
+	Verifier     string `json:"verifier"`
+	Registration string `json:"registration"`
+}
+
 type AuthClaims struct {
 	Token *oauth2.Token `json:"token"`
 	jwt.RegisteredClaims

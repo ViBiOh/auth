@@ -2,6 +2,7 @@ package github
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -105,10 +106,29 @@ func (s Service) GetUser(ctx context.Context, r *http.Request) (model.User, erro
 }
 
 func (s Service) OnError(w http.ResponseWriter, r *http.Request, err error) {
-	state := id.New()
-	verifier := oauth2.GenerateVerifier()
+	s.redirect(w, r, "")
+}
 
-	if err := s.cache.Store(r.Context(), verifierCacheKey+state, verifier, time.Minute*5); err != nil {
+func (s Service) Register(w http.ResponseWriter, r *http.Request) {
+	s.redirect(w, r, r.URL.Query().Get("registration"))
+}
+
+func (s Service) redirect(w http.ResponseWriter, r *http.Request, registration string) {
+	state := id.New()
+
+	verifier := oauth2.GenerateVerifier()
+	payload := State{
+		Verifier:     verifier,
+		Registration: registration,
+	}
+
+	rawPayload, err := json.Marshal(payload)
+	if err != nil {
+		httperror.InternalServerError(r.Context(), w, fmt.Errorf("marshal state: %w", err))
+		return
+	}
+
+	if err := s.cache.Store(r.Context(), verifierCacheKey+state, rawPayload, time.Minute*5); err != nil {
 		httperror.InternalServerError(r.Context(), w, fmt.Errorf("save state: %w", err))
 		return
 	}
@@ -121,13 +141,19 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 
 	state := verifierCacheKey + r.URL.Query().Get("state")
 
-	verifier, err := s.cache.Load(ctx, state)
+	rawPayload, err := s.cache.Load(ctx, state)
 	if err != nil {
 		httperror.HandleError(ctx, w, httpmodel.WrapNotFound(fmt.Errorf("state not found: %w", err)))
 		return
 	}
 
-	oauth2Token, err := s.config.Exchange(ctx, r.URL.Query().Get("code"), oauth2.VerifierOption(string(verifier)))
+	var payload State
+	if err := json.Unmarshal(rawPayload, &payload); err != nil {
+		httperror.HandleError(ctx, w, httpmodel.WrapNotFound(fmt.Errorf("unmarshal state: %w", err)))
+		return
+	}
+
+	oauth2Token, err := s.config.Exchange(ctx, r.URL.Query().Get("code"), oauth2.VerifierOption(payload.Verifier))
 	if err != nil {
 		httperror.HandleError(ctx, w, httpmodel.WrapUnauthorized(fmt.Errorf("exchange token: %w", err)))
 		return
