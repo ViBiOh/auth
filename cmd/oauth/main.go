@@ -63,10 +63,6 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/auth/github/callback", githubService.Callback)
-	mux.HandleFunc("/auth/github/check", func(w http.ResponseWriter, r *http.Request) {
-		user, err := githubService.GetUser(r.Context(), r)
-		fmt.Fprintf(w, "%#v - %s", user, err)
-	})
 	mux.Handle("/", authMiddleware.Middleware(authMux))
 
 	appServer := server.New(serverConfig)

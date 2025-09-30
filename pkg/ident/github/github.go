@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 	"time"
 
@@ -83,6 +84,7 @@ func New(config *Config, cache Cache) Service {
 		hmacSecret:    []byte(config.hmacSecret),
 		jwtExpiration: config.jwtExpiration,
 		cache:         cache,
+		onSuccessPath: config.onSuccessPath,
 	}
 }
 
@@ -187,7 +189,26 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 
 	s.setCallbackCookie(w, cookieName, tokenString)
 
-	http.Redirect(w, r, s.onSuccessPath, http.StatusFound)
+	redirectPath := s.onSuccessPath
+	if len(payload.Registration) != 0 {
+		redirectPath += "?" + url.QueryEscape(payload.Registration)
+	}
+
+	w.Header().Add("X-UA-Compatible", "ie=edge")
+	w.Header().Add("Content-Type", "text/html; charset=UTF-8")
+	w.Header().Add("Cache-Control", "no-cache")
+
+	w.WriteHeader(http.StatusOK)
+
+	fmt.Fprintf(w, `
+<html>
+	<head>
+		<meta http-equiv="refresh" content=1;url="%[1]s">
+	</head>
+	<body>
+		<a href="%[1]s">Continue...</a>
+	</body>
+</html>`, redirectPath)
 }
 
 func (s Service) jwtKeyFunc(_ *jwt.Token) (any, error) {
@@ -216,7 +237,9 @@ func (s Service) setCallbackCookie(w http.ResponseWriter, name, value string) {
 		Name:     name,
 		Value:    value,
 		MaxAge:   int(s.jwtExpiration.Seconds()),
+		Path:     "/",
 		Secure:   false,
 		HttpOnly: true,
+		SameSite: http.SameSiteStrictMode,
 	})
 }
