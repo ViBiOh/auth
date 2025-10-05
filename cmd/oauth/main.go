@@ -8,10 +8,9 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/ViBiOh/auth/v2/pkg/ident/github"
 	"github.com/ViBiOh/auth/v2/pkg/middleware"
 	"github.com/ViBiOh/auth/v2/pkg/model"
-	"github.com/ViBiOh/auth/v2/pkg/store/memory"
+	"github.com/ViBiOh/auth/v2/pkg/provider/github"
 	"github.com/ViBiOh/flags"
 	"github.com/ViBiOh/httputils/v4/pkg/health"
 	"github.com/ViBiOh/httputils/v4/pkg/httperror"
@@ -31,7 +30,6 @@ func main() {
 	serverConfig := server.Flags(fs, "")
 	redisConfig := redis.Flags(fs, "redis")
 	githubConfig := github.Flags(fs, "github")
-	memoryConfig := memory.Flags(fs, "memory")
 
 	_ = fs.Parse(os.Args[1:])
 
@@ -44,11 +42,8 @@ func main() {
 	redisClient, err := redis.New(ctx, redisConfig, nil, nil)
 	logger.FatalfOnErr(ctx, err, "redis")
 
-	authProvider, err := memory.New(memoryConfig)
-	logger.FatalfOnErr(ctx, err, "memory")
-
 	githubService := github.New(githubConfig, redisClient)
-	authMiddleware := middleware.New(authProvider, nil, githubService)
+	authMiddleware := middleware.New(githubService, "", nil)
 
 	authMux := http.NewServeMux()
 	authMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

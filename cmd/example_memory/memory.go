@@ -5,8 +5,8 @@ import (
 	"flag"
 	"os"
 
-	"github.com/ViBiOh/auth/v2/pkg/ident/basic"
 	"github.com/ViBiOh/auth/v2/pkg/middleware"
+	"github.com/ViBiOh/auth/v2/pkg/provider/basic"
 	memoryStore "github.com/ViBiOh/auth/v2/pkg/store/memory"
 	"github.com/ViBiOh/flags"
 	"github.com/ViBiOh/httputils/v4/pkg/health"
@@ -37,7 +37,7 @@ func main() {
 	logger.FatalfOnErr(ctx, err, "create memory store")
 
 	identProvider := basic.New(authProvider, "Example Memory")
-	middlewareApp := middleware.New(authProvider, nil, identProvider)
+	middlewareApp := middleware.New(identProvider, "", nil)
 
 	appServer := server.New(serverConfig)
 	go appServer.Start(healthService.EndCtx(), httputils.Handler(nil, healthService, middlewareApp.Middleware))

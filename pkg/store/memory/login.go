@@ -2,17 +2,17 @@ package memory
 
 import (
 	"context"
+	"net/http"
 	"strings"
 
 	"github.com/ViBiOh/auth/v2/pkg/argon"
-	"github.com/ViBiOh/auth/v2/pkg/ident"
 	"github.com/ViBiOh/auth/v2/pkg/model"
 )
 
-func (s Service) Login(_ context.Context, login, password string) (model.User, error) {
-	user, ok := s.ident[login]
+func (s Service) Login(_ context.Context, _ *http.Request, login, password string) (model.User, error) {
+	user, ok := s.identifications[login]
 	if !ok {
-		return model.User{}, ident.ErrInvalidCredentials
+		return model.User{}, model.ErrInvalidCredentials
 	}
 
 	if strings.HasPrefix(string(user.password), "$argon2id") {
@@ -21,11 +21,11 @@ func (s Service) Login(_ context.Context, login, password string) (model.User, e
 		}
 	}
 
-	return model.User{}, ident.ErrInvalidCredentials
+	return model.User{}, model.ErrInvalidCredentials
 }
 
-func (s Service) IsAuthorized(_ context.Context, user model.User, profile string) bool {
-	profiles, ok := s.auth[user.ID]
+func (s Service) IsAuthorized(_ context.Context, _ *http.Request, user model.User, profile string) bool {
+	profiles, ok := s.authorizations[user.ID]
 	if !ok {
 		return false
 	}

@@ -8,8 +8,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/ViBiOh/auth/v2/pkg/ident"
-	"github.com/ViBiOh/auth/v2/pkg/middleware"
 	"github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/httputils/v4/pkg/request"
 )
@@ -18,7 +16,7 @@ var errInvalidCredentials = errors.New("invalid credentials")
 
 type testProvider struct{}
 
-func (tp testProvider) Login(_ context.Context, login, password string) (model.User, error) {
+func (tp testProvider) Login(_ context.Context, _ *http.Request, login, password string) (model.User, error) {
 	if login == "admin" && password == "secret" {
 		return model.NewUser(1, "admin"), nil
 	}
@@ -36,22 +34,22 @@ func TestGetUser(t *testing.T) {
 		"empty auth": {
 			getRequestWithAuthorization(""),
 			model.User{},
-			middleware.ErrEmptyAuth,
+			model.ErrMalformedContent,
 		},
 		"invalid string": {
 			getRequestWithAuthorization("c2VjcmV0Cg=="),
 			model.User{},
-			middleware.ErrEmptyAuth,
+			model.ErrMalformedContent,
 		},
 		"invalid base64": {
 			getRequestWithAuthorization("Basic 🤪"),
 			model.User{},
-			ident.ErrMalformedAuth,
+			model.ErrMalformedContent,
 		},
 		"invalid auth": {
 			getRequestWithAuthorization("Basic c2VjcmV0Cg=="),
 			model.User{},
-			ident.ErrMalformedAuth,
+			model.ErrMalformedContent,
 		},
 		"valid": {
 			getRequestWithAuthorization("Basic YWRtaW46c2VjcmV0Cg=="),

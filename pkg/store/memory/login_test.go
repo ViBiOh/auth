@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/ViBiOh/auth/v2/pkg/argon"
-	"github.com/ViBiOh/auth/v2/pkg/ident"
 	"github.com/ViBiOh/auth/v2/pkg/model"
 )
 
@@ -19,7 +18,7 @@ func TestLogin(t *testing.T) {
 	}
 
 	instance := Service{
-		ident: map[string]basicUser{
+		identifications: map[string]basicUser{
 			"admin": {
 				model.NewUser(1, "admin"),
 				[]byte(argonPassword),
@@ -42,7 +41,7 @@ func TestLogin(t *testing.T) {
 				login: "anonymous",
 			},
 			model.User{},
-			ident.ErrInvalidCredentials,
+			model.ErrInvalidCredentials,
 		},
 		"invalid password": {
 			args{
@@ -50,7 +49,7 @@ func TestLogin(t *testing.T) {
 				password: "admin",
 			},
 			model.User{},
-			ident.ErrInvalidCredentials,
+			model.ErrInvalidCredentials,
 		},
 		"success": {
 			args{
@@ -74,7 +73,7 @@ func TestLogin(t *testing.T) {
 		t.Run(intention, func(t *testing.T) {
 			t.Parallel()
 
-			got, gotErr := instance.Login(context.Background(), testCase.args.login, testCase.args.password)
+			got, gotErr := instance.Login(context.Background(), nil, testCase.args.login, testCase.args.password)
 
 			failed := false
 
@@ -97,7 +96,7 @@ func TestIsAuthorized(t *testing.T) {
 	t.Parallel()
 
 	instance := Service{
-		auth: map[uint64][]string{
+		authorizations: map[uint64][]string{
 			1: {"admin"},
 			2: nil,
 		},
@@ -145,7 +144,7 @@ func TestIsAuthorized(t *testing.T) {
 		t.Run(intention, func(t *testing.T) {
 			t.Parallel()
 
-			if got := instance.IsAuthorized(context.Background(), testCase.args.user, testCase.args.profile); got != testCase.want {
+			if got := instance.IsAuthorized(context.Background(), nil, testCase.args.user, testCase.args.profile); got != testCase.want {
 				t.Errorf("IsAuthorized() = %t, want %t", got, testCase.want)
 			}
 		})

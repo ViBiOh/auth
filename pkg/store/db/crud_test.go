@@ -92,8 +92,7 @@ func TestCreate(t *testing.T) {
 		"create": {
 			args{
 				o: model.User{
-					Login:    "ViBiOh",
-					Password: "secret",
+					Login: "ViBiOh",
 				},
 			},
 			1,
@@ -113,7 +112,7 @@ func TestCreate(t *testing.T) {
 
 			switch intention {
 			case "create":
-				mockDatabase.EXPECT().Create(gomock.Any(), gomock.Any(), "vibioh", gomock.Any()).Return(uint64(1), nil)
+				mockDatabase.EXPECT().Create(gomock.Any(), gomock.Any(), "vibioh").Return(uint64(1), nil)
 			}
 
 			got, gotErr := instance.Create(context.Background(), testCase.args.o)
@@ -184,60 +183,6 @@ func TestUpdate(t *testing.T) {
 
 			if failed {
 				t.Errorf("Update() = `%s`, want `%s`", gotErr, testCase.wantErr)
-			}
-		})
-	}
-}
-
-func TestUpdatePassword(t *testing.T) {
-	t.Parallel()
-
-	type args struct {
-		o model.User
-	}
-
-	cases := map[string]struct {
-		args    args
-		wantErr error
-	}{
-		"update": {
-			args{
-				o: model.User{
-					ID:       1,
-					Password: "secret",
-				},
-			},
-			nil,
-		},
-	}
-
-	for intention, testCase := range cases {
-		t.Run(intention, func(t *testing.T) {
-			t.Parallel()
-
-			ctrl := gomock.NewController(t)
-
-			mockDatabase := mocks.NewDatabase(ctrl)
-
-			instance := Service{db: mockDatabase}
-
-			switch intention {
-			case "update":
-				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), uint64(1), gomock.Any()).Return(nil)
-			}
-
-			gotErr := instance.UpdatePassword(context.Background(), testCase.args.o)
-
-			failed := false
-
-			if testCase.wantErr == nil && gotErr != nil {
-				failed = true
-			} else if testCase.wantErr != nil && !errors.Is(gotErr, testCase.wantErr) {
-				failed = true
-			}
-
-			if failed {
-				t.Errorf("UpdatePassword() = `%s`, want `%s`", gotErr, testCase.wantErr)
 			}
 		})
 	}

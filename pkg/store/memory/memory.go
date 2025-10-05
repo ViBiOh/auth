@@ -6,20 +6,19 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ViBiOh/auth/v2/pkg/auth"
-	"github.com/ViBiOh/auth/v2/pkg/ident/basic"
 	"github.com/ViBiOh/auth/v2/pkg/model"
+	"github.com/ViBiOh/auth/v2/pkg/provider/basic"
 	"github.com/ViBiOh/flags"
 )
 
 var (
-	_ auth.Provider       = Service{}
+	_ model.Storage       = Service{}
 	_ basic.LoginProvider = Service{}
 )
 
 type Service struct {
-	ident map[string]basicUser
-	auth  map[uint64][]string
+	identifications map[string]basicUser
+	authorizations  map[uint64][]string
 }
 
 type Config struct {
@@ -37,19 +36,19 @@ func Flags(fs *flag.FlagSet, prefix string, overrides ...flags.Override) *Config
 }
 
 func New(config *Config) (Service, error) {
-	identService, err := loadIdent(config.Idents)
+	identifications, err := loadIdent(config.Idents)
 	if err != nil {
 		return Service{}, fmt.Errorf("load ident: %w", err)
 	}
 
-	authService, err := loadAuth(config.Auths)
+	authorizations, err := loadAuth(config.Auths)
 	if err != nil {
 		return Service{}, fmt.Errorf("load auth: %w", err)
 	}
 
 	return Service{
-		ident: identService,
-		auth:  authService,
+		identifications: identifications,
+		authorizations:  authorizations,
 	}, nil
 }
 

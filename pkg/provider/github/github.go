@@ -3,16 +3,12 @@ package github
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"flag"
 	"fmt"
 	"net/http"
 	"net/url"
-	"strconv"
 	"time"
 
-	"github.com/ViBiOh/auth/v2/pkg/ident"
-	"github.com/ViBiOh/auth/v2/pkg/middleware"
 	"github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/flags"
 	"github.com/ViBiOh/httputils/v4/pkg/httperror"
@@ -27,6 +23,11 @@ import (
 const (
 	verifierCacheKey = "auth:github:verifier:"
 	cookieName       = "_auth"
+)
+
+var (
+	_ model.Identification = Service{}
+	_ model.Authorization  = Service{}
 )
 
 var (
@@ -48,7 +49,7 @@ type Service struct {
 	jwtExpiration time.Duration
 }
 
-var _ ident.Provider = Service{}
+var _ model.Identification = Service{}
 
 type Config struct {
 	clientID      string
@@ -86,29 +87,6 @@ func New(config *Config, cache Cache) Service {
 		cache:         cache,
 		onSuccessPath: config.onSuccessPath,
 	}
-}
-
-func (s Service) GetUser(ctx context.Context, r *http.Request) (model.User, error) {
-	auth, err := r.Cookie(cookieName)
-	if err != nil {
-		if errors.Is(err, http.ErrNoCookie) {
-			return model.User{}, middleware.ErrEmptyAuth
-		}
-
-		return model.User{}, fmt.Errorf("get auth cookie: %w", err)
-	}
-
-	var claim AuthClaims
-
-	if _, err = jwt.ParseWithClaims(auth.Value, &claim, s.jwtKeyFunc, jwt.WithValidMethods(signValidMethods)); err != nil {
-		return model.User{}, fmt.Errorf("parse JWT: %w", err)
-	}
-
-	return claim.User, nil
-}
-
-func (s Service) OnError(w http.ResponseWriter, r *http.Request, err error) {
-	s.redirect(w, r, "")
 }
 
 func (s Service) Register(w http.ResponseWriter, r *http.Request) {
@@ -209,37 +187,4 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 		<a href="%[1]s">Continue...</a>
 	</body>
 </html>`, redirectPath)
-}
-
-func (s Service) jwtKeyFunc(_ *jwt.Token) (any, error) {
-	return s.hmacSecret, nil
-}
-
-func (s Service) newClaim(token *oauth2.Token, user model.User) AuthClaims {
-	now := time.Now()
-
-	return AuthClaims{
-		User:  user,
-		Token: token,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(now.Add(s.jwtExpiration)),
-			IssuedAt:  jwt.NewNumericDate(now),
-			NotBefore: jwt.NewNumericDate(now),
-			Issuer:    "auth",
-			Subject:   user.Login,
-			ID:        strconv.FormatInt(int64(user.ID), 10),
-		},
-	}
-}
-
-func (s Service) setCallbackCookie(w http.ResponseWriter, name, value string) {
-	http.SetCookie(w, &http.Cookie{
-		Name:     name,
-		Value:    value,
-		MaxAge:   int(s.jwtExpiration.Seconds()),
-		Path:     "/",
-		Secure:   false,
-		HttpOnly: true,
-		SameSite: http.SameSiteStrictMode,
-	})
 }

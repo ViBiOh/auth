@@ -2,10 +2,8 @@ package db
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
-	"github.com/ViBiOh/auth/v2/pkg/argon"
 	"github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/jackc/pgx/v5"
 )
@@ -19,21 +17,20 @@ SELECT
   id,
   login
 FROM
-  auth.login
+  auth.user
 WHERE
   id = $1
 `
 
 func (s Service) Get(ctx context.Context, id uint64) (model.User, error) {
 	var item model.User
+
 	scanner := func(row pgx.Row) error {
-		err := row.Scan(&item.ID, &item.Login)
-		if err == pgx.ErrNoRows {
-			item = model.User{}
-			return nil
+		if err := row.Scan(&item.ID, &item.Login); err != pgx.ErrNoRows {
+			return err
 		}
 
-		return err
+		return nil
 	}
 
 	return item, s.db.Get(ctx, scanner, getByIDQuery, id)
@@ -41,28 +38,21 @@ func (s Service) Get(ctx context.Context, id uint64) (model.User, error) {
 
 const insertQuery = `
 INSERT INTO
-  auth.login
+  auth.user
 (
-  login,
-  password
+  login
 ) VALUES (
-  $1,
-  $2
+  $1
 ) RETURNING id
 `
 
 func (s Service) Create(ctx context.Context, o model.User) (uint64, error) {
-	password, err := argon.GenerateFromPassword(o.Password)
-	if err != nil {
-		return 0, fmt.Errorf("hash password: %w", err)
-	}
-
-	return s.db.Create(ctx, insertQuery, strings.ToLower(o.Login), password)
+	return s.db.Create(ctx, insertQuery, strings.ToLower(o.Login))
 }
 
 const updateQuery = `
 UPDATE
-  auth.login
+  auth.user
 SET
   login = $2
 WHERE
@@ -73,27 +63,9 @@ func (s Service) Update(ctx context.Context, o model.User) error {
 	return s.db.One(ctx, updateQuery, o.ID, strings.ToLower(o.Login))
 }
 
-const updatePasswordQuery = `
-UPDATE
-  auth.login
-SET
-  password = $2
-WHERE
-  id = $1
-`
-
-func (s Service) UpdatePassword(ctx context.Context, o model.User) error {
-	password, err := argon.GenerateFromPassword(o.Password)
-	if err != nil {
-		return fmt.Errorf("hash password: %w", err)
-	}
-
-	return s.db.One(ctx, updatePasswordQuery, o.ID, password)
-}
-
 const deleteQuery = `
 DELETE FROM
-  auth.login
+  auth.user
 WHERE
   id = $1
 `

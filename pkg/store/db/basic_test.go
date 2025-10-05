@@ -5,7 +5,6 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/ViBiOh/auth/v2/pkg/ident"
 	"github.com/ViBiOh/auth/v2/pkg/mocks"
 	"github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/jackc/pgx/v5"
@@ -39,7 +38,7 @@ func TestLogin(t *testing.T) {
 				password: "secret",
 			},
 			model.User{},
-			ident.ErrInvalidCredentials,
+			model.ErrInvalidCredentials,
 		},
 		"error": {
 			args{
@@ -47,7 +46,7 @@ func TestLogin(t *testing.T) {
 				password: "secret",
 			},
 			model.User{},
-			ident.ErrUnavailableService,
+			model.ErrUnavailableService,
 		},
 	}
 
@@ -90,7 +89,7 @@ func TestLogin(t *testing.T) {
 				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), "vibioh").Return(errors.New("timeout"))
 			}
 
-			got, gotErr := instance.Login(context.Background(), testCase.args.login, testCase.args.password)
+			got, gotErr := instance.Login(context.Background(), nil, testCase.args.login, testCase.args.password)
 			failed := false
 
 			if testCase.wantErr != nil && !errors.Is(gotErr, testCase.wantErr) {
@@ -106,31 +105,26 @@ func TestLogin(t *testing.T) {
 	}
 }
 
-func TestIsAuthorized(t *testing.T) {
+func TestUpdatePassword(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
-		user    model.User
-		profile string
+		o        model.User
+		password string
 	}
 
 	cases := map[string]struct {
-		args args
-		want bool
+		args    args
+		wantErr error
 	}{
-		"simple": {
+		"update": {
 			args{
-				user:    model.NewUser(1, "vibioh"),
-				profile: "admin",
+				o: model.User{
+					ID: 1,
+				},
+				password: "secret",
 			},
-			true,
-		},
-		"error": {
-			args{
-				user:    model.NewUser(1, "vibioh"),
-				profile: "admin",
-			},
-			false,
+			nil,
 		},
 	}
 
@@ -145,23 +139,22 @@ func TestIsAuthorized(t *testing.T) {
 			instance := Service{db: mockDatabase}
 
 			switch intention {
-			case "simple":
-				mockRow := mocks.NewRow(ctrl)
-				mockRow.EXPECT().Scan(gomock.Any()).DoAndReturn(func(pointers ...any) error {
-					*pointers[0].(*uint64) = 1
-
-					return nil
-				})
-				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...any) error {
-					return scanner(mockRow)
-				}
-				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), uint64(1), "admin").DoAndReturn(dummyFn)
-			case "error":
-				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), uint64(1), "admin").Return(errors.New("timeout"))
+			case "update":
+				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), uint64(1), gomock.Any()).Return(nil)
 			}
 
-			if got := instance.IsAuthorized(context.Background(), testCase.args.user, testCase.args.profile); got != testCase.want {
-				t.Errorf("IsAuthorized() = %t, want %t", got, testCase.want)
+			gotErr := instance.UpdatePassword(context.Background(), testCase.args.o, testCase.args.password)
+
+			failed := false
+
+			if testCase.wantErr == nil && gotErr != nil {
+				failed = true
+			} else if testCase.wantErr != nil && !errors.Is(gotErr, testCase.wantErr) {
+				failed = true
+			}
+
+			if failed {
+				t.Errorf("UpdatePassword() = `%s`, want `%s`", gotErr, testCase.wantErr)
 			}
 		})
 	}

@@ -3,13 +3,11 @@ package middleware
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"testing"
 
-	"github.com/ViBiOh/auth/v2/pkg/auth"
-	"github.com/ViBiOh/auth/v2/pkg/ident"
 	"github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/httputils/v4/pkg/request"
 )
@@ -18,22 +16,26 @@ var errTestProvider = errors.New("decode")
 
 type testProvider struct{}
 
-func (t testProvider) IsAuthorized(_ context.Context, _ model.User, profile string) bool {
-	return profile == "admin"
-}
-
 func (t testProvider) GetUser(_ context.Context, r *http.Request) (model.User, error) {
 	if r.Header.Get("Authorization") == "Basic YWRtaW46cGFzc3dvcmQ=" {
-		return model.NewUser(8000, "admin"), nil
+		return model.User{ID: 8000, Login: "admin"}, nil
 	} else if r.Header.Get("Authorization") == "Basic" {
 		return model.User{}, errTestProvider
 	}
 
-	return model.User{}, ErrNoMatchingProvider
+	return model.User{}, model.ErrMalformedContent
 }
 
 func (t testProvider) OnError(w http.ResponseWriter, _ *http.Request, err error) {
 	http.Error(w, err.Error(), http.StatusTeapot)
+}
+
+func (t testProvider) IsAuthorized(_ context.Context, _ model.User, profile string) bool {
+	return profile == "admin"
+}
+
+func (t testProvider) OnForbidden(w http.ResponseWriter, _ *http.Request, user model.User, profile string) {
+	http.Error(w, fmt.Sprintf("%s has not the `%s` profile", user.Login, profile), http.StatusForbidden)
 }
 
 func TestMiddleware(t *testing.T) {
@@ -47,26 +49,26 @@ func TestMiddleware(t *testing.T) {
 		want       string
 		wantStatus int
 	}{
-		"no provider": {
-			New(nil, nil),
-			httptest.NewRequest(http.MethodOptions, "/", nil),
-			"OPTIONS",
-			http.StatusOK,
-		},
 		"options": {
-			New(nil, nil, testProvider{}),
+			New(testProvider{}, "admin", nil),
 			httptest.NewRequest(http.MethodOptions, "/", nil),
 			"",
 			http.StatusNoContent,
 		},
 		"failure": {
-			New(nil, nil, testProvider{}),
+			New(testProvider{}, "admin", nil),
 			httptest.NewRequest(http.MethodGet, "/", nil),
-			"no matching identification provider\n",
+			model.ErrMalformedContent.Error() + "\n",
 			http.StatusTeapot,
 		},
+		"unauthorized": {
+			New(testProvider{}, "regular", nil),
+			basicAuthRequest,
+			"admin has not the `regular` profile\n",
+			http.StatusForbidden,
+		},
 		"success": {
-			New(nil, nil, testProvider{}),
+			New(testProvider{}, "admin", nil),
 			basicAuthRequest,
 			"GET",
 			http.StatusOK,
@@ -92,160 +94,6 @@ func TestMiddleware(t *testing.T) {
 
 			if got, _ := request.ReadBodyResponse(writer.Result()); string(got) != testCase.want {
 				t.Errorf("Middleware = `%s`, want `%s`", string(got), testCase.want)
-			}
-		})
-	}
-}
-
-func TestIsAuthenticated(t *testing.T) {
-	t.Parallel()
-
-	basicAuthRequest, _ := request.Get("/").BasicAuth("admin", "password").Build(context.Background(), nil)
-	errorRequest, _ := request.Get("/").Header("Authorization", "Basic").Build(context.Background(), nil)
-
-	cases := map[string]struct {
-		instance Service
-		request  *http.Request
-		want     model.User
-		wantErr  error
-	}{
-		"no provider": {
-			New(nil, nil),
-			httptest.NewRequest(http.MethodGet, "/", nil),
-			model.User{},
-			ErrNoMatchingProvider,
-		},
-		"empty request": {
-			New(testProvider{}, nil, testProvider{}),
-			httptest.NewRequest(http.MethodGet, "/", nil),
-			model.User{},
-			ErrNoMatchingProvider,
-		},
-		"error on get user": {
-			New(testProvider{}, nil, testProvider{}),
-			errorRequest,
-			model.User{},
-			errTestProvider,
-		},
-		"valid": {
-			New(testProvider{}, nil, testProvider{}),
-			basicAuthRequest,
-			model.NewUser(8000, "admin"),
-			nil,
-		},
-	}
-
-	for intention, testCase := range cases {
-		t.Run(intention, func(t *testing.T) {
-			t.Parallel()
-
-			_, got, gotErr := testCase.instance.IsAuthenticated(testCase.request)
-
-			failed := false
-
-			if testCase.wantErr == nil && gotErr != nil {
-				failed = true
-			} else if testCase.wantErr != nil && !errors.Is(gotErr, testCase.wantErr) {
-				failed = true
-			} else if !reflect.DeepEqual(got, testCase.want) {
-				failed = true
-			}
-
-			if failed {
-				t.Errorf("IsAuthenticated() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
-			}
-		})
-	}
-}
-
-func TestIsAuthorized(t *testing.T) {
-	t.Parallel()
-
-	type args struct {
-		context context.Context
-		profile string
-	}
-
-	cases := map[string]struct {
-		instance Service
-		args     args
-		want     bool
-	}{
-		"no provider": {
-			New(nil, nil),
-			args{
-				context: model.StoreUser(context.Background(), model.User{}),
-				profile: "admin",
-			},
-			false,
-		},
-		"call provider": {
-			New(testProvider{}, nil),
-			args{
-				context: model.StoreUser(context.Background(), model.User{}),
-				profile: "admin",
-			},
-			true,
-		},
-	}
-
-	for intention, testCase := range cases {
-		t.Run(intention, func(t *testing.T) {
-			t.Parallel()
-
-			if got := testCase.instance.IsAuthorized(testCase.args.context, testCase.args.profile); got != testCase.want {
-				t.Errorf("IsAuthorized() = %t, want %t", got, testCase.want)
-			}
-		})
-	}
-}
-
-func TestOnHandlerFail(t *testing.T) {
-	t.Parallel()
-
-	cases := map[string]struct {
-		request    *http.Request
-		err        error
-		provider   ident.Provider
-		want       string
-		wantStatus int
-	}{
-		"forbidden": {
-			httptest.NewRequest(http.MethodGet, "/", nil),
-			auth.ErrForbidden,
-			nil,
-			"⛔️\n",
-			http.StatusForbidden,
-		},
-		"onError": {
-			httptest.NewRequest(http.MethodOptions, "/", nil),
-			ErrNoMatchingProvider,
-			testProvider{},
-			"no matching identification provider\n",
-			http.StatusTeapot,
-		},
-		"no provider": {
-			httptest.NewRequest(http.MethodOptions, "/", nil),
-			ErrNoMatchingProvider,
-			nil,
-			"no matching identification provider\n",
-			http.StatusUnauthorized,
-		},
-	}
-
-	for intention, testCase := range cases {
-		t.Run(intention, func(t *testing.T) {
-			t.Parallel()
-
-			writer := httptest.NewRecorder()
-			onHandlerFail(writer, testCase.request, testCase.err, testCase.provider)
-
-			if got := writer.Code; got != testCase.wantStatus {
-				t.Errorf("onHandlerFail = %d, want %d", got, testCase.wantStatus)
-			}
-
-			if got, _ := request.ReadBodyResponse(writer.Result()); string(got) != testCase.want {
-				t.Errorf("onHandlerFail = `%s`, want `%s`", string(got), testCase.want)
 			}
 		})
 	}

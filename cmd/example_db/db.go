@@ -5,8 +5,8 @@ import (
 	"flag"
 	"os"
 
-	"github.com/ViBiOh/auth/v2/pkg/ident/basic"
 	"github.com/ViBiOh/auth/v2/pkg/middleware"
+	"github.com/ViBiOh/auth/v2/pkg/provider/basic"
 	dbStore "github.com/ViBiOh/auth/v2/pkg/store/db"
 	"github.com/ViBiOh/flags"
 	"github.com/ViBiOh/httputils/v4/pkg/db"
@@ -41,7 +41,7 @@ func main() {
 
 	authProvider := dbStore.New(appDB)
 	identProvider := basic.New(authProvider, "Example with a DB")
-	middlewareApp := middleware.New(authProvider, nil, identProvider)
+	middlewareApp := middleware.New(identProvider, "", nil)
 
 	appServer := server.New(serverConfig)
 	go appServer.Start(healthService.EndCtx(), httputils.Handler(nil, healthService, middlewareApp.Middleware))

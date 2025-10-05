@@ -3,8 +3,8 @@ package db
 import (
 	"context"
 
-	"github.com/ViBiOh/auth/v2/pkg/auth"
-	"github.com/ViBiOh/auth/v2/pkg/ident/basic"
+	"github.com/ViBiOh/auth/v2/pkg/model"
+	"github.com/ViBiOh/auth/v2/pkg/provider/basic"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -22,9 +22,9 @@ type Service struct {
 }
 
 var (
-	_ auth.Provider       = Service{}
-	_ auth.Storage        = Service{}
-	_ basic.LoginProvider = Service{}
+	_ model.Storage          = Service{}
+	_ model.UpdatableStorage = Service{}
+	_ basic.LoginProvider    = Service{}
 )
 
 func New(db Database) Service {

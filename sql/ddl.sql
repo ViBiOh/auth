@@ -1,17 +1,19 @@
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- clean
-DROP TABLE IF EXISTS auth.login_profile;
+DROP TABLE IF EXISTS auth.basic;
+DROP TABLE IF EXISTS auth.user_profile;
 DROP TABLE IF EXISTS auth.profile;
-DROP TABLE IF EXISTS auth.login;
+DROP TABLE IF EXISTS auth.user;
 
 DROP SEQUENCE IF EXISTS auth.profile_seq;
-DROP SEQUENCE IF EXISTS auth.login_seq;
+DROP SEQUENCE IF EXISTS auth.user_seq;
 
-DROP INDEX IF EXISTS login_profile_login_id;
+DROP INDEX IF EXISTS basic_user_id;
+DROP INDEX IF EXISTS user_profile_user_id;
 DROP INDEX IF EXISTS profile_id;
-DROP INDEX IF EXISTS profile_id;
-DROP INDEX IF EXISTS login_login;
+DROP INDEX IF EXISTS user_login;
+DROP INDEX IF EXISTS user_id;
 
 DROP SCHEMA IF EXISTS auth CASCADE;
 
@@ -19,34 +21,41 @@ DROP SCHEMA IF EXISTS auth CASCADE;
 CREATE SCHEMA auth;
 
 -- user
-CREATE SEQUENCE auth.login_seq;
-CREATE TABLE auth.login (
-  id BIGINT NOT NULL DEFAULT nextval('auth.login_seq'),
-  login TEXT NOT NULL,
-  password TEXT NOT NULL,
-  creation_date TIMESTAMP WITH TIME ZONE DEFAULT now()
+CREATE SEQUENCE auth.user_seq;
+CREATE TABLE auth.user (
+  id            BIGINT                   NOT NULL DEFAULT nextval('auth.user_seq'),
+  login         TEXT                     NOT NULL,
+  creation_date TIMESTAMP WITH TIME ZONE          DEFAULT now()
 );
-ALTER SEQUENCE auth.login_seq OWNED BY auth.login.id;
+ALTER SEQUENCE auth.user_seq OWNED BY auth.user.id;
 
-CREATE UNIQUE INDEX login_id ON auth.login(id);
-CREATE UNIQUE INDEX login_login ON auth.login(login);
+CREATE UNIQUE INDEX user_id    ON auth.user(id);
+CREATE UNIQUE INDEX user_login ON auth.user(login);
 
 -- profile
 CREATE SEQUENCE auth.profile_seq;
 CREATE TABLE auth.profile (
-  id BIGINT NOT NULL DEFAULT nextval('auth.profile_seq'),
-  name TEXT NOT NULL,
-  creation_date TIMESTAMP WITH TIME ZONE DEFAULT now()
+  id BIGINT                              NOT NULL DEFAULT nextval('auth.profile_seq'),
+  name TEXT                              NOT NULL,
+  creation_date TIMESTAMP WITH TIME ZONE          DEFAULT now()
 );
 ALTER SEQUENCE auth.profile_seq OWNED BY auth.profile.id;
 
 CREATE UNIQUE INDEX profile_id ON auth.profile(id);
 
--- login_profile
-CREATE TABLE auth.login_profile (
-  login_id BIGINT NOT NULL REFERENCES auth.login(id) ON DELETE CASCADE,
-  profile_id BIGINT NOT NULL REFERENCES auth.profile(id) ON DELETE CASCADE,
-  creation_date TIMESTAMP WITH TIME ZONE DEFAULT now()
+-- user_profile
+CREATE TABLE auth.user_profile (
+  user_id       BIGINT                   NOT NULL REFERENCES auth.user(id)    ON DELETE CASCADE,
+  profile_id    BIGINT                   NOT NULL REFERENCES auth.profile(id) ON DELETE CASCADE,
+  creation_date TIMESTAMP WITH TIME ZONE          DEFAULT now()
 );
 
-CREATE UNIQUE INDEX login_profile_login_id ON auth.login_profile(login_id);
+CREATE UNIQUE INDEX user_profile_user_id ON auth.user_profile(user_id);
+
+-- basic
+CREATE TABLE auth.basic (
+  user_id       BIGINT                   NOT NULL REFERENCES auth.login(id) ON DELETE CASCADE,
+  password      TEXT                     NOT NULL,
+  creation_date TIMESTAMP WITH TIME ZONE          DEFAULT now()
+);
+CREATE UNIQUE INDEX basic_user_id ON auth.basic(user_id);

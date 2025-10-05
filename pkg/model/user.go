@@ -9,9 +9,8 @@ const (
 )
 
 type User struct {
-	Login    string `json:"login"`
-	Password string `json:"password,omitempty"`
-	ID       uint64 `json:"id"`
+	Login string `json:"login"`
+	ID    uint64 `json:"id"`
 }
 
 func (u User) IsZero() bool {
