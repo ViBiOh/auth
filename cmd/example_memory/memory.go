@@ -23,7 +23,7 @@ func main() {
 	healthConfig := health.Flags(fs, "")
 
 	serverConfig := server.Flags(fs, "")
-	basicConfig := memoryStore.Flags(fs, "")
+	memoryConfig := memoryStore.Flags(fs, "")
 
 	_ = fs.Parse(os.Args[1:])
 
@@ -33,10 +33,10 @@ func main() {
 
 	healthService := health.New(ctx, healthConfig)
 
-	authProvider, err := memoryStore.New(basicConfig)
+	authProvider, err := memoryStore.New(memoryConfig)
 	logger.FatalfOnErr(ctx, err, "create memory store")
 
-	identProvider := basic.New(authProvider, "Example Memory")
+	identProvider := basic.New(authProvider)
 	middlewareApp := middleware.New(identProvider, "", nil)
 
 	appServer := server.New(serverConfig)

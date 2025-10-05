@@ -5,11 +5,17 @@ import (
 	"net/http"
 
 	"github.com/ViBiOh/auth/v2/pkg/model"
+	"github.com/ViBiOh/httputils/v4/pkg/httperror"
 )
 
-func (s Service) IsAuthorized(_ context.Context, _ model.User, _ string) bool {
-	return false
+func (s Service) IsAuthorized(ctx context.Context, user model.User, profile string) bool {
+	return s.provider.IsAuthorized(ctx, user, profile)
 }
 
-func (s Service) OnForbidden(_ http.ResponseWriter, _ *http.Request, _ model.User, _ string) {
+func (s Service) OnForbidden(w http.ResponseWriter, r *http.Request, user model.User, profile string) {
+	if s.onForbidden == nil {
+		httperror.Forbidden(r.Context(), w)
+	} else {
+		s.onForbidden(w, r, user, profile)
+	}
 }

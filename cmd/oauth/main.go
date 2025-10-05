@@ -11,6 +11,7 @@ import (
 	"github.com/ViBiOh/auth/v2/pkg/middleware"
 	"github.com/ViBiOh/auth/v2/pkg/model"
 	"github.com/ViBiOh/auth/v2/pkg/provider/github"
+	"github.com/ViBiOh/auth/v2/pkg/store/memory"
 	"github.com/ViBiOh/flags"
 	"github.com/ViBiOh/httputils/v4/pkg/health"
 	"github.com/ViBiOh/httputils/v4/pkg/httperror"
@@ -30,6 +31,7 @@ func main() {
 	serverConfig := server.Flags(fs, "")
 	redisConfig := redis.Flags(fs, "redis")
 	githubConfig := github.Flags(fs, "github")
+	memoryConfig := memory.Flags(fs, "")
 
 	_ = fs.Parse(os.Args[1:])
 
@@ -42,7 +44,10 @@ func main() {
 	redisClient, err := redis.New(ctx, redisConfig, nil, nil)
 	logger.FatalfOnErr(ctx, err, "redis")
 
-	githubService := github.New(githubConfig, redisClient)
+	memoryProvider, err := memory.New(memoryConfig)
+	logger.FatalfOnErr(ctx, err, "create memory store")
+
+	githubService := github.New(githubConfig, redisClient, memoryProvider)
 	authMiddleware := middleware.New(githubService, "", nil)
 
 	authMux := http.NewServeMux()

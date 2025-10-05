@@ -40,7 +40,7 @@ func main() {
 	healthService := health.New(ctx, healthConfig, appDB.Ping)
 
 	authProvider := dbStore.New(appDB)
-	identProvider := basic.New(authProvider, "Example with a DB")
+	identProvider := basic.New(authProvider)
 	middlewareApp := middleware.New(identProvider, "", nil)
 
 	appServer := server.New(serverConfig)

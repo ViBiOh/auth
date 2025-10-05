@@ -12,8 +12,8 @@ import (
 )
 
 var (
-	_ model.Storage       = Service{}
-	_ basic.LoginProvider = Service{}
+	_ model.Storage  = Service{}
+	_ basic.Provider = Service{}
 )
 
 type Service struct {

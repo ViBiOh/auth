@@ -24,14 +24,14 @@ func (s Service) Login(_ context.Context, _ *http.Request, login, password strin
 	return model.User{}, model.ErrInvalidCredentials
 }
 
-func (s Service) IsAuthorized(_ context.Context, _ *http.Request, user model.User, profile string) bool {
+func (s Service) IsAuthorized(_ context.Context, user model.User, profile string) bool {
+	if len(profile) == 0 {
+		return true
+	}
+
 	profiles, ok := s.authorizations[user.ID]
 	if !ok {
 		return false
-	}
-
-	if len(profile) == 0 {
-		return true
 	}
 
 	for _, listedProfile := range profiles {

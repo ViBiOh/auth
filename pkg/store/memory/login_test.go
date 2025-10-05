@@ -115,7 +115,7 @@ func TestIsAuthorized(t *testing.T) {
 			args{
 				user: model.NewUser(8000, "vibioh"),
 			},
-			false,
+			true,
 		},
 		"no wanted profile": {
 			args{
@@ -144,7 +144,7 @@ func TestIsAuthorized(t *testing.T) {
 		t.Run(intention, func(t *testing.T) {
 			t.Parallel()
 
-			if got := instance.IsAuthorized(context.Background(), nil, testCase.args.user, testCase.args.profile); got != testCase.want {
+			if got := instance.IsAuthorized(context.Background(), testCase.args.user, testCase.args.profile); got != testCase.want {
 				t.Errorf("IsAuthorized() = %t, want %t", got, testCase.want)
 			}
 		})

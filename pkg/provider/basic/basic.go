@@ -18,8 +18,9 @@ var (
 	_ model.Authorization  = Service{}
 )
 
-type LoginProvider interface {
+type Provider interface {
 	Login(ctx context.Context, r *http.Request, login, password string) (model.User, error)
+	IsAuthorized(ctx context.Context, user model.User, profile string) bool
 }
 
 type PasswordStorage interface {
@@ -27,18 +28,42 @@ type PasswordStorage interface {
 	UpdatePassword(ctx context.Context, user model.User, password string) error
 }
 
+type ForbiddenHandler func(http.ResponseWriter, *http.Request, model.User, string)
+
 type Service struct {
-	provider LoginProvider
-	realm    string
+	provider    Provider
+	onForbidden ForbiddenHandler
+	realm       string
 }
 
-func New(provider LoginProvider, realm string) Service {
-	if len(realm) != 0 {
-		realm = fmt.Sprintf("realm=\"%s\" ", realm)
+func New(provider Provider, options ...Option) Service {
+	service := Service{
+		provider: provider,
 	}
 
-	return Service{
-		provider: provider,
-		realm:    realm,
+	for _, option := range options {
+		service = option(service)
+	}
+
+	return service
+}
+
+type Option func(Service) Service
+
+func WithRealm(realm string) Option {
+	return func(instance Service) Service {
+		if len(realm) != 0 {
+			instance.realm = fmt.Sprintf("realm=\"%s\" ", realm)
+		}
+
+		return instance
+	}
+}
+
+func WithForbiddenHandler(onForbidden ForbiddenHandler) Option {
+	return func(instance Service) Service {
+		instance.onForbidden = onForbidden
+
+		return instance
 	}
 }

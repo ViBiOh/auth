@@ -41,9 +41,17 @@ type Cache interface {
 	Delete(ctx context.Context, keys ...string) error
 }
 
+type Provider interface {
+	IsAuthorized(ctx context.Context, user model.User, profile string) bool
+}
+
+type ForbiddenHandler func(http.ResponseWriter, *http.Request, model.User, string)
+
 type Service struct {
 	config        oauth2.Config
 	cache         Cache
+	provider      Provider
+	onForbidden   ForbiddenHandler
 	onSuccessPath string
 	hmacSecret    []byte
 	jwtExpiration time.Duration
@@ -73,7 +81,7 @@ func Flags(fs *flag.FlagSet, prefix string, overrides ...flags.Override) *Config
 	return &config
 }
 
-func New(config *Config, cache Cache) Service {
+func New(config *Config, cache Cache, provider Provider) Service {
 	return Service{
 		config: oauth2.Config{
 			ClientID:     config.clientID,
@@ -84,8 +92,20 @@ func New(config *Config, cache Cache) Service {
 		},
 		hmacSecret:    []byte(config.hmacSecret),
 		jwtExpiration: config.jwtExpiration,
-		cache:         cache,
 		onSuccessPath: config.onSuccessPath,
+
+		cache:    cache,
+		provider: provider,
+	}
+}
+
+type Option func(Service) Service
+
+func WithForbiddenHandler(onForbidden ForbiddenHandler) Option {
+	return func(instance Service) Service {
+		instance.onForbidden = onForbidden
+
+		return instance
 	}
 }
 

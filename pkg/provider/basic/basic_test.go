@@ -23,6 +23,10 @@ func (tp testProvider) Login(_ context.Context, _ *http.Request, login, password
 	return model.User{}, errInvalidCredentials
 }
 
+func (tp testProvider) IsAuthorized(ctx context.Context, user model.User, profile string) bool {
+	return true
+}
+
 func TestGetUser(t *testing.T) {
 	t.Parallel()
 
@@ -67,7 +71,7 @@ func TestGetUser(t *testing.T) {
 		t.Run(intention, func(t *testing.T) {
 			t.Parallel()
 
-			got, gotErr := New(testProvider{}, "").GetUser(context.Background(), testCase.request)
+			got, gotErr := New(testProvider{}).GetUser(context.Background(), testCase.request)
 
 			failed := false
 
@@ -133,7 +137,7 @@ func TestOnError(t *testing.T) {
 			t.Parallel()
 
 			writer := httptest.NewRecorder()
-			New(testProvider{}, testCase.args.realm).OnError(writer, testCase.request, testCase.args.err)
+			New(testProvider{}, WithRealm(testCase.args.realm)).OnError(writer, testCase.request, testCase.args.err)
 
 			if got := writer.Code; got != testCase.wantStatus {
 				t.Errorf("OnError = %d, want %d", got, testCase.wantStatus)
@@ -154,7 +158,7 @@ func TestOnError(t *testing.T) {
 }
 
 func BenchmarkGetUser(b *testing.B) {
-	service := New(testProvider{}, "")
+	service := New(testProvider{})
 	ctx := context.Background()
 
 	req := getRequestWithAuthorization("Basic YWRtaW46c2VjcmV0Cg==")

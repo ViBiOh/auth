@@ -21,6 +21,10 @@ WHER
 `
 
 func (s Service) IsAuthorized(ctx context.Context, user model.User, profile string) bool {
+	if len(profile) == 0 {
+		return true
+	}
+
 	var id uint64
 
 	scanner := func(row pgx.Row) error {
