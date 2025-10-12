@@ -10,8 +10,8 @@ func TestNewUser(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
-		id    uint64
-		login string
+		id   uint64
+		name string
 	}
 
 	cases := map[string]struct {
@@ -20,10 +20,10 @@ func TestNewUser(t *testing.T) {
 	}{
 		"simple": {
 			args{
-				id:    1,
-				login: "vibioh",
+				id:   1,
+				name: "vibioh",
 			},
-			User{ID: 1, Login: "vibioh"},
+			User{ID: 1, Name: "vibioh"},
 		},
 	}
 
@@ -31,7 +31,7 @@ func TestNewUser(t *testing.T) {
 		t.Run(intention, func(t *testing.T) {
 			t.Parallel()
 
-			if got := NewUser(testCase.args.id, testCase.args.login); !reflect.DeepEqual(got, testCase.want) {
+			if got := NewUser(testCase.args.id, testCase.args.name); !reflect.DeepEqual(got, testCase.want) {
 				t.Errorf("NewUser() = %v, want %v", got, testCase.want)
 			}
 		})

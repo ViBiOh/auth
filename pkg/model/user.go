@@ -9,18 +9,18 @@ const (
 )
 
 type User struct {
-	Login string `json:"login"`
-	ID    uint64 `json:"id"`
+	Name string `json:"name"`
+	ID   uint64 `json:"id"`
 }
 
 func (u User) IsZero() bool {
-	return u.ID == 0 && len(u.Login) == 0
+	return u.ID == 0 && len(u.Name) == 0
 }
 
-func NewUser(id uint64, login string) User {
+func NewUser(id uint64, name string) User {
 	return User{
-		ID:    id,
-		Login: login,
+		ID:   id,
+		Name: name,
 	}
 }
 

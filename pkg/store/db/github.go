@@ -30,7 +30,7 @@ func (s Service) CreateGitHubRegistration(ctx context.Context, user model.User) 
 const githubGetUserQuery = `
 SELECT
   u.id,
-  u.login
+  g.login
 FROM
   auth.github g
   auth.user u
@@ -43,7 +43,7 @@ func (s Service) GetGitHubUser(ctx context.Context, registration string) (model.
 	var item model.User
 
 	return item, s.db.Get(ctx, func(row pgx.Row) error {
-		err := row.Scan(&item.ID, &item.Login)
+		err := row.Scan(&item.ID, &item.Name)
 
 		if errors.Is(err, pgx.ErrNoRows) {
 			return model.ErrUnknownUser
@@ -57,17 +57,12 @@ const githubUpdateUserQuery = `
 UPDATE
   auth.github
 SET
-  login = $2
+  id = $2,
+  login = $3
 WHERE
   user_id = $1
 `
 
-func (s Service) UpdateGitHubUser(ctx context.Context, user model.User, githubID string) error {
-	return s.DoAtomic(ctx, func(ctx context.Context) error {
-		if err := s.db.One(ctx, githubUpdateUserQuery, user.ID, githubID); err != nil {
-			return nil
-		}
-
-		return s.Update(ctx, user)
-	})
+func (s Service) UpdateGitHubUser(ctx context.Context, user model.User, githubID, githubLogin string) error {
+	return s.db.One(ctx, githubUpdateUserQuery, user.ID, githubID, githubLogin)
 }

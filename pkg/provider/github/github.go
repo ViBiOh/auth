@@ -46,7 +46,7 @@ type Cache interface {
 type Provider interface {
 	IsAuthorized(ctx context.Context, user model.User, profile string) bool
 	GetGitHubUser(ctx context.Context, registration string) (model.User, error)
-	UpdateGitHubUser(ctx context.Context, user model.User, githubID string) error
+	UpdateGitHubUser(ctx context.Context, user model.User, githubID, githubLogin string) error
 }
 
 type ForbiddenHandler func(http.ResponseWriter, *http.Request, model.User, string)
@@ -194,7 +194,7 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 	user, err := s.provider.GetGitHubUser(ctx, login)
 	if err != nil {
 		if errors.Is(err, model.ErrUnknownUser) {
-			httperror.HandleError(ctx, w, httpmodel.WrapNotFound(fmt.Errorf("unknown user `%s`", user.Login)))
+			httperror.HandleError(ctx, w, httpmodel.WrapNotFound(fmt.Errorf("unregistered user `%s`", login)))
 			return
 		}
 
@@ -213,9 +213,7 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 	s.setCallbackCookie(w, cookieName, tokenString)
 
 	if isRegistration {
-		user.Login = githubUser.Login
-
-		if err := s.provider.UpdateGitHubUser(ctx, user, strconv.FormatUint(user.ID, 10)); err != nil {
+		if err := s.provider.UpdateGitHubUser(ctx, user, strconv.FormatUint(githubUser.ID, 10), githubUser.Name); err != nil {
 			httperror.InternalServerError(ctx, w, fmt.Errorf("save github user: %w", err))
 			return
 		}

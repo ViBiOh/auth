@@ -25,7 +25,7 @@ func (s Service) newClaim(token *oauth2.Token, user model.User) AuthClaims {
 			IssuedAt:  jwt.NewNumericDate(now),
 			NotBefore: jwt.NewNumericDate(now),
 			Issuer:    "auth",
-			Subject:   user.Login,
+			Subject:   user.Name,
 			ID:        strconv.FormatInt(int64(user.ID), 10),
 		},
 	}

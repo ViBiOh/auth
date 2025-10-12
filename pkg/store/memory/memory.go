@@ -80,7 +80,7 @@ func loadIdent(idents []string) (map[string]basicUser, error) {
 			User:     model.NewUser(userID, strings.ToLower(parts[1])),
 			password: []byte(parts[2]),
 		}
-		users[user.Login] = user
+		users[user.Name] = user
 	}
 
 	return users, nil

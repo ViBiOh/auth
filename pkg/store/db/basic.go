@@ -26,12 +26,12 @@ WHERE
   AND u.id = b.user_id
 `
 
-func (s Service) Login(ctx context.Context, _ *http.Request, login, password string) (model.User, error) {
+func (s Service) GetBasicUser(ctx context.Context, _ *http.Request, login, password string) (model.User, error) {
 	var user model.User
 	var userPassword string
 
 	scanner := func(row pgx.Row) error {
-		return row.Scan(&user.ID, &user.Login, &userPassword)
+		return row.Scan(&user.ID, &user.Name, &userPassword)
 	}
 
 	if err := s.db.Get(ctx, scanner, basicUserQuery, strings.ToLower(login)); err != nil {

@@ -3,79 +3,12 @@ package db
 import (
 	"context"
 	"errors"
-	"reflect"
 	"testing"
 
 	"github.com/ViBiOh/auth/v2/pkg/mocks"
 	"github.com/ViBiOh/auth/v2/pkg/model"
-	"github.com/jackc/pgx/v5"
 	"go.uber.org/mock/gomock"
 )
-
-func TestGet(t *testing.T) {
-	t.Parallel()
-
-	type args struct {
-		id uint64
-	}
-
-	cases := map[string]struct {
-		args    args
-		want    model.User
-		wantErr error
-	}{
-		"create": {
-			args{
-				id: 1,
-			},
-			model.NewUser(1, "vibioh"),
-			nil,
-		},
-	}
-
-	for intention, testCase := range cases {
-		t.Run(intention, func(t *testing.T) {
-			t.Parallel()
-
-			ctrl := gomock.NewController(t)
-
-			mockDatabase := mocks.NewDatabase(ctrl)
-
-			instance := Service{db: mockDatabase}
-
-			switch intention {
-			case "create":
-				mockRow := mocks.NewRow(ctrl)
-				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
-					*pointers[0].(*uint64) = 1
-					*pointers[1].(*string) = "vibioh"
-
-					return nil
-				})
-				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...any) error {
-					return scanner(mockRow)
-				}
-				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), uint64(1)).DoAndReturn(dummyFn)
-			}
-
-			got, gotErr := instance.Get(context.Background(), testCase.args.id)
-
-			failed := false
-
-			if testCase.wantErr == nil && gotErr != nil {
-				failed = true
-			} else if testCase.wantErr != nil && !errors.Is(gotErr, testCase.wantErr) {
-				failed = true
-			} else if !reflect.DeepEqual(got, testCase.want) {
-				failed = true
-			}
-
-			if failed {
-				t.Errorf("Get() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
-			}
-		})
-	}
-}
 
 func TestCreate(t *testing.T) {
 	t.Parallel()
@@ -91,9 +24,7 @@ func TestCreate(t *testing.T) {
 	}{
 		"create": {
 			args{
-				o: model.User{
-					Login: "ViBiOh",
-				},
+				o: model.User{},
 			},
 			1,
 			nil,
@@ -112,7 +43,7 @@ func TestCreate(t *testing.T) {
 
 			switch intention {
 			case "create":
-				mockDatabase.EXPECT().Create(gomock.Any(), gomock.Any(), "vibioh").Return(uint64(1), nil)
+				mockDatabase.EXPECT().Create(gomock.Any(), gomock.Any()).Return(uint64(1), nil)
 			}
 
 			got, gotErr := instance.Create(context.Background(), testCase.args.o)
@@ -129,60 +60,6 @@ func TestCreate(t *testing.T) {
 
 			if failed {
 				t.Errorf("Create() = (%d, `%s`), want (%d, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
-			}
-		})
-	}
-}
-
-func TestUpdate(t *testing.T) {
-	t.Parallel()
-
-	type args struct {
-		o model.User
-	}
-
-	cases := map[string]struct {
-		args    args
-		wantErr error
-	}{
-		"update": {
-			args{
-				o: model.User{
-					ID:    1,
-					Login: "ViBiOh",
-				},
-			},
-			nil,
-		},
-	}
-
-	for intention, testCase := range cases {
-		t.Run(intention, func(t *testing.T) {
-			t.Parallel()
-
-			ctrl := gomock.NewController(t)
-
-			mockDatabase := mocks.NewDatabase(ctrl)
-
-			instance := Service{db: mockDatabase}
-
-			switch intention {
-			case "update":
-				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), uint64(1), "vibioh").Return(nil)
-			}
-
-			gotErr := instance.Update(context.Background(), testCase.args.o)
-
-			failed := false
-
-			if testCase.wantErr == nil && gotErr != nil {
-				failed = true
-			} else if testCase.wantErr != nil && !errors.Is(gotErr, testCase.wantErr) {
-				failed = true
-			}
-
-			if failed {
-				t.Errorf("Update() = `%s`, want `%s`", gotErr, testCase.wantErr)
 			}
 		})
 	}

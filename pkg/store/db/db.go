@@ -22,9 +22,8 @@ type Service struct {
 }
 
 var (
-	_ model.Storage          = Service{}
-	_ model.UpdatableStorage = Service{}
-	_ basic.Provider         = Service{}
+	_ model.Storage  = Service{}
+	_ basic.Provider = Service{}
 )
 
 func New(db Database) Service {

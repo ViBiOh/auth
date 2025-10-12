@@ -18,7 +18,7 @@ type testProvider struct{}
 
 func (t testProvider) GetUser(_ context.Context, r *http.Request) (model.User, error) {
 	if r.Header.Get("Authorization") == "Basic YWRtaW46cGFzc3dvcmQ=" {
-		return model.User{ID: 8000, Login: "admin"}, nil
+		return model.User{ID: 8000, Name: "admin"}, nil
 	} else if r.Header.Get("Authorization") == "Basic" {
 		return model.User{}, errTestProvider
 	}
@@ -35,7 +35,7 @@ func (t testProvider) IsAuthorized(_ context.Context, _ model.User, profile stri
 }
 
 func (t testProvider) OnForbidden(w http.ResponseWriter, _ *http.Request, user model.User, profile string) {
-	http.Error(w, fmt.Sprintf("%s has not the `%s` profile", user.Login, profile), http.StatusForbidden)
+	http.Error(w, fmt.Sprintf("%s has not the `%s` profile", user.Name, profile), http.StatusForbidden)
 }
 
 func TestMiddleware(t *testing.T) {

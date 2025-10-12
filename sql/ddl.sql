@@ -25,7 +25,6 @@ CREATE SCHEMA auth;
 CREATE SEQUENCE auth.user_seq;
 CREATE TABLE auth.user (
   id            BIGINT                   NOT NULL DEFAULT nextval('auth.user_seq'),
-  login         TEXT                     NOT NULL,
   creation_date TIMESTAMP WITH TIME ZONE          DEFAULT now()
 );
 ALTER SEQUENCE auth.user_seq OWNED BY auth.user.id;
@@ -56,6 +55,7 @@ CREATE UNIQUE INDEX user_profile_user_id ON auth.user_profile(user_id);
 -- basic
 CREATE TABLE auth.basic (
   user_id       BIGINT                   NOT NULL REFERENCES auth.user(id) ON DELETE CASCADE,
+  login         TEXT                     NOT NULL,
   password      TEXT                     NOT NULL,
   creation_date TIMESTAMP WITH TIME ZONE          DEFAULT now()
 );
@@ -64,6 +64,7 @@ CREATE UNIQUE INDEX basic_user_id ON auth.basic(user_id);
 -- github
 CREATE TABLE auth.github (
   user_id       BIGINT                   NOT NULL REFERENCES auth.user(id) ON DELETE CASCADE,
+  id            BIGINT                   NOT NULL,
   login         TEXT                     NOT NULL,
   creation_date TIMESTAMP WITH TIME ZONE          DEFAULT now()
 );

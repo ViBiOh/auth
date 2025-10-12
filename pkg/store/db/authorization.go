@@ -32,7 +32,7 @@ func (s Service) IsAuthorized(ctx context.Context, user model.User, profile stri
 	}
 
 	if err := s.db.Get(ctx, scanner, readLoginProfile, user.ID, profile); err != nil {
-		slog.LogAttrs(ctx, slog.LevelError, "unauthorized", slog.String("login", user.Login), slog.Any("error", err))
+		slog.LogAttrs(ctx, slog.LevelError, "unauthorized", slog.String("login", user.Name), slog.Any("error", err))
 
 		return false
 	}

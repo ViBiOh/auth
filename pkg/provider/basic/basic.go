@@ -19,7 +19,7 @@ var (
 )
 
 type Provider interface {
-	Login(ctx context.Context, r *http.Request, login, password string) (model.User, error)
+	GetBasicUser(ctx context.Context, r *http.Request, login, password string) (model.User, error)
 	IsAuthorized(ctx context.Context, user model.User, profile string) bool
 }
 

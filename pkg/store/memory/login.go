@@ -9,7 +9,7 @@ import (
 	"github.com/ViBiOh/auth/v2/pkg/model"
 )
 
-func (s Service) Login(_ context.Context, _ *http.Request, login, password string) (model.User, error) {
+func (s Service) GetBasicUser(_ context.Context, _ *http.Request, login, password string) (model.User, error) {
 	user, ok := s.identifications[login]
 	if !ok {
 		return model.User{}, model.ErrInvalidCredentials

@@ -73,7 +73,7 @@ func TestLogin(t *testing.T) {
 		t.Run(intention, func(t *testing.T) {
 			t.Parallel()
 
-			got, gotErr := instance.Login(context.Background(), nil, testCase.args.login, testCase.args.password)
+			got, gotErr := instance.GetBasicUser(context.Background(), nil, testCase.args.login, testCase.args.password)
 
 			failed := false
 
