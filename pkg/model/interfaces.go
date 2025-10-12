@@ -8,6 +8,7 @@ import (
 
 var (
 	ErrForbidden          = errors.New("forbidden access")
+	ErrUnknownUser        = errors.New("unknown user")
 	ErrMalformedContent   = errors.New("malformed content")
 	ErrUnavailableService = errors.New("unavailable service")
 	ErrInvalidCredentials = errors.New("invalid credentials")

@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"errors"
 	"strings"
 
 	"github.com/ViBiOh/auth/v2/pkg/model"
@@ -26,11 +27,13 @@ func (s Service) Get(ctx context.Context, id uint64) (model.User, error) {
 	var item model.User
 
 	scanner := func(row pgx.Row) error {
-		if err := row.Scan(&item.ID, &item.Login); err != pgx.ErrNoRows {
-			return err
+		err := row.Scan(&item.ID, &item.Login)
+
+		if errors.Is(err, pgx.ErrNoRows) {
+			return model.ErrUnknownUser
 		}
 
-		return nil
+		return err
 	}
 
 	return item, s.db.Get(ctx, scanner, getByIDQuery, id)

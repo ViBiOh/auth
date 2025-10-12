@@ -3,10 +3,12 @@ package github
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/ViBiOh/auth/v2/pkg/model"
@@ -43,6 +45,8 @@ type Cache interface {
 
 type Provider interface {
 	IsAuthorized(ctx context.Context, user model.User, profile string) bool
+	GetGitHubUser(ctx context.Context, registration string) (model.User, error)
+	UpdateGitHubUser(ctx context.Context, user model.User, githubID string) error
 }
 
 type ForbiddenHandler func(http.ResponseWriter, *http.Request, model.User, string)
@@ -153,6 +157,8 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	isRegistration := len(payload.Registration) != 0
+
 	oauth2Token, err := s.config.Exchange(ctx, r.URL.Query().Get("code"), oauth2.VerifierOption(payload.Verifier))
 	if err != nil {
 		httperror.HandleError(ctx, w, httpmodel.WrapUnauthorized(fmt.Errorf("exchange token: %w", err)))
@@ -171,9 +177,28 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := httpjson.Read[model.User](resp)
+	githubUser, err := httpjson.Read[model.User](resp)
 	if err != nil {
 		httperror.InternalServerError(ctx, w, fmt.Errorf("read /user: %w", err))
+		return
+	}
+
+	var login string
+
+	if isRegistration {
+		login = payload.Registration
+	} else {
+		login = strconv.FormatUint(githubUser.ID, 10)
+	}
+
+	user, err := s.provider.GetGitHubUser(ctx, login)
+	if err != nil {
+		if errors.Is(err, model.ErrUnknownUser) {
+			httperror.HandleError(ctx, w, httpmodel.WrapNotFound(fmt.Errorf("unknown user `%s`", user.Login)))
+			return
+		}
+
+		httperror.InternalServerError(ctx, w, fmt.Errorf("get user: %w", err))
 		return
 	}
 
@@ -186,6 +211,15 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s.setCallbackCookie(w, cookieName, tokenString)
+
+	if isRegistration {
+		user.Login = githubUser.Login
+
+		if err := s.provider.UpdateGitHubUser(ctx, user, strconv.FormatUint(user.ID, 10)); err != nil {
+			httperror.InternalServerError(ctx, w, fmt.Errorf("save github user: %w", err))
+			return
+		}
+	}
 
 	redirectPath := s.onSuccessPath
 	if len(payload.Registration) != 0 {

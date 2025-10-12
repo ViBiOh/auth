@@ -1,6 +1,5 @@
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
-
 -- clean
+DROP TABLE IF EXISTS auth.github;
 DROP TABLE IF EXISTS auth.basic;
 DROP TABLE IF EXISTS auth.user_profile;
 DROP TABLE IF EXISTS auth.profile;
@@ -9,6 +8,8 @@ DROP TABLE IF EXISTS auth.user;
 DROP SEQUENCE IF EXISTS auth.profile_seq;
 DROP SEQUENCE IF EXISTS auth.user_seq;
 
+DROP INDEX IF EXISTS github_login;
+DROP INDEX IF EXISTS github_user_id;
 DROP INDEX IF EXISTS basic_user_id;
 DROP INDEX IF EXISTS user_profile_user_id;
 DROP INDEX IF EXISTS profile_id;
@@ -54,8 +55,17 @@ CREATE UNIQUE INDEX user_profile_user_id ON auth.user_profile(user_id);
 
 -- basic
 CREATE TABLE auth.basic (
-  user_id       BIGINT                   NOT NULL REFERENCES auth.login(id) ON DELETE CASCADE,
+  user_id       BIGINT                   NOT NULL REFERENCES auth.user(id) ON DELETE CASCADE,
   password      TEXT                     NOT NULL,
   creation_date TIMESTAMP WITH TIME ZONE          DEFAULT now()
 );
 CREATE UNIQUE INDEX basic_user_id ON auth.basic(user_id);
+
+-- github
+CREATE TABLE auth.github (
+  user_id       BIGINT                   NOT NULL REFERENCES auth.user(id) ON DELETE CASCADE,
+  login         TEXT                     NOT NULL,
+  creation_date TIMESTAMP WITH TIME ZONE          DEFAULT now()
+);
+CREATE UNIQUE INDEX github_user_id ON auth.github(user_id);
+CREATE UNIQUE INDEX github_login   ON auth.github(login);
