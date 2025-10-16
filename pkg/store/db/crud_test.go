@@ -13,20 +13,12 @@ import (
 func TestCreate(t *testing.T) {
 	t.Parallel()
 
-	type args struct {
-		o model.User
-	}
-
 	cases := map[string]struct {
-		args    args
-		want    uint64
+		want    model.User
 		wantErr error
 	}{
 		"create": {
-			args{
-				o: model.User{},
-			},
-			1,
+			model.User{ID: 1},
 			nil,
 		},
 	}
@@ -46,7 +38,7 @@ func TestCreate(t *testing.T) {
 				mockDatabase.EXPECT().Create(gomock.Any(), gomock.Any()).Return(uint64(1), nil)
 			}
 
-			got, gotErr := instance.Create(context.Background(), testCase.args.o)
+			got, gotErr := instance.Create(context.Background())
 
 			failed := false
 
@@ -59,7 +51,7 @@ func TestCreate(t *testing.T) {
 			}
 
 			if failed {
-				t.Errorf("Create() = (%d, `%s`), want (%d, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
+				t.Errorf("Create() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
 			}
 		})
 	}

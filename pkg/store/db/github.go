@@ -13,9 +13,11 @@ const githubCreateRegistrationQuery = `
 INSERT INTO
   auth.github
 (
+  id,
   user_id,
   login
 ) VALUES (
+  0,
   $1,
   $2
 )
@@ -27,20 +29,40 @@ func (s Service) CreateGitHubRegistration(ctx context.Context, user model.User) 
 	return registrationID, s.db.One(ctx, githubCreateRegistrationQuery, user.ID, registrationID)
 }
 
-const githubGetUserQuery = `
+const githubGetUserByIdQuery = `
 SELECT
   u.id,
   g.login
 FROM
-  auth.github g
+  auth.github g,
+  auth.user u
+WHERE
+  g.id = $1
+  AND g.user_id = u.id
+`
+
+const githubGetUserByRegistrationQuery = `
+SELECT
+  u.id,
+  g.login
+FROM
+  auth.github g,
   auth.user u
 WHERE
   g.login = $1
   AND g.user_id = u.id
 `
 
-func (s Service) GetGitHubUser(ctx context.Context, registration string) (model.User, error) {
+func (s Service) GetGitHubUser(ctx context.Context, id uint64, registration string) (model.User, error) {
 	var item model.User
+
+	query := githubGetUserByIdQuery
+	var args any = id
+
+	if id == 0 {
+		query = githubGetUserByRegistrationQuery
+		args = registration
+	}
 
 	return item, s.db.Get(ctx, func(row pgx.Row) error {
 		err := row.Scan(&item.ID, &item.Name)
@@ -50,7 +72,7 @@ func (s Service) GetGitHubUser(ctx context.Context, registration string) (model.
 		}
 
 		return err
-	}, githubGetUserQuery, registration)
+	}, query, args)
 }
 
 const githubUpdateUserQuery = `

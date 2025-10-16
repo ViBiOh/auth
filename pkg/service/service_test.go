@@ -15,29 +15,18 @@ import (
 func TestCreate(t *testing.T) {
 	t.Parallel()
 
-	type args struct {
-		o model.User
-	}
-
 	cases := map[string]struct {
 		instance Service
-		args     args
 		want     model.User
 		wantErr  error
 	}{
 		"error on create": {
 			Service{},
-			args{
-				o: model.NewUser(1, "admin"),
-			},
 			model.User{},
-			errors.New("create: failed"),
+			errors.New("failed"),
 		},
 		"success": {
 			Service{},
-			args{
-				o: model.NewUser(0, "admin"),
-			},
 			model.NewUser(1, "admin"),
 			nil,
 		},
@@ -49,17 +38,17 @@ func TestCreate(t *testing.T) {
 
 			ctrl := gomock.NewController(t)
 
-			authStorage := mocks.NewUpdatableStorage(ctrl)
+			authStorage := mocks.NewMockStorage(ctrl)
 			testCase.instance.storage = authStorage
 
 			switch intention {
 			case "error on create":
-				authStorage.EXPECT().Create(gomock.Any(), gomock.Any()).Return(uint64(0), errors.New("failed"))
+				authStorage.EXPECT().Create(gomock.Any()).Return(model.User{}, errors.New("failed"))
 			case "success":
-				authStorage.EXPECT().Create(gomock.Any(), gomock.Any()).Return(uint64(1), nil)
+				authStorage.EXPECT().Create(gomock.Any()).Return(model.User{ID: 1, Name: "admin"}, nil)
 			}
 
-			got, gotErr := testCase.instance.Create(context.Background(), testCase.args.o)
+			got, gotErr := testCase.instance.Create(context.Background())
 
 			failed := false
 
@@ -114,7 +103,7 @@ func TestDelete(t *testing.T) {
 
 			ctrl := gomock.NewController(t)
 
-			authStorage := mocks.NewUpdatableStorage(ctrl)
+			authStorage := mocks.NewMockStorage(ctrl)
 			testCase.instance.storage = authStorage
 
 			switch intention {

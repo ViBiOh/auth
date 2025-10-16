@@ -13,7 +13,6 @@ DROP INDEX IF EXISTS github_user_id;
 DROP INDEX IF EXISTS basic_user_id;
 DROP INDEX IF EXISTS user_profile_user_id;
 DROP INDEX IF EXISTS profile_id;
-DROP INDEX IF EXISTS user_login;
 DROP INDEX IF EXISTS user_id;
 
 DROP SCHEMA IF EXISTS auth CASCADE;
@@ -30,7 +29,6 @@ CREATE TABLE auth.user (
 ALTER SEQUENCE auth.user_seq OWNED BY auth.user.id;
 
 CREATE UNIQUE INDEX user_id    ON auth.user(id);
-CREATE UNIQUE INDEX user_login ON auth.user(login);
 
 -- profile
 CREATE SEQUENCE auth.profile_seq;

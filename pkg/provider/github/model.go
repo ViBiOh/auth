@@ -11,6 +11,11 @@ type State struct {
 	Registration string `json:"registration"`
 }
 
+type User struct {
+	Login string `json:"login"`
+	ID    uint64 `json:"id"`
+}
+
 type AuthClaims struct {
 	Token *oauth2.Token `json:"token"`
 	jwt.RegisteredClaims

@@ -17,7 +17,7 @@ var (
 //go:generate mockgen -source=$GOFILE -destination=../mocks/$GOFILE -package=mocks -mock_names UpdatableStorage=UpdatableStorage
 
 type Storage interface {
-	Create(context.Context, User) (uint64, error)
+	Create(context.Context) (User, error)
 	Delete(context.Context, User) error
 }
 

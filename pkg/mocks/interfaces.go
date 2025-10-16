@@ -42,62 +42,23 @@ func (m *MockStorage) EXPECT() *MockStorageMockRecorder {
 	return m.recorder
 }
 
-// Get mocks base method.
-func (m *MockStorage) Get(arg0 context.Context, arg1 uint64) (model.User, error) {
+// Create mocks base method.
+func (m *MockStorage) Create(arg0 context.Context) (model.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", arg0, arg1)
+	ret := m.ctrl.Call(m, "Create", arg0)
 	ret0, _ := ret[0].(model.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Get indicates an expected call of Get.
-func (mr *MockStorageMockRecorder) Get(arg0, arg1 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockStorage)(nil).Get), arg0, arg1)
-}
-
-// UpdatableStorage is a mock of UpdatableStorage interface.
-type UpdatableStorage struct {
-	isgomock struct{}
-	ctrl     *gomock.Controller
-	recorder *UpdatableStorageMockRecorder
-}
-
-// UpdatableStorageMockRecorder is the mock recorder for UpdatableStorage.
-type UpdatableStorageMockRecorder struct {
-	mock *UpdatableStorage
-}
-
-// NewUpdatableStorage creates a new mock instance.
-func NewUpdatableStorage(ctrl *gomock.Controller) *UpdatableStorage {
-	mock := &UpdatableStorage{ctrl: ctrl}
-	mock.recorder = &UpdatableStorageMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *UpdatableStorage) EXPECT() *UpdatableStorageMockRecorder {
-	return m.recorder
-}
-
-// Create mocks base method.
-func (m *UpdatableStorage) Create(arg0 context.Context, arg1 model.User) (uint64, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", arg0, arg1)
-	ret0, _ := ret[0].(uint64)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
 // Create indicates an expected call of Create.
-func (mr *UpdatableStorageMockRecorder) Create(arg0, arg1 any) *gomock.Call {
+func (mr *MockStorageMockRecorder) Create(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*UpdatableStorage)(nil).Create), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockStorage)(nil).Create), arg0)
 }
 
 // Delete mocks base method.
-func (m *UpdatableStorage) Delete(arg0 context.Context, arg1 model.User) error {
+func (m *MockStorage) Delete(arg0 context.Context, arg1 model.User) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -105,38 +66,9 @@ func (m *UpdatableStorage) Delete(arg0 context.Context, arg1 model.User) error {
 }
 
 // Delete indicates an expected call of Delete.
-func (mr *UpdatableStorageMockRecorder) Delete(arg0, arg1 any) *gomock.Call {
+func (mr *MockStorageMockRecorder) Delete(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*UpdatableStorage)(nil).Delete), arg0, arg1)
-}
-
-// Get mocks base method.
-func (m *UpdatableStorage) Get(arg0 context.Context, arg1 uint64) (model.User, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", arg0, arg1)
-	ret0, _ := ret[0].(model.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Get indicates an expected call of Get.
-func (mr *UpdatableStorageMockRecorder) Get(arg0, arg1 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*UpdatableStorage)(nil).Get), arg0, arg1)
-}
-
-// Update mocks base method.
-func (m *UpdatableStorage) Update(arg0 context.Context, arg1 model.User) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Update indicates an expected call of Update.
-func (mr *UpdatableStorageMockRecorder) Update(arg0, arg1 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*UpdatableStorage)(nil).Update), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockStorage)(nil).Delete), arg0, arg1)
 }
 
 // MockIdentification is a mock of Identification interface.

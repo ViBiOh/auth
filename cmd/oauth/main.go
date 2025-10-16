@@ -45,10 +45,32 @@ func main() {
 	redisClient, err := redis.New(ctx, redisConfig, nil, nil)
 	logger.FatalfOnErr(ctx, err, "redis")
 
-	dbProvider, err := db.New(ctx, dbConfig, nil)
-	logger.FatalfOnErr(ctx, err, "create db provider")
+	database, err := db.New(ctx, dbConfig, nil)
+	logger.FatalfOnErr(ctx, err, "create database")
 
-	githubService := github.New(githubConfig, redisClient, dbStore.New(dbProvider))
+	dbService := dbStore.New(database)
+
+	var registration string
+	err = dbService.DoAtomic(ctx, func(ctx context.Context) error {
+		user, err := dbService.Create(ctx)
+		if err != nil {
+			return fmt.Errorf("create user: %w", err)
+		}
+
+		user.Name = "ViBiOh"
+
+		registration, err = dbService.CreateGitHubRegistration(ctx, user)
+		if err != nil {
+			return fmt.Errorf("create github registration: %w", err)
+		}
+
+		return nil
+	})
+	logger.FatalfOnErr(ctx, err, "do atomic ")
+
+	fmt.Printf("Connect to http://127.0.0.1:%d/auth/github/register?registration=%s\n", serverConfig.Port, registration)
+
+	githubService := github.New(githubConfig, redisClient, dbService)
 	authMiddleware := middleware.New(githubService, "", nil)
 
 	authMux := http.NewServeMux()
@@ -64,6 +86,7 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/auth/github/callback", githubService.Callback)
+	mux.HandleFunc("/auth/github/register", githubService.Register)
 	mux.Handle("/", authMiddleware.Middleware(authMux))
 
 	appServer := server.New(serverConfig)
