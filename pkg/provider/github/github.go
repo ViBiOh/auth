@@ -16,7 +16,6 @@ import (
 	"github.com/ViBiOh/httputils/v4/pkg/httperror"
 	"github.com/ViBiOh/httputils/v4/pkg/httpjson"
 	"github.com/ViBiOh/httputils/v4/pkg/id"
-	httpmodel "github.com/ViBiOh/httputils/v4/pkg/model"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
@@ -147,13 +146,13 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 
 	rawPayload, err := s.cache.Load(ctx, state)
 	if err != nil {
-		httperror.HandleError(ctx, w, httpmodel.WrapNotFound(fmt.Errorf("state not found: %w", err)))
+		httperror.NotFound(ctx, w, fmt.Errorf("state not found: %w", err))
 		return
 	}
 
 	var payload State
 	if err := json.Unmarshal(rawPayload, &payload); err != nil {
-		httperror.HandleError(ctx, w, httpmodel.WrapNotFound(fmt.Errorf("unmarshal state: %w", err)))
+		httperror.NotFound(ctx, w, fmt.Errorf("unmarshal state: %w", err))
 		return
 	}
 
@@ -161,12 +160,12 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 
 	oauth2Token, err := s.config.Exchange(ctx, r.URL.Query().Get("code"), oauth2.VerifierOption(payload.Verifier))
 	if err != nil {
-		httperror.HandleError(ctx, w, httpmodel.WrapUnauthorized(fmt.Errorf("exchange token: %w", err)))
+		httperror.Unauthorized(ctx, w, fmt.Errorf("exchange token: %w", err))
 		return
 	}
 
 	if err := s.cache.Delete(ctx, state); err != nil {
-		httperror.HandleError(ctx, w, httpmodel.WrapNotFound(fmt.Errorf("delete state: %w", err)))
+		httperror.NotFound(ctx, w, fmt.Errorf("delete state: %w", err))
 		return
 	}
 
@@ -186,7 +185,7 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 	user, err := s.provider.GetGitHubUser(ctx, githubUser.ID, payload.Registration)
 	if err != nil {
 		if errors.Is(err, model.ErrUnknownUser) {
-			httperror.HandleError(ctx, w, httpmodel.WrapNotFound(fmt.Errorf("unregistered user %d - `%s`", githubUser.ID, payload.Registration)))
+			httperror.NotFound(ctx, w, fmt.Errorf("unregistered user %d - `%s`", githubUser.ID, payload.Registration))
 			return
 		}
 
