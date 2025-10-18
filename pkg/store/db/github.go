@@ -59,7 +59,7 @@ func (s Service) GetGitHubUser(ctx context.Context, id uint64, registration stri
 	query := githubGetUserByIdQuery
 	var args any = id
 
-	if id == 0 {
+	if len(registration) != 0 {
 		query = githubGetUserByRegistrationQuery
 		args = registration
 	}

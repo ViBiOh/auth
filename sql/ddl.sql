@@ -57,6 +57,7 @@ CREATE TABLE auth.basic (
   password      TEXT                     NOT NULL,
   creation_date TIMESTAMP WITH TIME ZONE          DEFAULT now()
 );
+
 CREATE UNIQUE INDEX basic_user_id ON auth.basic(user_id);
 
 -- github
@@ -66,5 +67,6 @@ CREATE TABLE auth.github (
   login         TEXT                     NOT NULL,
   creation_date TIMESTAMP WITH TIME ZONE          DEFAULT now()
 );
+
 CREATE UNIQUE INDEX github_user_id ON auth.github(user_id);
-CREATE UNIQUE INDEX github_login   ON auth.github(login);
+CREATE INDEX github_login   ON auth.github(login);

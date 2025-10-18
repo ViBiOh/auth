@@ -23,6 +23,7 @@ import (
 
 const (
 	verifierCacheKey = "auth:github:verifier:"
+	updateCacheKey   = "auth:github:update:"
 	cookieName       = "_auth"
 )
 
