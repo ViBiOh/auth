@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/ViBiOh/auth/v2/pkg/model"
+	"github.com/ViBiOh/auth/v3/pkg/model"
 	"github.com/ViBiOh/flags"
 	"github.com/ViBiOh/httputils/v4/pkg/httperror"
 	"github.com/ViBiOh/httputils/v4/pkg/httpjson"

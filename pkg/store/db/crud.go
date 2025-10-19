@@ -3,7 +3,7 @@ package db
 import (
 	"context"
 
-	"github.com/ViBiOh/auth/v2/pkg/model"
+	"github.com/ViBiOh/auth/v3/pkg/model"
 )
 
 func (s Service) DoAtomic(ctx context.Context, action func(context.Context) error) error {

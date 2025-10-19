@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/ViBiOh/auth/v2/pkg/model"
+	"github.com/ViBiOh/auth/v3/pkg/model"
 	"github.com/ViBiOh/httputils/v4/pkg/id"
 	"github.com/jackc/pgx/v5"
 )

@@ -5,9 +5,9 @@ import (
 	"flag"
 	"os"
 
-	"github.com/ViBiOh/auth/v2/pkg/middleware"
-	"github.com/ViBiOh/auth/v2/pkg/provider/basic"
-	dbStore "github.com/ViBiOh/auth/v2/pkg/store/db"
+	"github.com/ViBiOh/auth/v3/pkg/middleware"
+	"github.com/ViBiOh/auth/v3/pkg/provider/basic"
+	dbStore "github.com/ViBiOh/auth/v3/pkg/store/db"
 	"github.com/ViBiOh/flags"
 	"github.com/ViBiOh/httputils/v4/pkg/db"
 	"github.com/ViBiOh/httputils/v4/pkg/health"

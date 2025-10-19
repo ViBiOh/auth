@@ -5,8 +5,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/ViBiOh/auth/v2/pkg/mocks"
-	"github.com/ViBiOh/auth/v2/pkg/model"
+	"github.com/ViBiOh/auth/v3/pkg/mocks"
+	"github.com/ViBiOh/auth/v3/pkg/model"
 	"github.com/jackc/pgx/v5"
 	"go.uber.org/mock/gomock"
 )

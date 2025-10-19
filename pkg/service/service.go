@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 
-	"github.com/ViBiOh/auth/v2/pkg/model"
+	"github.com/ViBiOh/auth/v3/pkg/model"
 )
 
 type Service struct {

@@ -3,7 +3,7 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/ViBiOh/auth/v2/pkg/model"
+	"github.com/ViBiOh/auth/v3/pkg/model"
 	httpmodel "github.com/ViBiOh/httputils/v4/pkg/model"
 	"go.opentelemetry.io/otel/trace"
 )

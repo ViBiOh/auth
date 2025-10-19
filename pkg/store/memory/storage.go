@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/ViBiOh/auth/v2/pkg/model"
+	"github.com/ViBiOh/auth/v3/pkg/model"
 )
 
 func (s Service) Create(_ context.Context) (model.User, error) {

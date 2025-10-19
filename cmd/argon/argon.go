@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ViBiOh/auth/v2/pkg/argon"
+	"github.com/ViBiOh/auth/v3/pkg/argon"
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
 )
 

@@ -1,6 +1,6 @@
 package memory
 
-import "github.com/ViBiOh/auth/v2/pkg/model"
+import "github.com/ViBiOh/auth/v3/pkg/model"
 
 type basicUser struct {
 	model.User

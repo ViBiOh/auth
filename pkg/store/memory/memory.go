@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ViBiOh/auth/v2/pkg/model"
-	"github.com/ViBiOh/auth/v2/pkg/provider/basic"
+	"github.com/ViBiOh/auth/v3/pkg/model"
+	"github.com/ViBiOh/auth/v3/pkg/provider/basic"
 	"github.com/ViBiOh/flags"
 )
 

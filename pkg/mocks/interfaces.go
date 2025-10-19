@@ -14,7 +14,7 @@ import (
 	http "net/http"
 	reflect "reflect"
 
-	model "github.com/ViBiOh/auth/v2/pkg/model"
+	model "github.com/ViBiOh/auth/v3/pkg/model"
 	gomock "go.uber.org/mock/gomock"
 )
 

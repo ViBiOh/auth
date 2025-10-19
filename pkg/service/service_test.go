@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ViBiOh/auth/v2/pkg/mocks"
-	"github.com/ViBiOh/auth/v2/pkg/model"
+	"github.com/ViBiOh/auth/v3/pkg/mocks"
+	"github.com/ViBiOh/auth/v3/pkg/model"
 	"go.uber.org/mock/gomock"
 )
 

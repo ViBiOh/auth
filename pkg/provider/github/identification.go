@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/ViBiOh/auth/v2/pkg/model"
+	"github.com/ViBiOh/auth/v3/pkg/model"
 	"github.com/golang-jwt/jwt/v5"
 )
 

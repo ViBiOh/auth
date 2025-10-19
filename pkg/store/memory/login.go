@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/ViBiOh/auth/v2/pkg/argon"
-	"github.com/ViBiOh/auth/v2/pkg/model"
+	"github.com/ViBiOh/auth/v3/pkg/argon"
+	"github.com/ViBiOh/auth/v3/pkg/model"
 )
 
 func (s Service) GetBasicUser(_ context.Context, _ *http.Request, login, password string) (model.User, error) {
