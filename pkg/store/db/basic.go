@@ -16,13 +16,13 @@ import (
 const basicUserQuery = `
 SELECT
   u.id,
-  u.login,
+  b.login,
   b.password
 FROM
   auth.user u,
   auth.basic b
 WHERE
-  u.login = $1
+  b.login = $1
   AND u.id = b.user_id
 `
 
