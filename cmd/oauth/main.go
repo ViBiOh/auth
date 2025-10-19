@@ -52,16 +52,9 @@ func main() {
 
 	var registration string
 	err = dbService.DoAtomic(ctx, func(ctx context.Context) error {
-		user, err := dbService.Create(ctx)
+		_, registration, err = dbService.CreateGithub(ctx)
 		if err != nil {
-			return fmt.Errorf("create user: %w", err)
-		}
-
-		user.Name = "ViBiOh"
-
-		registration, err = dbService.CreateGitHubRegistration(ctx, user)
-		if err != nil {
-			return fmt.Errorf("create github registration: %w", err)
+			return fmt.Errorf("create github: %w", err)
 		}
 
 		return nil

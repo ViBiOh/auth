@@ -68,20 +68,29 @@ INSERT INTO
   auth.basic
 (
   user_id,
+  login,
   password
 ) VALUES (
   $1,
-  $2
+  $2,
+  $3
 )
 `
 
-func (s Service) SavePassword(ctx context.Context, user model.User, password string) error {
-	password, err := argon.GenerateFromPassword(password)
+func (s Service) CreateBasic(ctx context.Context, login, password string) (model.User, error) {
+	user, err := s.Create(ctx)
 	if err != nil {
-		return fmt.Errorf("hash password: %w", err)
+		return user, fmt.Errorf("create user: %w", err)
 	}
 
-	return s.db.One(ctx, insertPasswordQuery, user.ID, password)
+	password, err = argon.GenerateFromPassword(password)
+	if err != nil {
+		return user, fmt.Errorf("hash password: %w", err)
+	}
+
+	user.Name = login
+
+	return user, s.db.One(ctx, insertPasswordQuery, user.ID, login, password)
 }
 
 const updatePasswordQuery = `

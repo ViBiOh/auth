@@ -23,11 +23,6 @@ type Provider interface {
 	IsAuthorized(ctx context.Context, user model.User, profile string) bool
 }
 
-type PasswordStorage interface {
-	SavePassword(ctx context.Context, user model.User, password string) error
-	UpdatePassword(ctx context.Context, user model.User, password string) error
-}
-
 type ForbiddenHandler func(http.ResponseWriter, *http.Request, model.User, string)
 
 type Service struct {

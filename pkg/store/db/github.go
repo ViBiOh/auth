@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/ViBiOh/auth/v3/pkg/model"
 	"github.com/ViBiOh/httputils/v4/pkg/id"
@@ -23,10 +24,15 @@ INSERT INTO
 )
 `
 
-func (s Service) CreateGitHubRegistration(ctx context.Context, user model.User) (string, error) {
+func (s Service) CreateGithub(ctx context.Context) (model.User, string, error) {
+	user, err := s.Create(ctx)
+	if err != nil {
+		return user, "", fmt.Errorf("create user: %w", err)
+	}
+
 	registrationID := id.New()
 
-	return registrationID, s.db.One(ctx, githubCreateRegistrationQuery, user.ID, registrationID)
+	return user, registrationID, s.db.One(ctx, githubCreateRegistrationQuery, user.ID, registrationID)
 }
 
 const githubGetUserByIdQuery = `
