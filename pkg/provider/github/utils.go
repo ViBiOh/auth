@@ -37,7 +37,7 @@ func (s Service) setCallbackCookie(w http.ResponseWriter, name, value string) {
 		Value:    value,
 		MaxAge:   int(s.jwtExpiration.Seconds()),
 		Path:     "/",
-		Secure:   false,
+		Secure:   true,
 		HttpOnly: true,
 		SameSite: http.SameSiteStrictMode,
 	})
