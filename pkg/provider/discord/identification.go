@@ -1,4 +1,4 @@
-package github
+package discord
 
 import (
 	"context"
@@ -31,7 +31,7 @@ func (s Service) GetUser(ctx context.Context, r *http.Request) (model.User, erro
 		key := updateCacheKey + strconv.FormatUint(claim.User.ID, 10)
 
 		if content, _ := s.cache.Load(ctx, key); content == nil {
-			if _, err := s.config.Client(ctx, claim.Token).Get("https://api.github.com/user"); err != nil {
+			if _, err := s.config.Client(ctx, claim.Token).Get("https://discord.com/api/users/@me"); err != nil {
 				return model.User{}, fmt.Errorf("refresh user: %w", err)
 			}
 

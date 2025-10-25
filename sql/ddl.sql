@@ -1,4 +1,5 @@
 -- clean
+DROP TABLE IF EXISTS auth.discord;
 DROP TABLE IF EXISTS auth.github;
 DROP TABLE IF EXISTS auth.basic;
 DROP TABLE IF EXISTS auth.user_profile;
@@ -8,6 +9,8 @@ DROP TABLE IF EXISTS auth.user;
 DROP SEQUENCE IF EXISTS auth.profile_seq;
 DROP SEQUENCE IF EXISTS auth.user_seq;
 
+DROP INDEX IF EXISTS discord_login;
+DROP INDEX IF EXISTS discord_user_id;
 DROP INDEX IF EXISTS github_login;
 DROP INDEX IF EXISTS github_user_id;
 DROP INDEX IF EXISTS basic_user_id;
@@ -70,3 +73,14 @@ CREATE TABLE auth.github (
 
 CREATE UNIQUE INDEX github_user_id ON auth.github(user_id);
 CREATE INDEX github_login   ON auth.github(login);
+
+-- discord
+CREATE TABLE auth.discord (
+  user_id       BIGINT                   NOT NULL REFERENCES auth.user(id) ON DELETE CASCADE,
+  id            TEXT                     NOT NULL,
+  username      TEXT                     NOT NULL,
+  creation_date TIMESTAMP WITH TIME ZONE          DEFAULT now()
+);
+
+CREATE UNIQUE INDEX discord_user_id ON auth.discord(user_id);
+CREATE INDEX discord_login   ON auth.discord(id);

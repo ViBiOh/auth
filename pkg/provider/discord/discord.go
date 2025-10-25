@@ -1,4 +1,4 @@
-package github
+package discord
 
 import (
 	"context"
@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"strconv"
 	"time"
 
 	"github.com/ViBiOh/auth/v3/pkg/cookie"
@@ -18,12 +17,12 @@ import (
 	"github.com/ViBiOh/httputils/v4/pkg/httpjson"
 	"github.com/ViBiOh/httputils/v4/pkg/id"
 	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/github"
+	"golang.org/x/oauth2/endpoints"
 )
 
 const (
-	verifierCacheKey = "auth:github:verifier:"
-	updateCacheKey   = "auth:github:update:"
+	verifierCacheKey = "auth:discord:verifier:"
+	updateCacheKey   = "auth:discord:update:"
 	cookieName       = "_auth"
 )
 
@@ -40,8 +39,8 @@ type Cache interface {
 
 type Provider interface {
 	IsAuthorized(ctx context.Context, user model.User, profile string) bool
-	GetGitHubUser(ctx context.Context, id uint64, registration string) (model.User, error)
-	UpdateGitHubUser(ctx context.Context, user model.User, githubID, githubLogin string) error
+	GetDiscordUser(ctx context.Context, id, registration string) (model.User, error)
+	UpdateDiscordUser(ctx context.Context, user model.User, githubID, githubLogin string) error
 }
 
 type ForbiddenHandler func(http.ResponseWriter, *http.Request, model.User, string)
@@ -67,10 +66,10 @@ type Config struct {
 func Flags(fs *flag.FlagSet, prefix string, overrides ...flags.Override) *Config {
 	var config Config
 
-	flags.New("ClientID", "Client ID").Prefix(prefix).DocPrefix("github").StringVar(fs, &config.clientID, "", overrides)
-	flags.New("ClientSecret", "Client Secret").Prefix(prefix).DocPrefix("github").StringVar(fs, &config.clientSecret, "", overrides)
-	flags.New("RedirectURL", "URL used for redirection").Prefix(prefix).DocPrefix("github").StringVar(fs, &config.redirectURL, "http://127.0.0.1:1080/auth/github/callback", overrides)
-	flags.New("OnSuccessPath", "Path for redirecting on success").Prefix(prefix).DocPrefix("github").StringVar(fs, &config.onSuccessPath, "/", overrides)
+	flags.New("ClientID", "Client ID").Prefix(prefix).DocPrefix("discord").StringVar(fs, &config.clientID, "", overrides)
+	flags.New("ClientSecret", "Client Secret").Prefix(prefix).DocPrefix("discord").StringVar(fs, &config.clientSecret, "", overrides)
+	flags.New("RedirectURL", "URL used for redirection").Prefix(prefix).DocPrefix("discord").StringVar(fs, &config.redirectURL, "http://127.0.0.1:1080/auth/discord/callback", overrides)
+	flags.New("OnSuccessPath", "Path for redirecting on success").Prefix(prefix).DocPrefix("discord").StringVar(fs, &config.onSuccessPath, "/", overrides)
 
 	return &config
 }
@@ -80,8 +79,9 @@ func New(config *Config, cache Cache, provider Provider, cookie cookie.Service) 
 		config: oauth2.Config{
 			ClientID:     config.clientID,
 			ClientSecret: config.clientSecret,
-			Endpoint:     github.Endpoint,
+			Endpoint:     endpoints.Discord,
 			RedirectURL:  config.redirectURL,
+			Scopes:       []string{"identify"},
 		},
 		onSuccessPath: config.onSuccessPath,
 
@@ -159,22 +159,22 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	client := s.config.Client(ctx, oauth2Token)
-	resp, err := client.Get("https://api.github.com/user")
+	resp, err := client.Get("https://discord.com/api/users/@me")
 	if err != nil {
 		httperror.InternalServerError(ctx, w, fmt.Errorf("get /user: %w", err))
 		return
 	}
 
-	githubUser, err := httpjson.Read[User](resp)
+	discordUser, err := httpjson.Read[User](resp)
 	if err != nil {
 		httperror.InternalServerError(ctx, w, fmt.Errorf("read /user: %w", err))
 		return
 	}
 
-	user, err := s.provider.GetGitHubUser(ctx, githubUser.ID, payload.Registration)
+	user, err := s.provider.GetDiscordUser(ctx, discordUser.ID, payload.Registration)
 	if err != nil {
 		if errors.Is(err, model.ErrUnknownUser) {
-			httperror.NotFound(ctx, w, fmt.Errorf("unregistered user %d - `%s`", githubUser.ID, payload.Registration))
+			httperror.NotFound(ctx, w, fmt.Errorf("unregistered user `%s` - `%s`", discordUser.ID, payload.Registration))
 			return
 		}
 
@@ -187,7 +187,7 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if isRegistration {
-		if err := s.provider.UpdateGitHubUser(ctx, user, strconv.FormatUint(githubUser.ID, 10), githubUser.Login); err != nil {
+		if err := s.provider.UpdateDiscordUser(ctx, user, discordUser.ID, discordUser.Username); err != nil {
 			httperror.InternalServerError(ctx, w, fmt.Errorf("save github user: %w", err))
 			return
 		}

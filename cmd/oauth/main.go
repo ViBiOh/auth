@@ -8,9 +8,10 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/ViBiOh/auth/v3/pkg/cookie"
 	"github.com/ViBiOh/auth/v3/pkg/middleware"
 	"github.com/ViBiOh/auth/v3/pkg/model"
-	"github.com/ViBiOh/auth/v3/pkg/provider/github"
+	"github.com/ViBiOh/auth/v3/pkg/provider/discord"
 	dbStore "github.com/ViBiOh/auth/v3/pkg/store/db"
 	"github.com/ViBiOh/flags"
 	"github.com/ViBiOh/httputils/v4/pkg/db"
@@ -31,7 +32,8 @@ func main() {
 
 	serverConfig := server.Flags(fs, "")
 	redisConfig := redis.Flags(fs, "redis")
-	githubConfig := github.Flags(fs, "github")
+	cookieConfig := cookie.Flags(fs, "cookie")
+	discordConfig := discord.Flags(fs, "discord")
 	dbConfig := db.Flags(fs, "db")
 
 	_ = fs.Parse(os.Args[1:])
@@ -52,19 +54,20 @@ func main() {
 
 	var registration string
 	err = dbService.DoAtomic(ctx, func(ctx context.Context) error {
-		_, registration, err = dbService.CreateGithub(ctx)
+		_, registration, err = dbService.CreateDisord(ctx)
 		if err != nil {
-			return fmt.Errorf("create github: %w", err)
+			return fmt.Errorf("create discord: %w", err)
 		}
 
 		return nil
 	})
 	logger.FatalfOnErr(ctx, err, "do atomic ")
 
-	fmt.Printf("Connect to http://127.0.0.1:%d/auth/github/register?registration=%s\n", serverConfig.Port, registration)
+	fmt.Printf("Connect to http://127.0.0.1:%d/auth/discord/register?registration=%s\n", serverConfig.Port, registration)
 
-	githubService := github.New(githubConfig, redisClient, dbService)
-	authMiddleware := middleware.New(githubService, "", nil)
+	cookieService := cookie.New(cookieConfig)
+	discordService := discord.New(discordConfig, redisClient, dbService, cookieService)
+	authMiddleware := middleware.New(discordService, "", nil)
 
 	authMux := http.NewServeMux()
 	authMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -78,8 +81,8 @@ func main() {
 	})
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/auth/github/callback", githubService.Callback)
-	mux.HandleFunc("/auth/github/register", githubService.Register)
+	mux.HandleFunc("/auth/discord/callback", discordService.Callback)
+	mux.HandleFunc("/auth/discord/register", discordService.Register)
 	mux.Handle("/", authMiddleware.Middleware(authMux))
 
 	appServer := server.New(serverConfig)
