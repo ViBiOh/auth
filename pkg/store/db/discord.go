@@ -86,11 +86,12 @@ UPDATE
 	auth.discord
 SET
 	id = $2,
-	username = $3
+	username = $3,
+	avatar = $4
 WHERE
 	user_id = $1
 `
 
-func (s Service) UpdateDiscordUser(ctx context.Context, user model.User, id, username string) error {
-	return s.db.One(ctx, discordUpdateUserQuery, user.ID, id, username)
+func (s Service) UpdateDiscordUser(ctx context.Context, user model.User, id, username, avatar string) error {
+	return s.db.One(ctx, discordUpdateUserQuery, user.ID, id, username, avatar)
 }

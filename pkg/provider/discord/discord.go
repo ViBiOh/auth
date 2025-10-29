@@ -40,7 +40,7 @@ type Cache interface {
 type Provider interface {
 	IsAuthorized(ctx context.Context, user model.User, profile string) bool
 	GetDiscordUser(ctx context.Context, id, registration string) (model.User, error)
-	UpdateDiscordUser(ctx context.Context, user model.User, githubID, githubLogin string) error
+	UpdateDiscordUser(ctx context.Context, user model.User, id, username, avatar string) error
 }
 
 type ForbiddenHandler func(http.ResponseWriter, *http.Request, model.User, string)
@@ -187,7 +187,7 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if isRegistration {
-		if err := s.provider.UpdateDiscordUser(ctx, user, discordUser.ID, discordUser.Username); err != nil {
+		if err := s.provider.UpdateDiscordUser(ctx, user, discordUser.ID, discordUser.Username, discordUser.Avatar); err != nil {
 			httperror.InternalServerError(ctx, w, fmt.Errorf("save github user: %w", err))
 			return
 		}
@@ -209,8 +209,9 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 	<head>
 		<meta http-equiv="refresh" content=1;url="%[1]s">
 	</head>
-	<body>
-		<a href="%[1]s">Continue...</a>
+	<body style="background-color: darkgrey;">
+		<img style="display: block; margin: 0 auto; width: 120px;" src="%[2]s">
+		<a style="display: block; text-align: center; width: 100vw;" href="%[1]s">Continue...</a>
 	</body>
-</html>`, redirectPath)
+</html>`, redirectPath, discordUser.Image())
 }

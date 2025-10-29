@@ -79,6 +79,7 @@ CREATE TABLE auth.discord (
   user_id       BIGINT                   NOT NULL REFERENCES auth.user(id) ON DELETE CASCADE,
   id            TEXT                     NOT NULL,
   username      TEXT                     NOT NULL,
+  avatar        TEXT                     NOT NULL,
   creation_date TIMESTAMP WITH TIME ZONE          DEFAULT now()
 );
 

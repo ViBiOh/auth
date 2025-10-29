@@ -209,8 +209,9 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 	<head>
 		<meta http-equiv="refresh" content=1;url="%[1]s">
 	</head>
-	<body>
-		<a href="%[1]s">Continue...</a>
+	<body style="background-color: darkgrey;">
+		<img style="display: block; margin: 0 auto; width: 120px;" src="%[2]s">
+		<a style="display: block; text-align: center; width: 100vw;" href="%[1]s">Continue...</a>
 	</body>
-</html>`, redirectPath)
+</html>`, redirectPath, githubUser.Image())
 }
