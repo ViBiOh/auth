@@ -20,7 +20,7 @@ type User struct {
 }
 
 func (u User) Image() string {
-	return fmt.Sprintf("https://cdn.discordapp.com/%s/%s.webp", u.ID, u.Avatar)
+	return fmt.Sprintf("https://cdn.discordapp.com/avatars/%s/%s.webp", u.ID, u.Avatar)
 }
 
 type AuthClaims struct {

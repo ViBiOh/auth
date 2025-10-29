@@ -16,11 +16,13 @@ INSERT INTO
 (
 	id,
 	user_id,
-	username
+	username,
+	avatar
 ) VALUES (
 	0,
 	$1,
-	$2
+	$2,
+	''
 )
 `
 
