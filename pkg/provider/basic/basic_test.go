@@ -90,7 +90,7 @@ func TestGetUser(t *testing.T) {
 	}
 }
 
-func TestOnError(t *testing.T) {
+func TestOnUnauthorized(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
@@ -137,7 +137,7 @@ func TestOnError(t *testing.T) {
 			t.Parallel()
 
 			writer := httptest.NewRecorder()
-			New(testProvider{}, WithRealm(testCase.args.realm)).OnError(writer, testCase.request, testCase.args.err)
+			New(testProvider{}, WithRealm(testCase.args.realm)).OnUnauthorized(writer, testCase.request, testCase.args.err)
 
 			if got := writer.Code; got != testCase.wantStatus {
 				t.Errorf("OnError = %d, want %d", got, testCase.wantStatus)

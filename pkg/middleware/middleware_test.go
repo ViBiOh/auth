@@ -17,7 +17,9 @@ var errTestProvider = errors.New("decode")
 type testProvider struct{}
 
 func (t testProvider) GetUser(_ context.Context, r *http.Request) (model.User, error) {
-	if r.Header.Get("Authorization") == "Basic YWRtaW46cGFzc3dvcmQ=" {
+	if r.Header.Get("Authorization") == "Basic Z3Vlc3Q6Z3Vlc3Q=" {
+		return model.User{ID: 4000, Name: "guest"}, nil
+	} else if r.Header.Get("Authorization") == "Basic YWRtaW46cGFzc3dvcmQ=" {
 		return model.User{ID: 8000, Name: "admin"}, nil
 	} else if r.Header.Get("Authorization") == "Basic" {
 		return model.User{}, errTestProvider
@@ -26,22 +28,23 @@ func (t testProvider) GetUser(_ context.Context, r *http.Request) (model.User, e
 	return model.User{}, model.ErrMalformedContent
 }
 
-func (t testProvider) OnError(w http.ResponseWriter, _ *http.Request, err error) {
+func (t testProvider) OnUnauthorized(w http.ResponseWriter, _ *http.Request, err error) {
 	http.Error(w, err.Error(), http.StatusTeapot)
 }
 
-func (t testProvider) IsAuthorized(_ context.Context, _ model.User, profile string) bool {
-	return profile == "admin"
+func (t testProvider) IsAuthorized(_ context.Context, user model.User) bool {
+	return user.Name == "admin"
 }
 
-func (t testProvider) OnForbidden(w http.ResponseWriter, _ *http.Request, user model.User, profile string) {
-	http.Error(w, fmt.Sprintf("%s has not the `%s` profile", user.Name, profile), http.StatusForbidden)
+func (t testProvider) OnForbidden(w http.ResponseWriter, _ *http.Request, user model.User) {
+	http.Error(w, fmt.Sprintf("%s is not authorized", user.Name), http.StatusForbidden)
 }
 
 func TestMiddleware(t *testing.T) {
 	t.Parallel()
 
-	basicAuthRequest, _ := request.Get("/").BasicAuth("admin", "password").Build(context.Background(), nil)
+	adminRequest, _ := request.Get("/").BasicAuth("admin", "password").Build(context.Background(), nil)
+	guestRequest, _ := request.Get("/").BasicAuth("guest", "guest").Build(context.Background(), nil)
 
 	cases := map[string]struct {
 		instance   Service
@@ -50,26 +53,26 @@ func TestMiddleware(t *testing.T) {
 		wantStatus int
 	}{
 		"options": {
-			New(testProvider{}, "admin", nil),
+			New(testProvider{}),
 			httptest.NewRequest(http.MethodOptions, "/", nil),
 			"",
 			http.StatusNoContent,
 		},
 		"failure": {
-			New(testProvider{}, "admin", nil),
+			New(testProvider{}),
 			httptest.NewRequest(http.MethodGet, "/", nil),
 			model.ErrMalformedContent.Error() + "\n",
 			http.StatusTeapot,
 		},
-		"unauthorized": {
-			New(testProvider{}, "regular", nil),
-			basicAuthRequest,
-			"admin has not the `regular` profile\n",
+		"forbidden": {
+			New(testProvider{}, WithAuthorization(testProvider{})),
+			guestRequest,
+			"guest is not authorized\n",
 			http.StatusForbidden,
 		},
 		"success": {
-			New(testProvider{}, "admin", nil),
-			basicAuthRequest,
+			New(testProvider{}),
+			adminRequest,
 			"GET",
 			http.StatusOK,
 		},

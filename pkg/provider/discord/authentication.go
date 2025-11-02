@@ -42,6 +42,6 @@ func (s Service) GetUser(ctx context.Context, r *http.Request) (model.User, erro
 	return claim.User, nil
 }
 
-func (s Service) OnError(w http.ResponseWriter, r *http.Request, err error) {
+func (s Service) OnUnauthorized(w http.ResponseWriter, r *http.Request, err error) {
 	s.redirect(w, r, "")
 }

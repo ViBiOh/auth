@@ -41,7 +41,7 @@ func main() {
 
 	authProvider := dbStore.New(appDB)
 	identProvider := basic.New(authProvider)
-	middlewareApp := middleware.New(identProvider, "", nil)
+	middlewareApp := middleware.New(identProvider)
 
 	appServer := server.New(serverConfig)
 	go appServer.Start(healthService.EndCtx(), httputils.Handler(nil, healthService, middlewareApp.Middleware))

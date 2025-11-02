@@ -26,10 +26,7 @@ const (
 	cookieName       = "_auth"
 )
 
-var (
-	_ model.Identification = Service{}
-	_ model.Authorization  = Service{}
-)
+var _ model.Authentication = Service{}
 
 type Cache interface {
 	Load(ctx context.Context, key string) ([]byte, error)
@@ -38,7 +35,6 @@ type Cache interface {
 }
 
 type Provider interface {
-	IsAuthorized(ctx context.Context, user model.User, profile string) bool
 	GetDiscordUser(ctx context.Context, id, registration string) (model.User, error)
 	UpdateDiscordUser(ctx context.Context, user model.User, id, username, avatar string) error
 }
@@ -49,12 +45,11 @@ type Service struct {
 	config        oauth2.Config
 	cache         Cache
 	provider      Provider
-	onForbidden   ForbiddenHandler
 	onSuccessPath string
 	cookie        cookie.Service
 }
 
-var _ model.Identification = Service{}
+var _ model.Authentication = Service{}
 
 type Config struct {
 	clientID      string
@@ -88,16 +83,6 @@ func New(config *Config, cache Cache, provider Provider, cookie cookie.Service) 
 		cache:    cache,
 		provider: provider,
 		cookie:   cookie,
-	}
-}
-
-type Option func(Service) Service
-
-func WithForbiddenHandler(onForbidden ForbiddenHandler) Option {
-	return func(instance Service) Service {
-		instance.onForbidden = onForbidden
-
-		return instance
 	}
 }
 

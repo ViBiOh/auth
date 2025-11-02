@@ -40,7 +40,7 @@ func (s Service) GetUser(ctx context.Context, r *http.Request) (model.User, erro
 	return s.provider.GetBasicUser(ctx, r, login, password)
 }
 
-func (s Service) OnError(w http.ResponseWriter, r *http.Request, err error) {
+func (s Service) OnUnauthorized(w http.ResponseWriter, r *http.Request, err error) {
 	if errors.Is(err, model.ErrMalformedContent) {
 		err = nil // We don't want to log it
 	}

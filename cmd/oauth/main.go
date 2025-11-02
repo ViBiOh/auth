@@ -67,7 +67,7 @@ func main() {
 
 	cookieService := cookie.New(cookieConfig)
 	discordService := discord.New(discordConfig, redisClient, dbService, cookieService)
-	authMiddleware := middleware.New(discordService, "", nil)
+	authMiddleware := middleware.New(discordService)
 
 	authMux := http.NewServeMux()
 	authMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

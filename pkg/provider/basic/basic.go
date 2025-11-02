@@ -13,10 +13,7 @@ const (
 	lenPrefix  = len(authPrefix)
 )
 
-var (
-	_ model.Identification = Service{}
-	_ model.Authorization  = Service{}
-)
+var _ model.Authentication = Service{}
 
 type Provider interface {
 	GetBasicUser(ctx context.Context, r *http.Request, login, password string) (model.User, error)

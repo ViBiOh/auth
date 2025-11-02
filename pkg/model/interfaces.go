@@ -21,12 +21,12 @@ type Storage interface {
 	Delete(context.Context, User) error
 }
 
-type Identification interface {
+type Authentication interface {
 	GetUser(context.Context, *http.Request) (User, error)
-	OnError(http.ResponseWriter, *http.Request, error)
+	OnUnauthorized(http.ResponseWriter, *http.Request, error)
 }
 
 type Authorization interface {
-	IsAuthorized(context.Context, User, string) bool
-	OnForbidden(http.ResponseWriter, *http.Request, User, string)
+	IsAuthorized(context.Context, User) bool
+	OnForbidden(http.ResponseWriter, *http.Request, User)
 }

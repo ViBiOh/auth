@@ -10,25 +10,39 @@ import (
 
 var _ httpmodel.Middleware = Service{}.Middleware
 
-type Provider interface {
-	model.Identification
-	model.Authorization
-}
+type Provider interface{}
 
 type Service struct {
-	tracer   trace.Tracer
-	provider Provider
-	profile  string
+	tracer         trace.Tracer
+	identification model.Authentication
+	authorization  model.Authorization
 }
 
-func New(provider Provider, profile string, tracerProvider trace.TracerProvider) Service {
+type ServiceOption func(Service) Service
+
+func WithTracer(tracer trace.Tracer) ServiceOption {
+	return func(instance Service) Service {
+		instance.tracer = tracer
+
+		return instance
+	}
+}
+
+func WithAuthorization(authorization model.Authorization) ServiceOption {
+	return func(instance Service) Service {
+		instance.authorization = authorization
+
+		return instance
+	}
+}
+
+func New(identification model.Authentication, opts ...ServiceOption) Service {
 	service := Service{
-		provider: provider,
-		profile:  profile,
+		identification: identification,
 	}
 
-	if tracerProvider != nil {
-		service.tracer = tracerProvider.Tracer("auth")
+	for _, option := range opts {
+		service = option(service)
 	}
 
 	return service
@@ -43,14 +57,14 @@ func (s Service) Middleware(next http.Handler) http.Handler {
 
 		ctx := r.Context()
 
-		user, err := s.provider.GetUser(ctx, r)
+		user, err := s.identification.GetUser(ctx, r)
 		if err != nil {
-			s.provider.OnError(w, r, err)
+			s.identification.OnUnauthorized(w, r, err)
 			return
 		}
 
-		if !s.provider.IsAuthorized(ctx, user, s.profile) {
-			s.provider.OnForbidden(w, r, user, s.profile)
+		if s.authorization != nil && !s.authorization.IsAuthorized(ctx, user) {
+			s.authorization.OnForbidden(w, r, user)
 			return
 		}
 
