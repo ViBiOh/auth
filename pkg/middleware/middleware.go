@@ -63,7 +63,7 @@ func (s Service) Middleware(next http.Handler) http.Handler {
 			return
 		}
 
-		if s.authorization != nil && !s.authorization.IsAuthorized(ctx, user) {
+		if s.authorization != nil && !s.authorization.IsAuthorized(ctx, r, user) {
 			s.authorization.OnForbidden(w, r, user)
 			return
 		}

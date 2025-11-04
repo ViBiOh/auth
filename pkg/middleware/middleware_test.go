@@ -32,7 +32,7 @@ func (t testProvider) OnUnauthorized(w http.ResponseWriter, _ *http.Request, err
 	http.Error(w, err.Error(), http.StatusTeapot)
 }
 
-func (t testProvider) IsAuthorized(_ context.Context, user model.User) bool {
+func (t testProvider) IsAuthorized(_ context.Context, _ *http.Request, user model.User) bool {
 	return user.Name == "admin"
 }
 

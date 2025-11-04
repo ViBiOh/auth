@@ -14,8 +14,6 @@ var (
 	ErrInvalidCredentials = errors.New("invalid credentials")
 )
 
-//go:generate mockgen -source=$GOFILE -destination=../mocks/$GOFILE -package=mocks -mock_names UpdatableStorage=UpdatableStorage
-
 type Storage interface {
 	Create(context.Context) (User, error)
 	Delete(context.Context, User) error
@@ -27,6 +25,6 @@ type Authentication interface {
 }
 
 type Authorization interface {
-	IsAuthorized(context.Context, User) bool
+	IsAuthorized(context.Context, *http.Request, User) bool
 	OnForbidden(http.ResponseWriter, *http.Request, User)
 }
