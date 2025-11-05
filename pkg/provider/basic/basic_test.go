@@ -14,12 +14,15 @@ import (
 
 var errInvalidCredentials = errors.New("invalid credentials")
 
+var adminUser = model.NewUser("admin")
+
 type testProvider struct{}
 
 func (tp testProvider) GetBasicUser(_ context.Context, _ *http.Request, login, password string) (model.User, error) {
 	if login == "admin" && password == "secret" {
-		return model.NewUser(1, "admin"), nil
+		return adminUser, nil
 	}
+
 	return model.User{}, errInvalidCredentials
 }
 
@@ -57,7 +60,7 @@ func TestGetUser(t *testing.T) {
 		},
 		"valid": {
 			getRequestWithAuthorization("Basic YWRtaW46c2VjcmV0Cg=="),
-			model.NewUser(1, "admin"),
+			adminUser,
 			nil,
 		},
 		"invalid": {

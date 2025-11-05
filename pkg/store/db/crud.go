@@ -17,14 +17,14 @@ INSERT INTO
   id
 )
 VALUES (
-  nextval('auth.user_seq')
+  $1
 )
-RETURNING id
 `
 
 func (s Service) Create(ctx context.Context) (model.User, error) {
-	id, err := s.db.Create(ctx, insertQuery)
-	return model.User{ID: id}, err
+	user := model.NewUser("")
+
+	return user, s.db.One(ctx, insertQuery, user.ID)
 }
 
 const deleteQuery = `

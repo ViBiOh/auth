@@ -19,6 +19,8 @@ func TestLogin(t *testing.T) {
 		password string
 	}
 
+	expectedUser := model.NewUser("vibioh")
+
 	cases := map[string]struct {
 		args    args
 		want    model.User
@@ -29,7 +31,7 @@ func TestLogin(t *testing.T) {
 				login:    "vibioh",
 				password: "secret",
 			},
-			model.NewUser(1, "vibioh"),
+			expectedUser,
 			nil,
 		},
 		"not found": {
@@ -64,7 +66,7 @@ func TestLogin(t *testing.T) {
 			case "simple":
 				mockRow := mocks.NewRow(ctrl)
 				mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(pointers ...any) error {
-					*pointers[0].(*uint64) = 1
+					*pointers[0].(*string) = expectedUser.ID
 					*pointers[1].(*string) = "vibioh"
 					*pointers[2].(*string) = "$argon2id$v=19$m=7168,t=5,p=1$Fh3xnr+CV5ymbbx9hnfWQsEZOzSc0nI$/NU9AeurqbuHYx75qNFNDJxsUDqevR2eJnQSLNw8OMA"
 
@@ -119,9 +121,7 @@ func TestUpdatePassword(t *testing.T) {
 	}{
 		"update": {
 			args{
-				o: model.User{
-					ID: 1,
-				},
+				o:        model.NewUser("admin"),
 				password: "secret",
 			},
 			nil,
@@ -140,7 +140,7 @@ func TestUpdatePassword(t *testing.T) {
 
 			switch intention {
 			case "update":
-				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), uint64(1), gomock.Any()).Return(nil)
+				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			}
 
 			gotErr := instance.UpdatePassword(context.Background(), testCase.args.o, testCase.args.password)

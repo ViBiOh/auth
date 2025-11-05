@@ -25,7 +25,7 @@ func (s Service) IsAuthorized(ctx context.Context, user model.User, profile stri
 		return true
 	}
 
-	var id uint64
+	var id string
 
 	scanner := func(row pgx.Row) error {
 		return row.Scan(&id)

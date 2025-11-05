@@ -18,9 +18,9 @@ type testProvider struct{}
 
 func (t testProvider) GetUser(_ context.Context, r *http.Request) (model.User, error) {
 	if r.Header.Get("Authorization") == "Basic Z3Vlc3Q6Z3Vlc3Q=" {
-		return model.User{ID: 4000, Name: "guest"}, nil
+		return model.NewUser("guest"), nil
 	} else if r.Header.Get("Authorization") == "Basic YWRtaW46cGFzc3dvcmQ=" {
-		return model.User{ID: 8000, Name: "admin"}, nil
+		return model.NewUser("admin"), nil
 	} else if r.Header.Get("Authorization") == "Basic" {
 		return model.User{}, errTestProvider
 	}

@@ -25,14 +25,14 @@ func TestIsAuthorized(t *testing.T) {
 	}{
 		"simple": {
 			args{
-				user:    model.NewUser(1, "vibioh"),
+				user:    model.NewUser("vibioh"),
 				profile: "admin",
 			},
 			true,
 		},
 		"error": {
 			args{
-				user:    model.NewUser(1, "vibioh"),
+				user:    model.NewUser("vibioh"),
 				profile: "admin",
 			},
 			false,
@@ -53,16 +53,16 @@ func TestIsAuthorized(t *testing.T) {
 			case "simple":
 				mockRow := mocks.NewRow(ctrl)
 				mockRow.EXPECT().Scan(gomock.Any()).DoAndReturn(func(pointers ...any) error {
-					*pointers[0].(*uint64) = 1
+					*pointers[0].(*string) = testCase.args.user.ID
 
 					return nil
 				})
 				dummyFn := func(_ context.Context, scanner func(pgx.Row) error, _ string, _ ...any) error {
 					return scanner(mockRow)
 				}
-				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), uint64(1), "admin").DoAndReturn(dummyFn)
+				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), "admin").DoAndReturn(dummyFn)
 			case "error":
-				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), uint64(1), "admin").Return(errors.New("timeout"))
+				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), "admin").Return(errors.New("timeout"))
 			}
 
 			if got := instance.IsAuthorized(context.Background(), testCase.args.user, testCase.args.profile); got != testCase.want {

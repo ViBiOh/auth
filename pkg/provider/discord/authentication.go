@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"slices"
-	"strconv"
 	"time"
 
 	"github.com/ViBiOh/auth/v3/pkg/model"
@@ -28,7 +27,7 @@ func (s Service) GetUser(ctx context.Context, r *http.Request) (model.User, erro
 
 	if slices.Contains(updateMethods, r.Method) {
 		ctx := r.Context()
-		key := updateCacheKey + strconv.FormatUint(claim.User.ID, 10)
+		key := updateCacheKey + claim.User.ID
 
 		if content, _ := s.cache.Load(ctx, key); content == nil {
 			if _, err := s.config.Client(ctx, claim.Token).Get("https://discord.com/api/users/@me"); err != nil {

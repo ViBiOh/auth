@@ -1,6 +1,10 @@
 package model
 
-import "context"
+import (
+	"context"
+
+	"github.com/ViBiOh/httputils/v4/pkg/id"
+)
 
 type key int
 
@@ -9,17 +13,17 @@ const (
 )
 
 type User struct {
+	ID   string `json:"id"`
 	Name string `json:"name"`
-	ID   uint64 `json:"id"`
 }
 
 func (u User) IsZero() bool {
-	return u.ID == 0 && len(u.Name) == 0
+	return len(u.ID) == 0 && len(u.Name) == 0
 }
 
-func NewUser(id uint64, name string) User {
+func NewUser(name string) User {
 	return User{
-		ID:   id,
+		ID:   id.New(),
 		Name: name,
 	}
 }

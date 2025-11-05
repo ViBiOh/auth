@@ -63,13 +63,6 @@ func TestLoadIdent(t *testing.T) {
 			nil,
 			errors.New("invalid format for user ident `1:vibioh`"),
 		},
-		"invalid number": {
-			args{
-				idents: []string{"first:vibioh:secret"},
-			},
-			nil,
-			errors.New("strconv.ParseUint: parsing \"first\": invalid syntax"),
-		},
 		"same id": {
 			args{
 				idents: []string{"1:vibioh:secret", "1:guest:password"},
@@ -83,11 +76,11 @@ func TestLoadIdent(t *testing.T) {
 			},
 			map[string]basicUser{
 				"vibioh": {
-					model.NewUser(1, "vibioh"),
+					model.User{ID: "1", Name: "vibioh"},
 					[]byte("secret"),
 				},
 				"guest": {
-					model.NewUser(2, "guest"),
+					model.User{ID: "2", Name: "guest"},
 					[]byte("password"),
 				},
 			},
@@ -129,7 +122,7 @@ func TestLoadAuth(t *testing.T) {
 
 	cases := map[string]struct {
 		args    args
-		want    map[uint64][]string
+		want    map[string][]string
 		wantErr error
 	}{
 		"empty": {
@@ -144,20 +137,13 @@ func TestLoadAuth(t *testing.T) {
 			nil,
 			errors.New("invalid format of user auth `admin`"),
 		},
-		"invalid number": {
-			args{
-				auths: []string{"first:admin"},
-			},
-			nil,
-			errors.New("strconv.ParseUint: parsing \"first\": invalid syntax"),
-		},
 		"multiple": {
 			args{
 				auths: []string{"1:admin|user", "2:guest"},
 			},
-			map[uint64][]string{
-				1: {"admin", "user"},
-				2: {"guest"},
+			map[string][]string{
+				"1": {"admin", "user"},
+				"2": {"guest"},
 			},
 			nil,
 		},

@@ -3,7 +3,6 @@ package memory
 import (
 	"flag"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/ViBiOh/auth/v3/pkg/model"
@@ -18,7 +17,7 @@ var (
 
 type Service struct {
 	identifications map[string]basicUser
-	authorizations  map[uint64][]string
+	authorizations  map[string][]string
 }
 
 type Config struct {
@@ -58,7 +57,7 @@ func loadIdent(idents []string) (map[string]basicUser, error) {
 	}
 
 	users := make(map[string]basicUser)
-	ids := make(map[uint64]bool)
+	ids := make(map[string]struct{})
 
 	for _, identUser := range idents {
 		parts := strings.Split(identUser, ":")
@@ -66,18 +65,15 @@ func loadIdent(idents []string) (map[string]basicUser, error) {
 			return nil, fmt.Errorf("invalid format for user ident `%s`", identUser)
 		}
 
-		userID, err := strconv.ParseUint(parts[0], 10, 64)
-		if err != nil {
-			return nil, err
-		}
+		userID := strings.ToLower(parts[0])
 
-		if ids[userID] {
+		if _, ok := ids[userID]; ok {
 			return nil, fmt.Errorf("id already exists for user ident `%s`", identUser)
 		}
-		ids[userID] = true
+		ids[userID] = struct{}{}
 
 		user := basicUser{
-			User:     model.NewUser(userID, strings.ToLower(parts[1])),
+			User:     model.User{ID: userID, Name: strings.ToLower(parts[1])},
 			password: []byte(parts[2]),
 		}
 		users[user.Name] = user
@@ -86,12 +82,12 @@ func loadIdent(idents []string) (map[string]basicUser, error) {
 	return users, nil
 }
 
-func loadAuth(auths []string) (map[uint64][]string, error) {
+func loadAuth(auths []string) (map[string][]string, error) {
 	if len(auths) == 0 {
 		return nil, nil
 	}
 
-	users := make(map[uint64][]string)
+	users := make(map[string][]string)
 
 	for _, authUser := range auths {
 		parts := strings.Split(authUser, ":")
@@ -99,12 +95,7 @@ func loadAuth(auths []string) (map[uint64][]string, error) {
 			return nil, fmt.Errorf("invalid format of user auth `%s`", authUser)
 		}
 
-		userID, err := strconv.ParseUint(parts[0], 10, 64)
-		if err != nil {
-			return nil, err
-		}
-
-		users[userID] = strings.Split(parts[1], "|")
+		users[parts[0]] = strings.Split(parts[1], "|")
 	}
 
 	return users, nil

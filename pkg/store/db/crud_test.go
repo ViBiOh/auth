@@ -14,11 +14,9 @@ func TestCreate(t *testing.T) {
 	t.Parallel()
 
 	cases := map[string]struct {
-		want    model.User
 		wantErr error
 	}{
 		"create": {
-			model.User{ID: 1},
 			nil,
 		},
 	}
@@ -35,7 +33,7 @@ func TestCreate(t *testing.T) {
 
 			switch intention {
 			case "create":
-				mockDatabase.EXPECT().Create(gomock.Any(), gomock.Any()).Return(uint64(1), nil)
+				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			}
 
 			got, gotErr := instance.Create(context.Background())
@@ -46,12 +44,12 @@ func TestCreate(t *testing.T) {
 				failed = true
 			} else if testCase.wantErr != nil && !errors.Is(gotErr, testCase.wantErr) {
 				failed = true
-			} else if got != testCase.want {
+			} else if len(got.ID) == 0 {
 				failed = true
 			}
 
 			if failed {
-				t.Errorf("Create() = (%+v, `%s`), want (%+v, `%s`)", got, gotErr, testCase.want, testCase.wantErr)
+				t.Errorf("Create() = (`%s`), want (`%s`)", gotErr, testCase.wantErr)
 			}
 		})
 	}
@@ -60,20 +58,14 @@ func TestCreate(t *testing.T) {
 func TestDelete(t *testing.T) {
 	t.Parallel()
 
-	type args struct {
-		o model.User
-	}
+	deletedUser := model.NewUser("")
 
 	cases := map[string]struct {
-		args    args
+		user    model.User
 		wantErr error
 	}{
 		"delete": {
-			args{
-				o: model.User{
-					ID: 1,
-				},
-			},
+			deletedUser,
 			nil,
 		},
 	}
@@ -90,10 +82,10 @@ func TestDelete(t *testing.T) {
 
 			switch intention {
 			case "delete":
-				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), uint64(1)).Return(nil)
+				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), deletedUser.ID).Return(nil)
 			}
 
-			gotErr := instance.Delete(context.Background(), testCase.args.o)
+			gotErr := instance.Delete(context.Background(), testCase.user)
 
 			failed := false
 

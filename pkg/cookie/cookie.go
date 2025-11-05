@@ -6,7 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
-	"strconv"
+	"os"
 	"time"
 
 	"github.com/ViBiOh/auth/v3/pkg/model"
@@ -30,6 +30,7 @@ type AuthClaims struct {
 type Service struct {
 	hmacSecret    []byte
 	jwtExpiration time.Duration
+	devMode       bool
 }
 
 type Config struct {
@@ -50,6 +51,7 @@ func New(config *Config) Service {
 	return Service{
 		hmacSecret:    []byte(config.hmacSecret),
 		jwtExpiration: config.jwtExpiration,
+		devMode:       os.Getenv("ENV") == "dev",
 	}
 }
 
@@ -101,7 +103,7 @@ func (s Service) newClaim(token *oauth2.Token, user model.User) AuthClaims {
 			NotBefore: jwt.NewNumericDate(now),
 			Issuer:    "auth",
 			Subject:   user.Name,
-			ID:        strconv.FormatInt(int64(user.ID), 10),
+			ID:        user.ID,
 		},
 	}
 }
@@ -112,7 +114,7 @@ func (s Service) setCallbackCookie(w http.ResponseWriter, name, value string) {
 		Value:    value,
 		MaxAge:   int(s.jwtExpiration.Seconds()),
 		Path:     "/",
-		Secure:   true,
+		Secure:   !s.devMode,
 		HttpOnly: true,
 		SameSite: http.SameSiteStrictMode,
 	})

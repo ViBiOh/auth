@@ -2,41 +2,8 @@ package model
 
 import (
 	"context"
-	"reflect"
 	"testing"
 )
-
-func TestNewUser(t *testing.T) {
-	t.Parallel()
-
-	type args struct {
-		id   uint64
-		name string
-	}
-
-	cases := map[string]struct {
-		args args
-		want User
-	}{
-		"simple": {
-			args{
-				id:   1,
-				name: "vibioh",
-			},
-			User{ID: 1, Name: "vibioh"},
-		},
-	}
-
-	for intention, testCase := range cases {
-		t.Run(intention, func(t *testing.T) {
-			t.Parallel()
-
-			if got := NewUser(testCase.args.id, testCase.args.name); !reflect.DeepEqual(got, testCase.want) {
-				t.Errorf("NewUser() = %v, want %v", got, testCase.want)
-			}
-		})
-	}
-}
 
 func TestReadUser(t *testing.T) {
 	t.Parallel()
@@ -44,6 +11,8 @@ func TestReadUser(t *testing.T) {
 	type args struct {
 		ctx context.Context
 	}
+
+	user := NewUser("vibioh")
 
 	cases := map[string]struct {
 		args args
@@ -57,9 +26,9 @@ func TestReadUser(t *testing.T) {
 		},
 		"with User": {
 			args{
-				ctx: StoreUser(context.Background(), NewUser(8000, "vibioh")),
+				ctx: StoreUser(context.Background(), user),
 			},
-			NewUser(8000, "vibioh"),
+			user,
 		},
 		"not an User": {
 			args{

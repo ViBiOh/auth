@@ -17,10 +17,12 @@ func TestLogin(t *testing.T) {
 		t.Errorf("generate password: %s", err)
 	}
 
+	adminUser := model.NewUser("admin")
+
 	instance := Service{
 		identifications: map[string]basicUser{
-			"admin": {
-				model.NewUser(1, "admin"),
+			adminUser.ID: {
+				adminUser,
 				[]byte(argonPassword),
 			},
 		},
@@ -53,18 +55,10 @@ func TestLogin(t *testing.T) {
 		},
 		"success": {
 			args{
-				login:    "admin",
+				login:    adminUser.ID,
 				password: "password",
 			},
-			model.NewUser(1, "admin"),
-			nil,
-		},
-		"success argon": {
-			args{
-				login:    "admin",
-				password: "password",
-			},
-			model.NewUser(1, "admin"),
+			adminUser,
 			nil,
 		},
 	}
@@ -95,10 +89,12 @@ func TestLogin(t *testing.T) {
 func TestIsAuthorized(t *testing.T) {
 	t.Parallel()
 
+	adminUser := model.NewUser("root")
+
 	instance := Service{
-		authorizations: map[uint64][]string{
-			1: {"admin"},
-			2: nil,
+		authorizations: map[string][]string{
+			adminUser.ID: {"admin"},
+			"2":          nil,
 		},
 	}
 
@@ -113,27 +109,27 @@ func TestIsAuthorized(t *testing.T) {
 	}{
 		"unknown": {
 			args{
-				user: model.NewUser(8000, "vibioh"),
+				user: model.NewUser("vibioh"),
 			},
 			true,
 		},
 		"no wanted profile": {
 			args{
-				user:    model.NewUser(1, "vibioh"),
+				user:    model.NewUser("vibioh"),
 				profile: "",
 			},
 			true,
 		},
 		"no matching profile": {
 			args{
-				user:    model.NewUser(2, "guest"),
+				user:    model.NewUser("guest"),
 				profile: "admin",
 			},
 			false,
 		},
 		"success": {
 			args{
-				user:    model.NewUser(1, "vibioh"),
+				user:    adminUser,
 				profile: "admin",
 			},
 			true,
