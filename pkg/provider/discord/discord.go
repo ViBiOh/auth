@@ -36,7 +36,7 @@ type Cache interface {
 
 type Provider interface {
 	GetDiscordUser(ctx context.Context, id, registration string) (model.User, error)
-	UpdateDiscordUser(ctx context.Context, user model.User, id, username, avatar string) error
+	UpdateDiscordUser(ctx context.Context, user model.User, id, username, avatar string) (model.User, error)
 }
 
 type ForbiddenHandler func(http.ResponseWriter, *http.Request, model.User, string)
@@ -167,15 +167,15 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !s.cookie.Set(ctx, w, oauth2Token, user, cookieName) {
-		return
-	}
-
 	if isRegistration {
-		if err := s.provider.UpdateDiscordUser(ctx, user, discordUser.ID, discordUser.Username, discordUser.Avatar); err != nil {
-			httperror.InternalServerError(ctx, w, fmt.Errorf("save github user: %w", err))
+		if user, err = s.provider.UpdateDiscordUser(ctx, user, discordUser.ID, discordUser.Username, discordUser.Avatar); err != nil {
+			httperror.InternalServerError(ctx, w, fmt.Errorf("save discord user: %w", err))
 			return
 		}
+	}
+
+	if !s.cookie.Set(ctx, w, oauth2Token, user, cookieName) {
+		return
 	}
 
 	redirectPath := s.onSuccessPath
@@ -198,5 +198,5 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 		<img style="display: block; margin: 0 auto; width: 120px;" src="%[2]s">
 		<a style="display: block; text-align: center; width: 100vw;" href="%[1]s">Continue...</a>
 	</body>
-</html>`, redirectPath, discordUser.Image())
+</html>`, redirectPath, user.Image)
 }

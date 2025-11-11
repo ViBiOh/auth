@@ -13,12 +13,9 @@ const (
 )
 
 type User struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-}
-
-func (u User) IsZero() bool {
-	return len(u.ID) == 0 && len(u.Name) == 0
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	Image string `json:"image"`
 }
 
 func NewUser(name string) User {

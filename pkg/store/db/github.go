@@ -50,7 +50,8 @@ WHERE
 const githubGetUserByRegistrationQuery = `
 SELECT
   u.id,
-  g.login
+  g.login,
+  g.id
 FROM
   auth.github g,
   auth.user u
@@ -71,11 +72,15 @@ func (s Service) GetGitHubUser(ctx context.Context, id uint64, registration stri
 	}
 
 	return item, s.db.Get(ctx, func(row pgx.Row) error {
-		err := row.Scan(&item.ID, &item.Name)
+		var githubID string
+
+		err := row.Scan(&item.ID, &item.Name, &githubID)
 
 		if errors.Is(err, pgx.ErrNoRows) {
 			return model.ErrUnknownUser
 		}
+
+		item.Image = getGitHubImageURL(githubID)
 
 		return err
 	}, query, args)
@@ -91,6 +96,13 @@ WHERE
   user_id = $1
 `
 
-func (s Service) UpdateGitHubUser(ctx context.Context, user model.User, githubID, githubLogin string) error {
-	return s.db.One(ctx, githubUpdateUserQuery, user.ID, githubID, githubLogin)
+func (s Service) UpdateGitHubUser(ctx context.Context, user model.User, githubID, githubLogin string) (model.User, error) {
+	user.Name = githubLogin
+	user.Image = getGitHubImageURL(githubID)
+
+	return user, s.db.One(ctx, githubUpdateUserQuery, user.ID, githubID, githubLogin)
+}
+
+func getGitHubImageURL(id string) string {
+	return "https://avatars.githubusercontent.com/u/" + id
 }

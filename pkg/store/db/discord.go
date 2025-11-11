@@ -52,7 +52,9 @@ WHERE
 const discordGetUserByRegistrationQuery = `
 SELECT
 	u.id,
-	d.username
+	d.username,
+	d.id,
+	d.avatar
 FROM
 	auth.discord d,
 	auth.user u
@@ -73,11 +75,14 @@ func (s Service) GetDiscordUser(ctx context.Context, id, registration string) (m
 	}
 
 	return item, s.db.Get(ctx, func(row pgx.Row) error {
-		err := row.Scan(&item.ID, &item.Name)
+		var discordID, avatar string
+		err := row.Scan(&item.ID, &item.Name, &discordID, &avatar)
 
 		if errors.Is(err, pgx.ErrNoRows) {
 			return model.ErrUnknownUser
 		}
+
+		item.Image = getDiscordImageURL(discordID, avatar)
 
 		return err
 	}, query, args)
@@ -94,6 +99,13 @@ WHERE
 	user_id = $1
 `
 
-func (s Service) UpdateDiscordUser(ctx context.Context, user model.User, id, username, avatar string) error {
-	return s.db.One(ctx, discordUpdateUserQuery, user.ID, id, username, avatar)
+func (s Service) UpdateDiscordUser(ctx context.Context, user model.User, id, username, avatar string) (model.User, error) {
+	user.Name = username
+	user.Image = getDiscordImageURL(id, avatar)
+
+	return user, s.db.One(ctx, discordUpdateUserQuery, user.ID, id, username, avatar)
+}
+
+func getDiscordImageURL(id, avatar string) string {
+	return fmt.Sprintf("https://cdn.discordapp.com/avatars/%s/%s.webp", id, avatar)
 }
