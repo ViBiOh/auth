@@ -37,7 +37,7 @@ func (s Service) GetUser(ctx context.Context, r *http.Request) (model.User, erro
 	login := strings.ToLower(data[:sepIndex])
 	password := strings.TrimSuffix(data[sepIndex+1:], "\n")
 
-	return s.provider.GetBasicUser(ctx, r, login, password)
+	return s.provider.GetBasicUser(ctx, login, password)
 }
 
 func (s Service) OnUnauthorized(w http.ResponseWriter, r *http.Request, err error) {

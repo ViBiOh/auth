@@ -2,14 +2,13 @@ package memory
 
 import (
 	"context"
-	"net/http"
 	"strings"
 
 	"github.com/ViBiOh/auth/v3/pkg/argon"
 	"github.com/ViBiOh/auth/v3/pkg/model"
 )
 
-func (s Service) GetBasicUser(_ context.Context, _ *http.Request, login, password string) (model.User, error) {
+func (s Service) GetBasicUser(_ context.Context, login, password string) (model.User, error) {
 	user, ok := s.identifications[login]
 	if !ok {
 		return model.User{}, model.ErrInvalidCredentials

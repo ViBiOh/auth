@@ -18,7 +18,7 @@ var adminUser = model.NewUser("admin")
 
 type testProvider struct{}
 
-func (tp testProvider) GetBasicUser(_ context.Context, _ *http.Request, login, password string) (model.User, error) {
+func (tp testProvider) GetBasicUser(_ context.Context, login, password string) (model.User, error) {
 	if login == "admin" && password == "secret" {
 		return adminUser, nil
 	}

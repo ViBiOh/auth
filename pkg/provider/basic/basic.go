@@ -16,7 +16,7 @@ const (
 var _ model.Authentication = Service{}
 
 type Provider interface {
-	GetBasicUser(ctx context.Context, r *http.Request, login, password string) (model.User, error)
+	GetBasicUser(ctx context.Context, login, password string) (model.User, error)
 }
 
 type ForbiddenHandler func(http.ResponseWriter, *http.Request, model.User, string)

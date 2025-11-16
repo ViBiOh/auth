@@ -91,7 +91,7 @@ func TestLogin(t *testing.T) {
 				mockDatabase.EXPECT().Get(gomock.Any(), gomock.Any(), gomock.Any(), "vibioh").Return(errors.New("timeout"))
 			}
 
-			got, gotErr := instance.GetBasicUser(context.Background(), nil, testCase.args.login, testCase.args.password)
+			got, gotErr := instance.GetBasicUser(context.Background(), testCase.args.login, testCase.args.password)
 			failed := false
 
 			if testCase.wantErr != nil && !errors.Is(gotErr, testCase.wantErr) {

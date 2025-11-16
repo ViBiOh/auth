@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"net/http"
 	"strings"
 
 	"github.com/ViBiOh/auth/v3/pkg/argon"
@@ -26,7 +25,7 @@ WHERE
   AND u.id = b.user_id
 `
 
-func (s Service) GetBasicUser(ctx context.Context, _ *http.Request, login, password string) (model.User, error) {
+func (s Service) GetBasicUser(ctx context.Context, login, password string) (model.User, error) {
 	var user model.User
 	var userPassword string
 
