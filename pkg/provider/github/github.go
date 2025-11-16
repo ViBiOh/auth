@@ -36,7 +36,6 @@ type Cache interface {
 }
 
 type Provider interface {
-	IsAuthorized(ctx context.Context, user model.User, profile string) bool
 	GetGitHubUser(ctx context.Context, id uint64, registration string) (model.User, error)
 	UpdateGitHubUser(ctx context.Context, user model.User, githubID, githubLogin string) (model.User, error)
 }

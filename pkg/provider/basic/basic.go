@@ -17,7 +17,6 @@ var _ model.Authentication = Service{}
 
 type Provider interface {
 	GetBasicUser(ctx context.Context, r *http.Request, login, password string) (model.User, error)
-	IsAuthorized(ctx context.Context, user model.User, profile string) bool
 }
 
 type ForbiddenHandler func(http.ResponseWriter, *http.Request, model.User, string)

@@ -26,10 +26,6 @@ func (tp testProvider) GetBasicUser(_ context.Context, _ *http.Request, login, p
 	return model.User{}, errInvalidCredentials
 }
 
-func (tp testProvider) IsAuthorized(ctx context.Context, user model.User, profile string) bool {
-	return true
-}
-
 func TestGetUser(t *testing.T) {
 	t.Parallel()
 
