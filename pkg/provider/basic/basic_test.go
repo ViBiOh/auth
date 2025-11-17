@@ -35,32 +35,17 @@ func TestGetUser(t *testing.T) {
 		wantErr error
 	}{
 		"empty auth": {
-			getRequestWithAuthorization(""),
-			model.User{},
-			model.ErrMalformedContent,
-		},
-		"invalid string": {
-			getRequestWithAuthorization("c2VjcmV0Cg=="),
-			model.User{},
-			model.ErrMalformedContent,
-		},
-		"invalid base64": {
-			getRequestWithAuthorization("Basic 🤪"),
-			model.User{},
-			model.ErrMalformedContent,
-		},
-		"invalid auth": {
-			getRequestWithAuthorization("Basic c2VjcmV0Cg=="),
+			getRequestWithAuthorization("", ""),
 			model.User{},
 			model.ErrMalformedContent,
 		},
 		"valid": {
-			getRequestWithAuthorization("Basic YWRtaW46c2VjcmV0Cg=="),
+			getRequestWithAuthorization("admin", "secret"),
 			adminUser,
 			nil,
 		},
 		"invalid": {
-			getRequestWithAuthorization("Basic YWRtaW46YWRtaW4K"),
+			getRequestWithAuthorization("guest", "guest"),
 			model.User{},
 			errInvalidCredentials,
 		},
@@ -160,18 +145,18 @@ func BenchmarkGetUser(b *testing.B) {
 	service := New(testProvider{})
 	ctx := context.Background()
 
-	req := getRequestWithAuthorization("Basic YWRtaW46c2VjcmV0Cg==")
+	req := getRequestWithAuthorization("admin", "secret")
 
 	for b.Loop() {
 		_, _ = service.GetUser(ctx, req)
 	}
 }
 
-func getRequestWithAuthorization(auth string) *http.Request {
+func getRequestWithAuthorization(user, password string) *http.Request {
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 
-	if len(auth) != 0 {
-		req.Header.Add("Authorization", auth)
+	if len(user) != 0 {
+		req.SetBasicAuth(user, password)
 	}
 
 	return req

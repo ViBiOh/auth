@@ -8,11 +8,6 @@ import (
 	"github.com/ViBiOh/auth/v3/pkg/model"
 )
 
-const (
-	authPrefix = "Basic "
-	lenPrefix  = len(authPrefix)
-)
-
 var _ model.Authentication = Service{}
 
 type Provider interface {
