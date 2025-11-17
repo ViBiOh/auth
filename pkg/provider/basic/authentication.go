@@ -13,31 +13,37 @@ import (
 )
 
 func (s Service) GetUser(ctx context.Context, r *http.Request) (model.User, error) {
+	login, password, err := ExtractCredentials(r)
+	if err != nil {
+		return model.User{}, err
+	}
+
+	return s.provider.GetBasicUser(ctx, login, password)
+}
+
+func ExtractCredentials(r *http.Request) (string, string, error) {
 	content := r.Header.Get("Authorization")
 	if len(content) == 0 || content[:lenPrefix] != authPrefix {
-		return model.User{}, model.ErrMalformedContent
+		return "", "", model.ErrMalformedContent
 	}
 
 	if len(content) < lenPrefix {
-		return model.User{}, model.ErrMalformedContent
+		return "", "", model.ErrMalformedContent
 	}
 
 	rawData, err := base64.StdEncoding.DecodeString(content[lenPrefix:])
 	if err != nil {
-		return model.User{}, fmt.Errorf("%s: %w", err, model.ErrMalformedContent)
+		return "", "", fmt.Errorf("%s: %w", err, model.ErrMalformedContent)
 	}
 
 	data := string(rawData)
 
 	sepIndex := strings.Index(data, ":")
 	if sepIndex == -1 {
-		return model.User{}, model.ErrMalformedContent
+		return "", "", model.ErrMalformedContent
 	}
 
-	login := strings.ToLower(data[:sepIndex])
-	password := strings.TrimSuffix(data[sepIndex+1:], "\n")
-
-	return s.provider.GetBasicUser(ctx, login, password)
+	return strings.ToLower(data[:sepIndex]), strings.TrimSuffix(data[sepIndex+1:], "\n"), nil
 }
 
 func (s Service) OnUnauthorized(w http.ResponseWriter, r *http.Request, err error) {
