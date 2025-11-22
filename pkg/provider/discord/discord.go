@@ -7,7 +7,6 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
-	"net/url"
 	"time"
 
 	"github.com/ViBiOh/auth/v3/pkg/cookie"
@@ -87,16 +86,17 @@ func New(config *Config, cache Cache, provider Provider, cookie cookie.Service) 
 }
 
 func (s Service) Register(w http.ResponseWriter, r *http.Request) {
-	s.redirect(w, r, r.URL.Query().Get("registration"))
+	s.redirect(w, r, r.URL.Query().Get("registration"), r.URL.Query().Get("redirect"))
 }
 
-func (s Service) redirect(w http.ResponseWriter, r *http.Request, registration string) {
+func (s Service) redirect(w http.ResponseWriter, r *http.Request, registration, redirect string) {
 	state := id.New()
 
 	verifier := oauth2.GenerateVerifier()
 	payload := State{
 		Verifier:     verifier,
 		Registration: registration,
+		Redirection:  redirect,
 	}
 
 	rawPayload, err := json.Marshal(payload)
@@ -178,9 +178,9 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	redirectPath := s.onSuccessPath
-	if len(payload.Registration) != 0 {
-		redirectPath += "?" + url.QueryEscape(payload.Registration)
+	redirect := payload.Redirection
+	if len(redirect) == 0 {
+		redirect = s.onSuccessPath
 	}
 
 	w.Header().Add("X-UA-Compatible", "ie=edge")
@@ -198,5 +198,5 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 		<img style="display: block; margin: 0 auto; width: 120px;" src="%[2]s">
 		<a style="display: block; text-align: center; width: 100vw;" href="%[1]s">Continue...</a>
 	</body>
-</html>`, redirectPath, user.Image)
+</html>`, redirect, user.Image)
 }

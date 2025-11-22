@@ -63,7 +63,7 @@ func main() {
 	})
 	logger.FatalfOnErr(ctx, err, "do atomic ")
 
-	fmt.Printf("Connect to http://127.0.0.1:%d/auth/discord/register?registration=%s\n", serverConfig.Port, registration)
+	fmt.Printf("Connect to http://127.0.0.1:%d/auth/discord/register?registration=%s&redirect=/hello/world\n", serverConfig.Port, registration)
 
 	cookieService := cookie.New(cookieConfig)
 	discordService := discord.New(discordConfig, redisClient, dbService, cookieService)
@@ -83,7 +83,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/auth/discord/callback", discordService.Callback)
 	mux.HandleFunc("/auth/discord/register", discordService.Register)
-	mux.Handle("/", authMiddleware.Middleware(authMux))
+	mux.Handle("/hello/world", authMiddleware.Middleware(authMux))
 
 	appServer := server.New(serverConfig)
 	go appServer.Start(healthService.EndCtx(), httputils.Handler(mux, healthService))
