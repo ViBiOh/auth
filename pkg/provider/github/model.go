@@ -9,6 +9,7 @@ import (
 type State struct {
 	Verifier     string `json:"verifier"`
 	Registration string `json:"registration"`
+	Redirection  string `json:"redirect"`
 }
 
 type User struct {
