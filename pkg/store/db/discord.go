@@ -40,7 +40,9 @@ func (s Service) CreateDisord(ctx context.Context) (model.User, string, error) {
 const discordGetUserByIdQuery = `
 SELECT
 	u.id,
-	d.username
+	d.username,
+	d.id,
+	d.avatar
 FROM
 	auth.discord d,
 	auth.user u
