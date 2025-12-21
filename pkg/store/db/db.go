@@ -14,6 +14,7 @@ type Database interface {
 	Get(context.Context, func(pgx.Row) error, string, ...any) error
 	Create(context.Context, string, ...any) (uint64, error)
 	One(context.Context, string, ...any) error
+	List(context.Context, func(pgx.Rows) error, string, ...any) error
 	DoAtomic(context.Context, func(context.Context) error) error
 }
 

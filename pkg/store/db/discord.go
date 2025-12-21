@@ -90,6 +90,36 @@ func (s Service) GetDiscordUser(ctx context.Context, id, registration string) (m
 	}, query, args)
 }
 
+const discordListUsers = `
+SELECT
+	user_id
+	username,
+	id,
+	avatar
+FROM
+	auth.discord
+WHERE
+	user_id = ANY($1)
+`
+
+func (s Service) ListDiscordUsers(ctx context.Context, userIDs ...string) ([]model.User, error) {
+	var items []model.User
+
+	return items, s.db.List(ctx, func(rows pgx.Rows) error {
+		var discordID, avatar string
+		var item model.User
+
+		if err := rows.Scan(&item.ID, &item.Name, &discordID, &avatar); err != nil {
+			return fmt.Errorf("list discord users: %w", err)
+		}
+
+		item.Image = getDiscordImageURL(discordID, avatar)
+		items = append(items, item)
+
+		return nil
+	}, discordListUsers, userIDs)
+}
+
 const discordUpdateUserQuery = `
 UPDATE
 	auth.discord

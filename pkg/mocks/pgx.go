@@ -17,9 +17,9 @@ import (
 
 // Row is a mock of Row interface.
 type Row struct {
-	isgomock struct{}
 	ctrl     *gomock.Controller
 	recorder *RowMockRecorder
+	isgomock struct{}
 }
 
 // RowMockRecorder is the mock recorder for Row.

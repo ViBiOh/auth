@@ -19,9 +19,9 @@ import (
 
 // Database is a mock of Database interface.
 type Database struct {
-	isgomock struct{}
 	ctrl     *gomock.Controller
 	recorder *DatabaseMockRecorder
+	isgomock struct{}
 }
 
 // DatabaseMockRecorder is the mock recorder for Database.
@@ -92,6 +92,25 @@ func (mr *DatabaseMockRecorder) Get(arg0, arg1, arg2 any, arg3 ...any) *gomock.C
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{arg0, arg1, arg2}, arg3...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*Database)(nil).Get), varargs...)
+}
+
+// List mocks base method.
+func (m *Database) List(arg0 context.Context, arg1 func(pgx.Rows) error, arg2 string, arg3 ...any) error {
+	m.ctrl.T.Helper()
+	varargs := []any{arg0, arg1, arg2}
+	for _, a := range arg3 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "List", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// List indicates an expected call of List.
+func (mr *DatabaseMockRecorder) List(arg0, arg1, arg2 any, arg3 ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{arg0, arg1, arg2}, arg3...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*Database)(nil).List), varargs...)
 }
 
 // One mocks base method.
