@@ -191,12 +191,15 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Fprintf(w, `
 <html>
-	<head>
-		<meta http-equiv="refresh" content=1;url="%[1]s">
-	</head>
-	<body style="background-color: darkgrey;">
-		<img style="display: block; margin: 0 auto; width: 120px;" src="%[2]s">
-		<a style="display: block; text-align: center; width: 100vw;" href="%[1]s">Continue...</a>
-	</body>
-</html>`, redirect, user.Image)
+  <head>
+    <meta http-equiv="refresh" content=1;url="%[1]s">
+  </head>
+  <body style="font-family:-apple-system,'Segoe UI','Roboto','Oxygen-Sans','Ubuntu','Cantarell','Helvetica Nue', sans-serif; background-color: #272727; display: flex; height: 100vh; width: 100vw; align-items: center; justify-content: center;">
+    <div>
+      <img style="display: block; margin: 0 auto; width: 120px; border-radius: 50%%;" src="%[2]s">
+      <a style="display: block; text-align: center; padding-top: 1rem; color: silver;" href="%[1]s">Continue...</a>
+    </div>
+  </body>
+</html>
+`, redirect, user.Image)
 }

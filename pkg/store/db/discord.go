@@ -12,17 +12,17 @@ import (
 
 const discordCreateRegistrationQuery = `
 INSERT INTO
-	auth.discord
+  auth.discord
 (
-	id,
-	user_id,
-	username,
-	avatar
+  id,
+  user_id,
+  username,
+  avatar
 ) VALUES (
-	0,
-	$1,
-	$2,
-	''
+  0,
+  $1,
+  $2,
+  ''
 )
 `
 
@@ -39,30 +39,26 @@ func (s Service) CreateDisord(ctx context.Context) (model.User, string, error) {
 
 const discordGetUserByIdQuery = `
 SELECT
-	u.id,
-	d.username,
-	d.id,
-	d.avatar
+  user_id,
+  username,
+  id,
+  avatar
 FROM
-	auth.discord d,
-	auth.user u
+  auth.discord
 WHERE
-	d.id = $1
-	AND d.user_id = u.id
+  id = $1
 `
 
 const discordGetUserByRegistrationQuery = `
 SELECT
-	u.id,
-	d.username,
-	d.id,
-	d.avatar
+  user_id,
+  username,
+  id,
+  avatar
 FROM
-	auth.discord d,
-	auth.user u
+  auth.discord
 WHERE
-	d.username = $1
-	AND d.user_id = u.id
+  username = $1
 `
 
 func (s Service) GetDiscordUser(ctx context.Context, id, registration string) (model.User, error) {
@@ -92,14 +88,14 @@ func (s Service) GetDiscordUser(ctx context.Context, id, registration string) (m
 
 const discordListUsers = `
 SELECT
-	user_id,
-	username,
-	id,
-	avatar
+  user_id,
+  username,
+  id,
+  avatar
 FROM
-	auth.discord
+  auth.discord
 WHERE
-	user_id = ANY($1)
+  user_id = ANY($1)
 `
 
 func (s Service) ListDiscordUsers(ctx context.Context, userIDs ...string) ([]model.User, error) {
@@ -122,13 +118,13 @@ func (s Service) ListDiscordUsers(ctx context.Context, userIDs ...string) ([]mod
 
 const discordUpdateUserQuery = `
 UPDATE
-	auth.discord
+  auth.discord
 SET
-	id = $2,
-	username = $3,
-	avatar = $4
+  id = $2,
+  username = $3,
+  avatar = $4
 WHERE
-	user_id = $1
+  user_id = $1
 `
 
 func (s Service) UpdateDiscordUser(ctx context.Context, user model.User, id, username, avatar string) (model.User, error) {
@@ -139,5 +135,9 @@ func (s Service) UpdateDiscordUser(ctx context.Context, user model.User, id, use
 }
 
 func getDiscordImageURL(id, avatar string) string {
+	if len(id) == 0 || len(avatar) == 0 {
+		return ""
+	}
+
 	return fmt.Sprintf("https://cdn.discordapp.com/avatars/%s/%s.webp", id, avatar)
 }

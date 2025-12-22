@@ -2,8 +2,10 @@ package db
 
 import (
 	"context"
+	"slices"
 
 	"github.com/ViBiOh/auth/v3/pkg/model"
+	"github.com/ViBiOh/httputils/v4/pkg/concurrent"
 )
 
 func (s Service) DoAtomic(ctx context.Context, action func(context.Context) error) error {
@@ -25,6 +27,26 @@ func (s Service) Create(ctx context.Context) (model.User, error) {
 	user := model.NewUser("")
 
 	return user, s.db.One(ctx, insertQuery, user.ID)
+}
+
+func (s Service) List(ctx context.Context, ids ...string) ([]model.User, error) {
+	conc := concurrent.NewFailFast(0)
+
+	var discordUsers, githubUsers []model.User
+
+	conc.Go(func() (err error) {
+		discordUsers, err = s.ListDiscordUsers(ctx, ids...)
+		return err
+	})
+
+	conc.Go(func() (err error) {
+		githubUsers, err = s.ListGithubUsers(ctx, ids...)
+		return err
+	})
+
+	err := conc.Wait()
+
+	return slices.Concat(discordUsers, githubUsers), err
 }
 
 const deleteQuery = `

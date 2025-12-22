@@ -37,27 +37,24 @@ func (s Service) CreateGithub(ctx context.Context) (model.User, string, error) {
 
 const githubGetUserByIdQuery = `
 SELECT
-  u.id,
-  g.login
+  user_id,
+  login,
+  id
 FROM
-  auth.github g,
-  auth.user u
+  auth.github
 WHERE
-  g.id = $1
-  AND g.user_id = u.id
+  id = $1
 `
 
 const githubGetUserByRegistrationQuery = `
 SELECT
-  u.id,
-  g.login,
-  g.id
+  user_id,
+  login,
+  id
 FROM
-  auth.github g,
-  auth.user u
+  auth.github
 WHERE
-  g.login = $1
-  AND g.user_id = u.id
+  login = $1
 `
 
 func (s Service) GetGitHubUser(ctx context.Context, id uint64, registration string) (model.User, error) {
@@ -86,6 +83,35 @@ func (s Service) GetGitHubUser(ctx context.Context, id uint64, registration stri
 	}, query, args)
 }
 
+const githubListUsers = `
+SELECT
+  user_id,
+  login,
+  id
+FROM
+  auth.github
+WHERE
+  user_id = ANY($1)
+`
+
+func (s Service) ListGithubUsers(ctx context.Context, userIDs ...string) ([]model.User, error) {
+	var items []model.User
+
+	return items, s.db.List(ctx, func(rows pgx.Rows) error {
+		var githubID string
+		var item model.User
+
+		if err := rows.Scan(&item.ID, &item.Name, &githubID); err != nil {
+			return fmt.Errorf("scan: %w", err)
+		}
+
+		item.Image = getGitHubImageURL(githubID)
+		items = append(items, item)
+
+		return nil
+	}, githubListUsers, userIDs)
+}
+
 const githubUpdateUserQuery = `
 UPDATE
   auth.github
@@ -104,5 +130,9 @@ func (s Service) UpdateGitHubUser(ctx context.Context, user model.User, githubID
 }
 
 func getGitHubImageURL(id string) string {
+	if len(id) == 0 {
+		return ""
+	}
+
 	return "https://avatars.githubusercontent.com/u/" + id
 }
