@@ -92,7 +92,7 @@ func (s Service) GetDiscordUser(ctx context.Context, id, registration string) (m
 
 const discordListUsers = `
 SELECT
-	user_id
+	user_id,
 	username,
 	id,
 	avatar
@@ -110,7 +110,7 @@ func (s Service) ListDiscordUsers(ctx context.Context, userIDs ...string) ([]mod
 		var item model.User
 
 		if err := rows.Scan(&item.ID, &item.Name, &discordID, &avatar); err != nil {
-			return fmt.Errorf("list discord users: %w", err)
+			return fmt.Errorf("scan: %w", err)
 		}
 
 		item.Image = getDiscordImageURL(discordID, avatar)
