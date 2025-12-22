@@ -85,6 +85,26 @@ func New(config *Config, cache Cache, provider Provider, cookie cookie.Service) 
 	}
 }
 
+func (s Service) Logout(w http.ResponseWriter, r *http.Request) {
+	s.cookie.Clear(w, cookieName)
+
+	w.WriteHeader(http.StatusOK)
+
+	fmt.Fprint(w, `
+<html>
+  <head>
+    <meta http-equiv="refresh" content=1;url="/">
+  </head>
+  <body style="font-family:-apple-system,'Segoe UI','Roboto','Oxygen-Sans','Ubuntu','Cantarell','Helvetica Nue', sans-serif; background-color: #272727; display: flex; height: 100vh; width: 100vw; align-items: center; justify-content: center;">
+    <div>
+      <h1 style="display: block; text-align: center; padding-top: 1rem; color: limegreen;">Logout success!</h1>
+      <a style="display: block; text-align: center; padding-top: 1rem; color: silver;" href="/">Continue...</a>
+    </div>
+  </body>
+</html>
+`)
+}
+
 func (s Service) Register(w http.ResponseWriter, r *http.Request) {
 	s.redirect(w, r, r.URL.Query().Get("registration"), r.URL.Query().Get("redirect"))
 }
@@ -100,7 +120,7 @@ func (s Service) redirect(w http.ResponseWriter, r *http.Request, registration, 
   <head></head>
   <body style="font-family:-apple-system,'Segoe UI','Roboto','Oxygen-Sans','Ubuntu','Cantarell','Helvetica Nue', sans-serif; background-color: #272727; display: flex; height: 100vh; width: 100vw; align-items: center; justify-content: center;">
     <div>
-      <span style="display: block; text-align: center; padding-top: 1rem; color: salmon;">Unknown registration code or already used</span>
+      <h1 style="display: block; text-align: center; padding-top: 1rem; color: salmon;">Unknown registration code or already used</h1>
       <a style="display: block; text-align: center; padding-top: 1rem; color: silver;" href="%s">Click here to redirect</a>
     </div>
   </body>
