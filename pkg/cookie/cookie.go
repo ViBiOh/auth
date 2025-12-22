@@ -87,6 +87,18 @@ func (s Service) Set(ctx context.Context, w http.ResponseWriter, oauth2Token *oa
 	return true
 }
 
+func (s Service) Clear(w http.ResponseWriter, name string) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     name,
+		Value:    "",
+		MaxAge:   -1,
+		Path:     "/",
+		Secure:   !s.devMode,
+		HttpOnly: true,
+		SameSite: http.SameSiteStrictMode,
+	})
+}
+
 func (s Service) jwtKeyFunc(_ *jwt.Token) (any, error) {
 	return s.hmacSecret, nil
 }
