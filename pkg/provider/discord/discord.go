@@ -90,7 +90,25 @@ func (s Service) Register(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s Service) redirect(w http.ResponseWriter, r *http.Request, registration, redirect string) {
+	ctx := r.Context()
 	state := id.New()
+
+	if len(registration) != 0 {
+		if _, err := s.provider.GetDiscordUser(ctx, "", registration); err != nil && errors.Is(err, model.ErrUnknownUser) {
+			fmt.Fprintf(w, `
+<html>
+  <head></head>
+  <body style="font-family:-apple-system,'Segoe UI','Roboto','Oxygen-Sans','Ubuntu','Cantarell','Helvetica Nue', sans-serif; background-color: #272727; display: flex; height: 100vh; width: 100vw; align-items: center; justify-content: center;">
+    <div>
+      <span style="display: block; text-align: center; padding-top: 1rem; color: salmon;">Unknown registration code or already used</span>
+      <a style="display: block; text-align: center; padding-top: 1rem; color: silver;" href="%s">Click here to redirect</a>
+    </div>
+  </body>
+</html>
+`, redirect)
+			return
+		}
+	}
 
 	verifier := oauth2.GenerateVerifier()
 	payload := State{
@@ -101,12 +119,12 @@ func (s Service) redirect(w http.ResponseWriter, r *http.Request, registration, 
 
 	rawPayload, err := json.Marshal(payload)
 	if err != nil {
-		httperror.InternalServerError(r.Context(), w, fmt.Errorf("marshal state: %w", err))
+		httperror.InternalServerError(ctx, w, fmt.Errorf("marshal state: %w", err))
 		return
 	}
 
-	if err := s.cache.Store(r.Context(), verifierCacheKey+state, rawPayload, time.Minute*5); err != nil {
-		httperror.InternalServerError(r.Context(), w, fmt.Errorf("save state: %w", err))
+	if err := s.cache.Store(ctx, verifierCacheKey+state, rawPayload, time.Minute*5); err != nil {
+		httperror.InternalServerError(ctx, w, fmt.Errorf("save state: %w", err))
 		return
 	}
 
