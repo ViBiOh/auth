@@ -35,12 +35,12 @@ func (s Service) List(ctx context.Context, ids ...string) ([]model.User, error) 
 	var discordUsers, githubUsers []model.User
 
 	conc.Go(func() (err error) {
-		discordUsers, err = s.ListDiscordUsers(ctx, ids...)
+		discordUsers, err = s.listDiscordUsers(ctx, ids...)
 		return err
 	})
 
 	conc.Go(func() (err error) {
-		githubUsers, err = s.ListGithubUsers(ctx, ids...)
+		githubUsers, err = s.listGithubUsers(ctx, ids...)
 		return err
 	})
 

@@ -34,7 +34,7 @@ type Cache interface {
 }
 
 type Provider interface {
-	GetDiscordUser(ctx context.Context, id, registration string) (model.User, error)
+	GetDiscordUser(ctx context.Context, id string) (model.User, error)
 	UpdateDiscordUser(ctx context.Context, user model.User, id, username, avatar string) (model.User, error)
 }
 
@@ -114,7 +114,7 @@ func (s Service) redirect(w http.ResponseWriter, r *http.Request, registration, 
 	state := id.New()
 
 	if len(registration) != 0 {
-		if _, err := s.provider.GetDiscordUser(ctx, "", registration); err != nil && errors.Is(err, model.ErrUnknownUser) {
+		if _, err := s.provider.GetDiscordUser(ctx, registration); err != nil && errors.Is(err, model.ErrUnknownUser) {
 			fmt.Fprintf(w, `
 <html>
   <head></head>
@@ -168,8 +168,6 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isRegistration := len(payload.Registration) != 0
-
 	oauth2Token, err := s.config.Exchange(ctx, r.URL.Query().Get("code"), oauth2.VerifierOption(payload.Verifier))
 	if err != nil {
 		httperror.Unauthorized(ctx, w, fmt.Errorf("exchange token: %w", err))
@@ -194,10 +192,17 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := s.provider.GetDiscordUser(ctx, discordUser.ID, payload.Registration)
+	isRegistration := len(payload.Registration) != 0
+
+	identifier := discordUser.ID
+	if isRegistration {
+		identifier = payload.Registration
+	}
+
+	user, err := s.provider.GetDiscordUser(ctx, identifier)
 	if err != nil {
 		if errors.Is(err, model.ErrUnknownUser) {
-			httperror.NotFound(ctx, w, fmt.Errorf("unregistered user `%s` - `%s`", discordUser.ID, payload.Registration))
+			httperror.NotFound(ctx, w, fmt.Errorf("unregistered user `%s`", identifier))
 			return
 		}
 

@@ -94,7 +94,7 @@ WHERE
   user_id = ANY($1)
 `
 
-func (s Service) ListGithubUsers(ctx context.Context, userIDs ...string) ([]model.User, error) {
+func (s Service) listGithubUsers(ctx context.Context, userIDs ...string) ([]model.User, error) {
 	var items []model.User
 
 	return items, s.db.List(ctx, func(rows pgx.Rows) error {

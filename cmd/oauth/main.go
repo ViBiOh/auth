@@ -54,7 +54,7 @@ func main() {
 
 	var registration string
 	err = dbService.DoAtomic(ctx, func(ctx context.Context) error {
-		_, registration, err = dbService.CreateDisord(ctx)
+		_, registration, err = dbService.CreateDiscord(ctx, "Hello WOrld")
 		if err != nil {
 			return fmt.Errorf("create discord: %w", err)
 		}

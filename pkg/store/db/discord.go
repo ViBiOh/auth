@@ -19,14 +19,14 @@ INSERT INTO
   username,
   avatar
 ) VALUES (
-  0,
   $1,
   $2,
+  $3,
   ''
 )
 `
 
-func (s Service) CreateDisord(ctx context.Context) (model.User, string, error) {
+func (s Service) CreateDiscord(ctx context.Context, username string) (model.User, string, error) {
 	user, err := s.Create(ctx)
 	if err != nil {
 		return user, "", fmt.Errorf("create user: %w", err)
@@ -34,7 +34,7 @@ func (s Service) CreateDisord(ctx context.Context) (model.User, string, error) {
 
 	registrationID := id.New()
 
-	return user, registrationID, s.db.One(ctx, discordCreateRegistrationQuery, user.ID, registrationID)
+	return user, registrationID, s.db.One(ctx, discordCreateRegistrationQuery, registrationID, user.ID, username)
 }
 
 const discordGetUserByIdQuery = `
@@ -49,28 +49,8 @@ WHERE
   id = $1
 `
 
-const discordGetUserByRegistrationQuery = `
-SELECT
-  user_id,
-  username,
-  id,
-  avatar
-FROM
-  auth.discord
-WHERE
-  username = $1
-`
-
-func (s Service) GetDiscordUser(ctx context.Context, id, registration string) (model.User, error) {
+func (s Service) GetDiscordUser(ctx context.Context, id string) (model.User, error) {
 	var item model.User
-
-	query := discordGetUserByIdQuery
-	var args any = id
-
-	if len(registration) != 0 {
-		query = discordGetUserByRegistrationQuery
-		args = registration
-	}
 
 	return item, s.db.Get(ctx, func(row pgx.Row) error {
 		var discordID, avatar string
@@ -83,7 +63,7 @@ func (s Service) GetDiscordUser(ctx context.Context, id, registration string) (m
 		item.Image = getDiscordImageURL(discordID, avatar)
 
 		return err
-	}, query, args)
+	}, discordGetUserByIdQuery, id)
 }
 
 const discordListUsers = `
@@ -98,7 +78,7 @@ WHERE
   user_id = ANY($1)
 `
 
-func (s Service) ListDiscordUsers(ctx context.Context, userIDs ...string) ([]model.User, error) {
+func (s Service) listDiscordUsers(ctx context.Context, userIDs ...string) ([]model.User, error) {
 	var items []model.User
 
 	return items, s.db.List(ctx, func(rows pgx.Rows) error {
