@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"embed"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -20,8 +21,12 @@ import (
 	"github.com/ViBiOh/httputils/v4/pkg/httputils"
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	"github.com/ViBiOh/httputils/v4/pkg/redis"
+	"github.com/ViBiOh/httputils/v4/pkg/renderer"
 	"github.com/ViBiOh/httputils/v4/pkg/server"
 )
+
+//go:embed templates
+var content embed.FS
 
 func main() {
 	fs := flag.NewFlagSet("oauth", flag.ExitOnError)
@@ -34,6 +39,7 @@ func main() {
 	redisConfig := redis.Flags(fs, "redis")
 	cookieConfig := cookie.Flags(fs, "cookie")
 	discordConfig := discord.Flags(fs, "discord")
+	rendererConfig := renderer.Flags(fs, "", flags.NewOverride("Title", "OAuth"))
 	dbConfig := db.Flags(fs, "db")
 
 	_ = fs.Parse(os.Args[1:])
@@ -61,12 +67,15 @@ func main() {
 
 		return nil
 	})
-	logger.FatalfOnErr(ctx, err, "do atomic ")
+	logger.FatalfOnErr(ctx, err, "do atomic")
 
-	fmt.Printf("Connect to http://127.0.0.1:%d/auth/discord/register?registration=%s&redirect=/hello/world\n", serverConfig.Port, registration)
+	fmt.Printf("Connect to http://127.0.0.1:%d/oauth/discord/register?registration=%s&redirect=/hello/world\n", serverConfig.Port, registration)
+
+	rendererService, err := renderer.New(ctx, rendererConfig, content, nil, nil, nil)
+	logger.FatalfOnErr(ctx, err, "renderer")
 
 	cookieService := cookie.New(cookieConfig)
-	discordService := discord.New(discordConfig, redisClient, dbService, cookieService)
+	discordService := discord.New(discordConfig, redisClient, dbService, rendererService, cookieService)
 	authMiddleware := middleware.New(discordService)
 
 	authMux := http.NewServeMux()
@@ -81,8 +90,9 @@ func main() {
 	})
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/auth/discord/callback", discordService.Callback)
-	mux.HandleFunc("/auth/discord/register", discordService.Register)
+	mux.HandleFunc("/oauth/discord/logout", discordService.Logout)
+	mux.HandleFunc("/oauth/discord/callback", discordService.Callback)
+	mux.HandleFunc("/oauth/discord/register", discordService.Register)
 	mux.Handle("/hello/world", authMiddleware.Middleware(authMux))
 
 	appServer := server.New(serverConfig)

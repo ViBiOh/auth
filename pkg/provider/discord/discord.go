@@ -15,6 +15,7 @@ import (
 	"github.com/ViBiOh/httputils/v4/pkg/httperror"
 	"github.com/ViBiOh/httputils/v4/pkg/httpjson"
 	"github.com/ViBiOh/httputils/v4/pkg/id"
+	"github.com/ViBiOh/httputils/v4/pkg/renderer"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/endpoints"
 )
@@ -45,6 +46,7 @@ type Service struct {
 	cache         Cache
 	provider      Provider
 	onSuccessPath string
+	renderer      *renderer.Service
 	cookie        cookie.Service
 }
 
@@ -62,13 +64,13 @@ func Flags(fs *flag.FlagSet, prefix string, overrides ...flags.Override) *Config
 
 	flags.New("ClientID", "Client ID").Prefix(prefix).DocPrefix("discord").StringVar(fs, &config.clientID, "", overrides)
 	flags.New("ClientSecret", "Client Secret").Prefix(prefix).DocPrefix("discord").StringVar(fs, &config.clientSecret, "", overrides)
-	flags.New("RedirectURL", "URL used for redirection").Prefix(prefix).DocPrefix("discord").StringVar(fs, &config.redirectURL, "http://127.0.0.1:1080/auth/discord/callback", overrides)
+	flags.New("RedirectURL", "URL used for redirection").Prefix(prefix).DocPrefix("discord").StringVar(fs, &config.redirectURL, "http://127.0.0.1:1080/oauth/discord/callback", overrides)
 	flags.New("OnSuccessPath", "Path for redirecting on success").Prefix(prefix).DocPrefix("discord").StringVar(fs, &config.onSuccessPath, "/", overrides)
 
 	return &config
 }
 
-func New(config *Config, cache Cache, provider Provider, cookie cookie.Service) Service {
+func New(config *Config, cache Cache, provider Provider, renderer *renderer.Service, cookie cookie.Service) Service {
 	return Service{
 		config: oauth2.Config{
 			ClientID:     config.clientID,
@@ -81,6 +83,7 @@ func New(config *Config, cache Cache, provider Provider, cookie cookie.Service) 
 
 		cache:    cache,
 		provider: provider,
+		renderer: renderer,
 		cookie:   cookie,
 	}
 }
@@ -88,21 +91,10 @@ func New(config *Config, cache Cache, provider Provider, cookie cookie.Service) 
 func (s Service) Logout(w http.ResponseWriter, r *http.Request) {
 	s.cookie.Clear(w, cookieName)
 
-	w.WriteHeader(http.StatusOK)
-
-	fmt.Fprint(w, `
-<html>
-  <head>
-    <meta http-equiv="refresh" content=1;url="/">
-  </head>
-  <body style="font-family:-apple-system,'Segoe UI','Roboto','Oxygen-Sans','Ubuntu','Cantarell','Helvetica Nue', sans-serif; background-color: #272727; display: flex; height: 100vh; width: 100vw; align-items: center; justify-content: center;">
-    <div>
-      <h1 style="display: block; text-align: center; padding-top: 1rem; color: limegreen;">Logout success!</h1>
-      <a style="display: block; text-align: center; padding-top: 1rem; color: silver;" href="/">Continue...</a>
-    </div>
-  </body>
-</html>
-`)
+	s.renderer.Serve(w, r, renderer.NewPage("auth", http.StatusOK, map[string]any{
+		"Redirect": "/",
+		"Message":  renderer.NewSuccessMessage("Logout success!"),
+	}))
 }
 
 func (s Service) Register(w http.ResponseWriter, r *http.Request) {
@@ -115,17 +107,11 @@ func (s Service) redirect(w http.ResponseWriter, r *http.Request, registration, 
 
 	if len(registration) != 0 {
 		if _, err := s.provider.GetDiscordUser(ctx, registration); err != nil && errors.Is(err, model.ErrUnknownUser) {
-			fmt.Fprintf(w, `
-<html>
-  <head></head>
-  <body style="font-family:-apple-system,'Segoe UI','Roboto','Oxygen-Sans','Ubuntu','Cantarell','Helvetica Nue', sans-serif; background-color: #272727; display: flex; height: 100vh; width: 100vw; align-items: center; justify-content: center;">
-    <div>
-      <h1 style="display: block; text-align: center; padding-top: 1rem; color: salmon;">Unknown registration code or already used</h1>
-      <a style="display: block; text-align: center; padding-top: 1rem; color: silver;" href="%s">Click here to redirect</a>
-    </div>
-  </body>
-</html>
-`, redirect)
+
+			s.renderer.Serve(w, r, renderer.NewPage("auth", http.StatusOK, map[string]any{
+				"Redirect": redirect,
+				"Message":  renderer.NewErrorMessage("Unknown registration code or already used"),
+			}))
 			return
 		}
 	}
@@ -226,23 +212,9 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 		redirect = s.onSuccessPath
 	}
 
-	w.Header().Add("X-UA-Compatible", "ie=edge")
-	w.Header().Add("Content-Type", "text/html; charset=UTF-8")
-	w.Header().Add("Cache-Control", "no-cache")
-
-	w.WriteHeader(http.StatusOK)
-
-	fmt.Fprintf(w, `
-<html>
-  <head>
-    <meta http-equiv="refresh" content=1;url="%[1]s">
-  </head>
-  <body style="font-family:-apple-system,'Segoe UI','Roboto','Oxygen-Sans','Ubuntu','Cantarell','Helvetica Nue', sans-serif; background-color: #272727; display: flex; height: 100vh; width: 100vw; align-items: center; justify-content: center;">
-    <div>
-      <img style="display: block; margin: 0 auto; width: 120px; border-radius: 50%%;" src="%[2]s">
-      <a style="display: block; text-align: center; padding-top: 1rem; color: silver;" href="%[1]s">Continue...</a>
-    </div>
-  </body>
-</html>
-`, redirect, user.Image)
+	s.renderer.Serve(w, r, renderer.NewPage("auth", http.StatusOK, map[string]any{
+		"Redirect": redirect,
+		"Image":    user.Image,
+		"Message":  renderer.NewSuccessMessage("Login success!"),
+	}))
 }

@@ -16,6 +16,7 @@ import (
 	"github.com/ViBiOh/httputils/v4/pkg/httperror"
 	"github.com/ViBiOh/httputils/v4/pkg/httpjson"
 	"github.com/ViBiOh/httputils/v4/pkg/id"
+	"github.com/ViBiOh/httputils/v4/pkg/renderer"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
 )
@@ -46,6 +47,7 @@ type Service struct {
 	cache         Cache
 	provider      Provider
 	onSuccessPath string
+	renderer      *renderer.Service
 	cookie        cookie.Service
 }
 
@@ -69,7 +71,7 @@ func Flags(fs *flag.FlagSet, prefix string, overrides ...flags.Override) *Config
 	return &config
 }
 
-func New(config *Config, cache Cache, provider Provider, cookie cookie.Service) Service {
+func New(config *Config, cache Cache, provider Provider, renderer *renderer.Service, cookie cookie.Service) Service {
 	return Service{
 		config: oauth2.Config{
 			ClientID:     config.clientID,
@@ -81,8 +83,18 @@ func New(config *Config, cache Cache, provider Provider, cookie cookie.Service) 
 
 		cache:    cache,
 		provider: provider,
+		renderer: renderer,
 		cookie:   cookie,
 	}
+}
+
+func (s Service) Logout(w http.ResponseWriter, r *http.Request) {
+	s.cookie.Clear(w, cookieName)
+
+	s.renderer.Serve(w, r, renderer.NewPage("auth", http.StatusOK, map[string]any{
+		"Redirect": "/",
+		"Message":  renderer.NewSuccessMessage("Logout success!"),
+	}))
 }
 
 func (s Service) Register(w http.ResponseWriter, r *http.Request) {
@@ -183,23 +195,9 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 		redirect = s.onSuccessPath
 	}
 
-	w.Header().Add("X-UA-Compatible", "ie=edge")
-	w.Header().Add("Content-Type", "text/html; charset=UTF-8")
-	w.Header().Add("Cache-Control", "no-cache")
-
-	w.WriteHeader(http.StatusOK)
-
-	fmt.Fprintf(w, `
-<html>
-  <head>
-    <meta http-equiv="refresh" content=1;url="%[1]s">
-  </head>
-  <body style="font-family:-apple-system,'Segoe UI','Roboto','Oxygen-Sans','Ubuntu','Cantarell','Helvetica Nue', sans-serif; background-color: #272727; display: flex; height: 100vh; width: 100vw; align-items: center; justify-content: center;">
-    <div>
-      <img style="display: block; margin: 0 auto; width: 120px; border-radius: 50%%;" src="%[2]s">
-      <a style="display: block; text-align: center; padding-top: 1rem; color: silver;" href="%[1]s">Continue...</a>
-    </div>
-  </body>
-</html>
-`, redirect, user.Image)
+	s.renderer.Serve(w, r, renderer.NewPage("auth", http.StatusOK, map[string]any{
+		"Redirect": redirect,
+		"Image":    user.Image,
+		"Message":  renderer.NewSuccessMessage("Login success!"),
+	}))
 }
