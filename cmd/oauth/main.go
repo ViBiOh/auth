@@ -86,7 +86,7 @@ func main() {
 			return
 		}
 
-		fmt.Fprintf(w, "%s", payload)
+		_, _ = fmt.Fprintf(w, "%s", payload)
 	})
 
 	mux := http.NewServeMux()
