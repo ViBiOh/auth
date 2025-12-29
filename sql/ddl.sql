@@ -65,7 +65,7 @@ CREATE TABLE auth.github (
 );
 
 CREATE UNIQUE INDEX github_user_id ON auth.github(user_id);
-CREATE INDEX github_login   ON auth.github(login);
+CREATE        INDEX github_login   ON auth.github(login);
 
 -- discord
 CREATE TABLE auth.discord (
@@ -77,4 +77,4 @@ CREATE TABLE auth.discord (
 );
 
 CREATE UNIQUE INDEX discord_user_id ON auth.discord(user_id);
-CREATE INDEX discord_login   ON auth.discord(id);
+CREATE        INDEX discord_login   ON auth.discord(id);

@@ -2,6 +2,7 @@ package model
 
 import (
 	"context"
+	"reflect"
 	"testing"
 )
 
@@ -42,7 +43,7 @@ func TestReadUser(t *testing.T) {
 		t.Run(intention, func(t *testing.T) {
 			t.Parallel()
 
-			if got := ReadUser(testCase.args.ctx); got != testCase.want {
+			if got := ReadUser(testCase.args.ctx); !reflect.DeepEqual(got, testCase.want) {
 				t.Errorf("ReadUser() = %v, want %v", got, testCase.want)
 			}
 		})

@@ -3,6 +3,7 @@ package memory
 import (
 	"context"
 	"errors"
+	"reflect"
 	"testing"
 
 	"github.com/ViBiOh/auth/v3/pkg/argon"
@@ -75,7 +76,7 @@ func TestLogin(t *testing.T) {
 				failed = true
 			} else if testCase.wantErr != nil && !errors.Is(gotErr, testCase.wantErr) {
 				failed = true
-			} else if got != testCase.want {
+			} else if !reflect.DeepEqual(got, testCase.want) {
 				failed = true
 			}
 

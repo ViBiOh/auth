@@ -39,14 +39,16 @@ func (s Service) CreateDiscord(ctx context.Context, username string) (model.User
 
 const discordGetUserByIdQuery = `
 SELECT
-  user_id,
   username,
   id,
-  avatar
+  avatar,
+  json_agg(user_id) as user_ids
 FROM
   auth.discord
 WHERE
   id = $1
+GROUP BY
+  username, id, avatar
 `
 
 func (s Service) GetDiscordUser(ctx context.Context, id string) (model.User, error) {
@@ -54,12 +56,13 @@ func (s Service) GetDiscordUser(ctx context.Context, id string) (model.User, err
 
 	return item, s.db.Get(ctx, func(row pgx.Row) error {
 		var discordID, avatar string
-		err := row.Scan(&item.ID, &item.Name, &discordID, &avatar)
+		err := row.Scan(&item.Name, &discordID, &avatar, &item.Aliases)
 
 		if errors.Is(err, pgx.ErrNoRows) {
 			return model.ErrUnknownUser
 		}
 
+		item.ID = item.Aliases[0]
 		item.Image = getDiscordImageURL(discordID, avatar)
 
 		return err
@@ -111,7 +114,11 @@ func (s Service) UpdateDiscordUser(ctx context.Context, user model.User, id, use
 	user.Name = username
 	user.Image = getDiscordImageURL(id, avatar)
 
-	return user, s.db.One(ctx, discordUpdateUserQuery, user.ID, id, username, avatar)
+	if err := s.db.One(ctx, discordUpdateUserQuery, user.ID, id, username, avatar); err != nil {
+		return user, fmt.Errorf("update: %w", err)
+	}
+
+	return s.GetDiscordUser(ctx, id)
 }
 
 func getDiscordImageURL(id, avatar string) string {
