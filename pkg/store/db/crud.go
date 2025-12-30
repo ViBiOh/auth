@@ -23,8 +23,8 @@ VALUES (
 )
 `
 
-func (s Service) Create(ctx context.Context) (model.User, error) {
-	user := model.NewUser("")
+func (s Service) Create(ctx context.Context, name string) (model.User, error) {
+	user := model.NewUser(name)
 
 	return user, s.db.One(ctx, insertQuery, user.ID)
 }

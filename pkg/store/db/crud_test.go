@@ -36,7 +36,7 @@ func TestCreate(t *testing.T) {
 				mockDatabase.EXPECT().One(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			}
 
-			got, gotErr := instance.Create(context.Background())
+			got, gotErr := instance.Create(context.Background(), "admin")
 
 			failed := false
 

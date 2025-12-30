@@ -7,7 +7,7 @@ import (
 	"github.com/ViBiOh/auth/v3/pkg/model"
 )
 
-func (s Service) Create(_ context.Context) (model.User, error) {
+func (s Service) Create(_ context.Context, _ string) (model.User, error) {
 	return model.User{}, errors.New("not updatable")
 }
 

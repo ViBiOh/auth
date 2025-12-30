@@ -25,7 +25,7 @@ INSERT INTO
 `
 
 func (s Service) CreateGithub(ctx context.Context) (model.User, string, error) {
-	user, err := s.Create(ctx)
+	user, err := s.Create(ctx, "")
 	if err != nil {
 		return user, "", fmt.Errorf("create user: %w", err)
 	}

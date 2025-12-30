@@ -6,6 +6,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -35,8 +36,13 @@ type Cache interface {
 }
 
 type Provider interface {
+	DoAtomic(ctx context.Context, action func(context.Context) error) error
+
+	CreateDiscord(ctx context.Context, id, username, avatar string) (model.User, error)
 	GetDiscordUser(ctx context.Context, id string) (model.User, error)
-	UpdateDiscordUser(ctx context.Context, user model.User, id, username, avatar string) (model.User, error)
+
+	UpdateLink(ctx context.Context, externalID string, user model.User) error
+	GetExternalByToken(ctx context.Context, token string) (model.Link, error)
 }
 
 type ForbiddenHandler func(http.ResponseWriter, *http.Request, model.User, string)
@@ -106,8 +112,7 @@ func (s Service) redirect(w http.ResponseWriter, r *http.Request, registration, 
 	state := id.New()
 
 	if len(registration) != 0 {
-		if _, err := s.provider.GetDiscordUser(ctx, registration); err != nil && errors.Is(err, model.ErrUnknownUser) {
-
+		if _, err := s.provider.GetExternalByToken(ctx, registration); err != nil && errors.Is(err, model.ErrUnknownLink) {
 			s.renderer.Serve(w, r, renderer.NewPage("auth", http.StatusOK, map[string]any{
 				"Redirect": redirect,
 				"Message":  renderer.NewErrorMessage("Unknown registration code or already used"),
@@ -160,56 +165,79 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := s.cache.Delete(ctx, state); err != nil {
-		httperror.NotFound(ctx, w, fmt.Errorf("delete state: %w", err))
-		return
-	}
-
 	client := s.config.Client(ctx, oauth2Token)
 	resp, err := client.Get("https://discord.com/api/users/@me")
 	if err != nil {
-		httperror.InternalServerError(ctx, w, fmt.Errorf("get /user: %w", err))
+		httperror.InternalServerError(ctx, w, fmt.Errorf("get discord /user: %w", err))
 		return
 	}
 
 	discordUser, err := httpjson.Read[User](resp)
 	if err != nil {
-		httperror.InternalServerError(ctx, w, fmt.Errorf("read /user: %w", err))
-		return
-	}
-
-	isRegistration := len(payload.Registration) != 0
-
-	identifier := discordUser.ID
-	if isRegistration {
-		identifier = payload.Registration
-	}
-
-	user, err := s.provider.GetDiscordUser(ctx, identifier)
-	if err != nil {
-		if errors.Is(err, model.ErrUnknownUser) {
-			httperror.NotFound(ctx, w, fmt.Errorf("unregistered user `%s`", identifier))
-			return
-		}
-
-		httperror.InternalServerError(ctx, w, fmt.Errorf("get user: %w", err))
-		return
-	}
-
-	if isRegistration {
-		if user, err = s.provider.UpdateDiscordUser(ctx, user, discordUser.ID, discordUser.Username, discordUser.Avatar); err != nil {
-			httperror.InternalServerError(ctx, w, fmt.Errorf("save discord user: %w", err))
-			return
-		}
-	}
-
-	if !s.cookie.Set(ctx, w, oauth2Token, user, cookieName) {
+		httperror.InternalServerError(ctx, w, fmt.Errorf("read discord /user: %w", err))
 		return
 	}
 
 	redirect := payload.Redirection
 	if len(redirect) == 0 {
 		redirect = s.onSuccessPath
+	}
+
+	isRegistration := len(payload.Registration) != 0
+
+	user, err := s.provider.GetDiscordUser(ctx, discordUser.ID)
+	if err == nil && !isRegistration {
+		s.callbackSuccess(ctx, w, r, state, oauth2Token, user, redirect)
+		return
+	}
+
+	if err != nil && !errors.Is(err, model.ErrUnknownUser) {
+		httperror.InternalServerError(ctx, w, fmt.Errorf("get user: %w", err))
+		return
+	}
+
+	link, err := s.provider.GetExternalByToken(ctx, payload.Registration)
+	if err != nil {
+		if errors.Is(err, model.ErrUnknownLink) {
+			s.renderer.Serve(w, r, renderer.NewPage("auth", http.StatusOK, map[string]any{
+				"Redirect": redirect,
+				"Message":  renderer.NewErrorMessage("Unknown registration code or already used"),
+			}))
+			return
+		}
+
+		httperror.InternalServerError(ctx, w, fmt.Errorf("get registration: %w", err))
+		return
+	}
+
+	if err := s.provider.DoAtomic(ctx, func(ctx context.Context) (err error) {
+		fmt.Println(user)
+
+		if len(user.ID) == 0 {
+			user, err = s.provider.CreateDiscord(ctx, discordUser.ID, discordUser.Username, discordUser.Avatar)
+			if err != nil {
+				return err
+			}
+		}
+
+		fmt.Println(user)
+
+		return s.provider.UpdateLink(ctx, link.ExternalID, user)
+	}); err != nil {
+		httperror.InternalServerError(ctx, w, fmt.Errorf("upsert user: %w", err))
+		return
+	}
+
+	s.callbackSuccess(ctx, w, r, state, oauth2Token, user, redirect)
+}
+
+func (s Service) callbackSuccess(ctx context.Context, w http.ResponseWriter, r *http.Request, state string, oauth2Token *oauth2.Token, user model.User, redirect string) {
+	if err := s.cache.Delete(ctx, state); err != nil {
+		slog.ErrorContext(ctx, "unable to delete state", slog.Any("error", err))
+	}
+
+	if !s.cookie.Set(ctx, w, oauth2Token, user, cookieName) {
+		return
 	}
 
 	s.renderer.Serve(w, r, renderer.NewPage("auth", http.StatusOK, map[string]any{

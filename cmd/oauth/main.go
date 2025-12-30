@@ -19,6 +19,7 @@ import (
 	"github.com/ViBiOh/httputils/v4/pkg/health"
 	"github.com/ViBiOh/httputils/v4/pkg/httperror"
 	"github.com/ViBiOh/httputils/v4/pkg/httputils"
+	"github.com/ViBiOh/httputils/v4/pkg/id"
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	"github.com/ViBiOh/httputils/v4/pkg/redis"
 	"github.com/ViBiOh/httputils/v4/pkg/renderer"
@@ -58,16 +59,8 @@ func main() {
 
 	dbService := dbStore.New(database)
 
-	var registration string
-	err = dbService.DoAtomic(ctx, func(ctx context.Context) error {
-		_, registration, err = dbService.CreateDiscord(ctx, "Hello WOrld")
-		if err != nil {
-			return fmt.Errorf("create discord: %w", err)
-		}
-
-		return nil
-	})
-	logger.FatalfOnErr(ctx, err, "do atomic")
+	registration, err := dbService.CreateLink(ctx, id.New(), "nobody@localhost")
+	logger.FatalfOnErr(ctx, err, "create link")
 
 	fmt.Printf("Connect to http://127.0.0.1:%d/oauth/discord/register?registration=%s&redirect=/hello/world\n", serverConfig.Port, registration)
 

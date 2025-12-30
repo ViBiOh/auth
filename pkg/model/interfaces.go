@@ -9,13 +9,14 @@ import (
 var (
 	ErrForbidden          = errors.New("forbidden access")
 	ErrUnknownUser        = errors.New("unknown user")
+	ErrUnknownLink        = errors.New("unknown link")
 	ErrMalformedContent   = errors.New("malformed content")
 	ErrUnavailableService = errors.New("unavailable service")
 	ErrInvalidCredentials = errors.New("invalid credentials")
 )
 
 type Storage interface {
-	Create(context.Context) (User, error)
+	Create(context.Context, string) (User, error)
 	Delete(context.Context, User) error
 }
 

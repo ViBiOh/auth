@@ -77,7 +77,7 @@ INSERT INTO
 `
 
 func (s Service) CreateBasic(ctx context.Context, login, password string) (model.User, error) {
-	user, err := s.Create(ctx)
+	user, err := s.Create(ctx, login)
 	if err != nil {
 		return user, fmt.Errorf("create user: %w", err)
 	}
