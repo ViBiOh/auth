@@ -211,16 +211,12 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := s.provider.DoAtomic(ctx, func(ctx context.Context) (err error) {
-		fmt.Println(user)
-
 		if len(user.ID) == 0 {
 			user, err = s.provider.CreateDiscord(ctx, discordUser.ID, discordUser.Username, discordUser.Avatar)
 			if err != nil {
 				return err
 			}
 		}
-
-		fmt.Println(user)
 
 		return s.provider.UpdateLink(ctx, link.ExternalID, user)
 	}); err != nil {
