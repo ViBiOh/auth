@@ -50,18 +50,6 @@ CREATE TABLE auth.user_profile (
 
 CREATE UNIQUE INDEX user_profile_user_id ON auth.user_profile(user_id, profile_id);
 
--- user_link
-CREATE TABLE auth.user_link (
-  external_id TEXT                     NOT NULL,
-  token       TEXT                     NOT NULL,
-  description TEXT                     NOT NULL,
-  user_id     TEXT                              REFERENCES auth.user(id) ON DELETE CASCADE,
-  creation    TIMESTAMP WITH TIME ZONE          DEFAULT now()
-);
-
-CREATE UNIQUE INDEX user_link_external_id ON auth.user_link(external_id);
-CREATE        INDEX user_link_user_id     ON auth.user_link(user_id);
-
 -- basic
 CREATE TABLE auth.basic (
   user_id  TEXT                     NOT NULL REFERENCES auth.user(id) ON DELETE CASCADE,
@@ -95,3 +83,13 @@ CREATE TABLE auth.discord (
 
 CREATE UNIQUE INDEX discord_user_id ON auth.discord(user_id);
 CREATE        INDEX discord_login   ON auth.discord(id);
+
+-- user_link
+CREATE TABLE auth.user_link (
+  external_id TEXT                     NOT NULL,
+  token       TEXT                     NOT NULL,
+  description TEXT                     NOT NULL,
+  creation    TIMESTAMP WITH TIME ZONE          DEFAULT now()
+);
+
+CREATE UNIQUE INDEX user_link_token       ON auth.user_link(token);

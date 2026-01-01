@@ -70,9 +70,15 @@ func main() {
 	rendererService, err := renderer.New(ctx, rendererConfig, content, nil, nil, nil)
 	logger.FatalfOnErr(ctx, err, "renderer")
 
+	linkHandler := func(ctx context.Context, externalID string, user model.User) error {
+		fmt.Printf("`%s` has been link to `%s`\n", externalID, user.ID)
+
+		return nil
+	}
+
 	cookieService := cookie.New(cookieConfig)
-	discordService := discord.New(discordConfig, redisClient, dbService, rendererService, cookieService)
-	githubService := github.New(githubConfig, redisClient, dbService, rendererService, cookieService)
+	discordService := discord.New(discordConfig, redisClient, dbService, linkHandler, rendererService, cookieService)
+	githubService := github.New(githubConfig, redisClient, dbService, linkHandler, rendererService, cookieService)
 
 	authMiddleware := middleware.New(githubService)
 

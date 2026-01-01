@@ -41,16 +41,19 @@ type Provider interface {
 	CreateGithub(ctx context.Context, id uint64, login string) (model.User, error)
 	GetGitHubUser(ctx context.Context, id uint64) (model.User, error)
 
-	UpdateLink(ctx context.Context, externalID string, user model.User) error
-	GetExternalByToken(ctx context.Context, token string) (model.Link, error)
+	GetLinkByToken(ctx context.Context, token string) (model.Link, error)
 }
 
-type ForbiddenHandler func(http.ResponseWriter, *http.Request, model.User, string)
+type (
+	LinkHandler      func(ctx context.Context, externalID string, user model.User) error
+	ForbiddenHandler func(http.ResponseWriter, *http.Request, model.User, string)
+)
 
 type Service struct {
 	config        oauth2.Config
 	cache         Cache
 	provider      Provider
+	linkHandler   LinkHandler
 	onSuccessPath string
 	renderer      *renderer.Service
 	cookie        cookie.Service
@@ -76,7 +79,7 @@ func Flags(fs *flag.FlagSet, prefix string, overrides ...flags.Override) *Config
 	return &config
 }
 
-func New(config *Config, cache Cache, provider Provider, renderer *renderer.Service, cookie cookie.Service) Service {
+func New(config *Config, cache Cache, provider Provider, linkHandler LinkHandler, renderer *renderer.Service, cookie cookie.Service) Service {
 	return Service{
 		config: oauth2.Config{
 			ClientID:     config.clientID,
@@ -86,10 +89,11 @@ func New(config *Config, cache Cache, provider Provider, renderer *renderer.Serv
 		},
 		onSuccessPath: config.onSuccessPath,
 
-		cache:    cache,
-		provider: provider,
-		renderer: renderer,
-		cookie:   cookie,
+		cache:       cache,
+		provider:    provider,
+		linkHandler: linkHandler,
+		renderer:    renderer,
+		cookie:      cookie,
 	}
 }
 
@@ -184,7 +188,7 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	link, err := s.provider.GetExternalByToken(ctx, payload.Registration)
+	link, err := s.provider.GetLinkByToken(ctx, payload.Registration)
 	if err != nil {
 		if errors.Is(err, model.ErrUnknownLink) {
 			s.renderer.Serve(w, r, renderer.NewPage("auth", http.StatusOK, map[string]any{
@@ -206,7 +210,7 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		return s.provider.UpdateLink(ctx, link.ExternalID, user)
+		return s.linkHandler(ctx, link.ExternalID, user)
 	}); err != nil {
 		httperror.InternalServerError(ctx, w, fmt.Errorf("upsert user: %w", err))
 		return

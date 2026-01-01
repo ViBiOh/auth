@@ -39,7 +39,7 @@ WHERE
   token = $1
 `
 
-func (s Service) GetExternalByToken(ctx context.Context, token string) (model.Link, error) {
+func (s Service) GetLinkByToken(ctx context.Context, token string) (model.Link, error) {
 	var item model.Link
 
 	return item, s.db.Get(ctx, func(row pgx.Row) error {
@@ -51,20 +51,6 @@ func (s Service) GetExternalByToken(ctx context.Context, token string) (model.Li
 
 		return err
 	}, getLinkByTokenQuery, token)
-}
-
-const updateLinkQuery = `
-UPDATE
-  auth.user_link
-SET
-  user_id = $2,
-  token = ''
-WHERE
-  external_id = $1
-`
-
-func (s Service) UpdateLink(ctx context.Context, externalID string, user model.User) error {
-	return s.db.One(ctx, updateLinkQuery, externalID, user.ID)
 }
 
 const deleteLinkQuery = `
