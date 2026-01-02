@@ -1,20 +1,19 @@
 -- clean
+DROP TABLE IF EXISTS auth.invite;
 DROP TABLE IF EXISTS auth.discord;
 DROP TABLE IF EXISTS auth.github;
 DROP TABLE IF EXISTS auth.basic;
-DROP TABLE IF EXISTS auth.user_link;
 DROP TABLE IF EXISTS auth.user_profile;
 DROP TABLE IF EXISTS auth.profile;
 DROP TABLE IF EXISTS auth.user;
 
-DROP INDEX IF EXISTS discord_login;
+DROP INDEX IF EXISTS invite_token;
+DROP INDEX IF EXISTS discord_id;
 DROP INDEX IF EXISTS discord_user_id;
 DROP INDEX IF EXISTS github_login;
 DROP INDEX IF EXISTS github_user_id;
 DROP INDEX IF EXISTS basic_login;
 DROP INDEX IF EXISTS basic_user_id;
-DROP INDEX IF EXISTS user_link_user_id;
-DROP INDEX IF EXISTS user_link_external_id;
 DROP INDEX IF EXISTS user_profile_user_id;
 DROP INDEX IF EXISTS profile_id;
 DROP INDEX IF EXISTS user_id;
