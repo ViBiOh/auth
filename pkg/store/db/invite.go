@@ -24,15 +24,15 @@ INSERT INTO
 )
 `
 
-func (s Service) CreateInvite(ctx context.Context, description string) (string, error) {
+func (s Service) CreateInvite(ctx context.Context, description string) (model.User, string, error) {
 	token := id.New()
 
 	user, err := s.Create(ctx, description)
 	if err != nil {
-		return token, fmt.Errorf("create user: %w", err)
+		return user, token, fmt.Errorf("create user: %w", err)
 	}
 
-	return token, s.db.One(ctx, createInviteQuery, user.ID, token, description)
+	return user, token, s.db.One(ctx, createInviteQuery, user.ID, token, description)
 }
 
 const getInviteByTokenQuery = `

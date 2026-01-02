@@ -60,7 +60,7 @@ func main() {
 
 	dbService := dbStore.New(database)
 
-	registration, err := dbService.CreateInvite(ctx, "nobody@localhost")
+	_, registration, err := dbService.CreateInvite(ctx, "nobody@localhost")
 	logger.FatalfOnErr(ctx, err, "create link")
 
 	fmt.Printf("Connect to http://127.0.0.1:%d/oauth/discord/register?registration=%s&redirect=/hello/world\n", serverConfig.Port, registration)
