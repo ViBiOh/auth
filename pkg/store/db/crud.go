@@ -32,7 +32,7 @@ func (s Service) Create(ctx context.Context, name string) (model.User, error) {
 func (s Service) List(ctx context.Context, ids ...string) ([]model.User, error) {
 	conc := concurrent.NewFailFast(0)
 
-	var discordUsers, githubUsers []model.User
+	var discordUsers, githubUsers, inviteUsers []model.User
 
 	conc.Go(func() (err error) {
 		discordUsers, err = s.listDiscordUsers(ctx, ids...)
@@ -44,9 +44,14 @@ func (s Service) List(ctx context.Context, ids ...string) ([]model.User, error) 
 		return err
 	})
 
+	conc.Go(func() (err error) {
+		inviteUsers, err = s.listInviteUsers(ctx, ids...)
+		return err
+	})
+
 	err := conc.Wait()
 
-	return slices.Concat(discordUsers, githubUsers), err
+	return slices.Concat(discordUsers, githubUsers, inviteUsers), err
 }
 
 const deleteQuery = `

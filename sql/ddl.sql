@@ -82,14 +82,14 @@ CREATE TABLE auth.discord (
 );
 
 CREATE UNIQUE INDEX discord_user_id ON auth.discord(user_id);
-CREATE        INDEX discord_login   ON auth.discord(id);
+CREATE        INDEX discord_id      ON auth.discord(id);
 
--- user_link
-CREATE TABLE auth.user_link (
-  external_id TEXT                     NOT NULL,
+-- invite
+CREATE TABLE auth.invite (
+  user_id     TEXT                     NOT NULL REFERENCES auth.user(id) ON DELETE CASCADE,
   token       TEXT                     NOT NULL,
   description TEXT                     NOT NULL,
   creation    TIMESTAMP WITH TIME ZONE          DEFAULT now()
 );
 
-CREATE UNIQUE INDEX user_link_token       ON auth.user_link(token);
+CREATE UNIQUE INDEX invite_token ON auth.invite(token);

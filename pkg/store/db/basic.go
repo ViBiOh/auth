@@ -43,6 +43,8 @@ func (s Service) GetBasicUser(ctx context.Context, login, password string) (mode
 		return model.User{}, model.ErrUnavailableService
 	}
 
+	user.Kind = model.Basic
+
 	switch {
 	case strings.HasPrefix(userPassword, "$argon2id"):
 		if argon.CompareHashAndPassword(userPassword, password) == nil {
@@ -88,6 +90,7 @@ func (s Service) CreateBasic(ctx context.Context, login, password string) (model
 	}
 
 	user.Name = login
+	user.Kind = model.Basic
 
 	return user, s.db.One(ctx, insertPasswordQuery, user.ID, login, password)
 }

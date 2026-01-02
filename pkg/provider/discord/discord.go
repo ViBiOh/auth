@@ -38,14 +38,16 @@ type Cache interface {
 type Provider interface {
 	DoAtomic(ctx context.Context, action func(context.Context) error) error
 
-	CreateDiscord(ctx context.Context, id, username, avatar string) (model.User, error)
+	CreateDiscord(ctx context.Context, invite model.User, id, username, avatar string) (model.User, error)
 	GetDiscordUser(ctx context.Context, id string) (model.User, error)
 
-	GetLinkByToken(ctx context.Context, token string) (model.Link, error)
+	GetInviteByToken(ctx context.Context, token string) (model.User, error)
+	Delete(ctx context.Context, user model.User) error
+	DeleteInvite(ctx context.Context, user model.User) error
 }
 
 type (
-	LinkHandler      func(ctx context.Context, externalID string, user model.User) error
+	LinkHandler      func(ctx context.Context, old, new model.User) error
 	ForbiddenHandler func(http.ResponseWriter, *http.Request, model.User, string)
 )
 
@@ -116,7 +118,7 @@ func (s Service) redirect(w http.ResponseWriter, r *http.Request, registration, 
 	state := id.New()
 
 	if len(registration) != 0 {
-		if _, err := s.provider.GetLinkByToken(ctx, registration); err != nil && errors.Is(err, model.ErrUnknownLink) {
+		if _, err := s.provider.GetInviteByToken(ctx, registration); err != nil && errors.Is(err, model.ErrUnknownUser) {
 			s.renderer.Serve(w, r, renderer.NewPage("auth", http.StatusOK, map[string]any{
 				"Redirect": redirect,
 				"Message":  renderer.NewErrorMessage("Unknown registration code or already used"),
@@ -200,9 +202,9 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	link, err := s.provider.GetLinkByToken(ctx, payload.Registration)
+	invite, err := s.provider.GetInviteByToken(ctx, payload.Registration)
 	if err != nil {
-		if errors.Is(err, model.ErrUnknownLink) {
+		if errors.Is(err, model.ErrUnknownUser) {
 			s.renderer.Serve(w, r, renderer.NewPage("auth", http.StatusOK, map[string]any{
 				"Redirect": redirect,
 				"Message":  renderer.NewErrorMessage("Unknown registration code or already used"),
@@ -216,13 +218,21 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 
 	if err := s.provider.DoAtomic(ctx, func(ctx context.Context) (err error) {
 		if len(user.ID) == 0 {
-			user, err = s.provider.CreateDiscord(ctx, discordUser.ID, discordUser.Username, discordUser.Avatar)
+			user, err = s.provider.CreateDiscord(ctx, invite, discordUser.ID, discordUser.Username, discordUser.Avatar)
 			if err != nil {
 				return err
 			}
 		}
 
-		return s.linkHandler(ctx, link.ExternalID, user)
+		if err := s.linkHandler(ctx, invite, user); err != nil {
+			return fmt.Errorf("invite handler: %w", err)
+		}
+
+		if user.ID != invite.ID {
+			return s.provider.Delete(ctx, invite)
+		}
+
+		return s.provider.DeleteInvite(ctx, invite)
 	}); err != nil {
 		httperror.InternalServerError(ctx, w, fmt.Errorf("upsert user: %w", err))
 		return

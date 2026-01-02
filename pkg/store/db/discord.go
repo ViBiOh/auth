@@ -25,15 +25,12 @@ INSERT INTO
 )
 `
 
-func (s Service) CreateDiscord(ctx context.Context, id, username, avatar string) (model.User, error) {
-	user, err := s.Create(ctx, username)
-	if err != nil {
-		return user, fmt.Errorf("create user: %w", err)
-	}
+func (s Service) CreateDiscord(ctx context.Context, invite model.User, id, username, avatar string) (model.User, error) {
+	invite.Name = username
+	invite.Kind = model.Discord
+	invite.Image = getDiscordImageURL(id, avatar)
 
-	user.Image = getDiscordImageURL(id, avatar)
-
-	return user, s.db.One(ctx, discordCreateRegistrationQuery, id, user.ID, username, avatar)
+	return invite, s.db.One(ctx, discordCreateRegistrationQuery, id, invite.ID, username, avatar)
 }
 
 const discordGetUserByIdQuery = `
@@ -59,13 +56,14 @@ func (s Service) GetDiscordUser(ctx context.Context, id string) (model.User, err
 			return model.ErrUnknownUser
 		}
 
+		item.Kind = model.Discord
 		item.Image = getDiscordImageURL(discordID, avatar)
 
 		return err
 	}, discordGetUserByIdQuery, id)
 }
 
-const discordListUsers = `
+const listDiscordQuery = `
 SELECT
   user_id,
   username,
@@ -88,11 +86,12 @@ func (s Service) listDiscordUsers(ctx context.Context, userIDs ...string) ([]mod
 			return fmt.Errorf("scan: %w", err)
 		}
 
+		item.Kind = model.Discord
 		item.Image = getDiscordImageURL(discordID, avatar)
 		items = append(items, item)
 
 		return nil
-	}, discordListUsers, userIDs)
+	}, listDiscordQuery, userIDs)
 }
 
 const discordUpdateUserQuery = `

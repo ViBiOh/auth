@@ -24,15 +24,12 @@ INSERT INTO
 )
 `
 
-func (s Service) CreateGithub(ctx context.Context, id uint64, login string) (model.User, error) {
-	user, err := s.Create(ctx, login)
-	if err != nil {
-		return user, fmt.Errorf("create user: %w", err)
-	}
+func (s Service) CreateGithub(ctx context.Context, invite model.User, id uint64, login string) (model.User, error) {
+	invite.Name = login
+	invite.Kind = model.GitHub
+	invite.Image = getGitHubImageURL(id)
 
-	user.Image = getGitHubImageURL(id)
-
-	return user, s.db.One(ctx, githubCreateRegistrationQuery, id, user.ID, login)
+	return invite, s.db.One(ctx, githubCreateRegistrationQuery, id, invite.ID, login)
 }
 
 const githubGetUserByIdQuery = `
@@ -57,6 +54,7 @@ func (s Service) GetGitHubUser(ctx context.Context, id uint64) (model.User, erro
 			return model.ErrUnknownUser
 		}
 
+		item.Kind = model.GitHub
 		item.Image = getGitHubImageURL(githubID)
 
 		return err
@@ -85,6 +83,7 @@ func (s Service) listGithubUsers(ctx context.Context, userIDs ...string) ([]mode
 			return fmt.Errorf("scan: %w", err)
 		}
 
+		item.Kind = model.GitHub
 		item.Image = getGitHubImageURL(githubID)
 		items = append(items, item)
 

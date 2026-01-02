@@ -38,14 +38,16 @@ type Cache interface {
 type Provider interface {
 	DoAtomic(ctx context.Context, action func(context.Context) error) error
 
-	CreateGithub(ctx context.Context, id uint64, login string) (model.User, error)
+	CreateGithub(ctx context.Context, invite model.User, id uint64, login string) (model.User, error)
 	GetGitHubUser(ctx context.Context, id uint64) (model.User, error)
 
-	GetLinkByToken(ctx context.Context, token string) (model.Link, error)
+	GetInviteByToken(ctx context.Context, token string) (model.User, error)
+	Delete(ctx context.Context, user model.User) error
+	DeleteInvite(ctx context.Context, user model.User) error
 }
 
 type (
-	LinkHandler      func(ctx context.Context, externalID string, user model.User) error
+	LinkHandler      func(ctx context.Context, old, new model.User) error
 	ForbiddenHandler func(http.ResponseWriter, *http.Request, model.User, string)
 )
 
@@ -188,9 +190,9 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	link, err := s.provider.GetLinkByToken(ctx, payload.Registration)
+	invite, err := s.provider.GetInviteByToken(ctx, payload.Registration)
 	if err != nil {
-		if errors.Is(err, model.ErrUnknownLink) {
+		if errors.Is(err, model.ErrUnknownUser) {
 			s.renderer.Serve(w, r, renderer.NewPage("auth", http.StatusOK, map[string]any{
 				"Redirect": redirect,
 				"Message":  renderer.NewErrorMessage("Unknown registration code or already used"),
@@ -204,13 +206,21 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 
 	if err := s.provider.DoAtomic(ctx, func(ctx context.Context) (err error) {
 		if len(user.ID) == 0 {
-			user, err = s.provider.CreateGithub(ctx, githubUser.ID, githubUser.Login)
+			user, err = s.provider.CreateGithub(ctx, invite, githubUser.ID, githubUser.Login)
 			if err != nil {
 				return err
 			}
 		}
 
-		return s.linkHandler(ctx, link.ExternalID, user)
+		if err := s.linkHandler(ctx, invite, user); err != nil {
+			return fmt.Errorf("invite handler: %w", err)
+		}
+
+		if user.ID != invite.ID {
+			return s.provider.Delete(ctx, invite)
+		}
+
+		return s.provider.DeleteInvite(ctx, invite)
 	}); err != nil {
 		httperror.InternalServerError(ctx, w, fmt.Errorf("upsert user: %w", err))
 		return

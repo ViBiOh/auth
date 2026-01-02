@@ -21,6 +21,7 @@ func TestLogin(t *testing.T) {
 	}
 
 	expectedUser := model.NewUser("vibioh")
+	expectedUser.Kind = model.Basic
 
 	cases := map[string]struct {
 		args    args

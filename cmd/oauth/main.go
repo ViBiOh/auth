@@ -20,7 +20,6 @@ import (
 	"github.com/ViBiOh/httputils/v4/pkg/health"
 	"github.com/ViBiOh/httputils/v4/pkg/httperror"
 	"github.com/ViBiOh/httputils/v4/pkg/httputils"
-	"github.com/ViBiOh/httputils/v4/pkg/id"
 	"github.com/ViBiOh/httputils/v4/pkg/logger"
 	"github.com/ViBiOh/httputils/v4/pkg/redis"
 	"github.com/ViBiOh/httputils/v4/pkg/renderer"
@@ -61,7 +60,7 @@ func main() {
 
 	dbService := dbStore.New(database)
 
-	registration, err := dbService.CreateLink(ctx, id.New(), "nobody@localhost")
+	registration, err := dbService.CreateInvite(ctx, "nobody@localhost")
 	logger.FatalfOnErr(ctx, err, "create link")
 
 	fmt.Printf("Connect to http://127.0.0.1:%d/oauth/discord/register?registration=%s&redirect=/hello/world\n", serverConfig.Port, registration)
@@ -70,11 +69,7 @@ func main() {
 	rendererService, err := renderer.New(ctx, rendererConfig, content, nil, nil, nil)
 	logger.FatalfOnErr(ctx, err, "renderer")
 
-	linkHandler := func(ctx context.Context, externalID string, user model.User) error {
-		fmt.Printf("`%s` has been link to `%s`\n", externalID, user.ID)
-
-		return nil
-	}
+	linkHandler := func(ctx context.Context, old, new model.User) error { return nil }
 
 	cookieService := cookie.New(cookieConfig)
 	discordService := discord.New(discordConfig, redisClient, dbService, linkHandler, rendererService, cookieService)
