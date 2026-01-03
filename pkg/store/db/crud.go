@@ -49,6 +49,11 @@ func (s Service) List(ctx context.Context, ids ...string) ([]model.User, error) 
 		return err
 	})
 
+	conc.Go(func() (err error) {
+		inviteUsers, err = s.listBasicUsers(ctx, ids...)
+		return err
+	})
+
 	err := conc.Wait()
 
 	return slices.Concat(discordUsers, githubUsers, inviteUsers), err

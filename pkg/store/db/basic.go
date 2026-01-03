@@ -112,3 +112,30 @@ func (s Service) UpdatePassword(ctx context.Context, user model.User, password s
 
 	return s.db.One(ctx, updatePasswordQuery, user.ID, password)
 }
+
+const listBasicQuery = `
+SELECT
+  user_id,
+  login
+FROM
+  auth.basic
+WHERE
+  user_id = ANY($1)
+`
+
+func (s Service) listBasicUsers(ctx context.Context, userIDs ...string) ([]model.User, error) {
+	var items []model.User
+
+	return items, s.db.List(ctx, func(rows pgx.Rows) error {
+		var item model.User
+
+		if err := rows.Scan(&item.ID, &item.Name); err != nil {
+			return fmt.Errorf("scan: %w", err)
+		}
+
+		item.Kind = model.Basic
+		items = append(items, item)
+
+		return nil
+	}, listBasicQuery, userIDs)
+}
