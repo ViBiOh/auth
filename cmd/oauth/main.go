@@ -89,13 +89,8 @@ func main() {
 	})
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/oauth/discord/logout", discordService.Logout)
-	mux.HandleFunc("/oauth/discord/callback", discordService.Callback)
-	mux.HandleFunc("/oauth/discord/register", discordService.Register)
-
-	mux.HandleFunc("/oauth/github/logout", githubService.Logout)
-	mux.HandleFunc("/oauth/github/callback", githubService.Callback)
-	mux.HandleFunc("/oauth/github/register", githubService.Register)
+	discordService.Mux("/oauth/discord", mux)
+	discordService.Mux("/oauth/github", mux)
 
 	mux.Handle("/hello/world", authMiddleware.Middleware(authMux))
 

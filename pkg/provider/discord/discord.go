@@ -13,9 +13,9 @@ import (
 	"github.com/ViBiOh/auth/v3/pkg/cookie"
 	"github.com/ViBiOh/auth/v3/pkg/model"
 	"github.com/ViBiOh/flags"
-	"github.com/ViBiOh/httputils/v4/pkg/httperror"
 	"github.com/ViBiOh/httputils/v4/pkg/httpjson"
 	"github.com/ViBiOh/httputils/v4/pkg/id"
+	httpModel "github.com/ViBiOh/httputils/v4/pkg/model"
 	"github.com/ViBiOh/httputils/v4/pkg/renderer"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/endpoints"
@@ -100,6 +100,12 @@ func New(config *Config, cache Cache, provider Provider, linkHandler LinkHandler
 	}
 }
 
+func (s Service) Mux(prefix string, mux *http.ServeMux) {
+	mux.HandleFunc(prefix+"/logout", s.Logout)
+	mux.HandleFunc(prefix+"/register", s.Register)
+	mux.HandleFunc(prefix+"/callback", s.Callback)
+}
+
 func (s Service) Logout(w http.ResponseWriter, r *http.Request) {
 	s.cookie.Clear(w, cookieName)
 
@@ -136,12 +142,12 @@ func (s Service) redirect(w http.ResponseWriter, r *http.Request, registration, 
 
 	rawPayload, err := json.Marshal(payload)
 	if err != nil {
-		httperror.InternalServerError(ctx, w, fmt.Errorf("marshal state: %w", err))
+		s.renderer.Error(w, r, nil, fmt.Errorf("marshal state: %w", err))
 		return
 	}
 
 	if err := s.cache.Store(ctx, verifierCacheKey+state, rawPayload, time.Minute*5); err != nil {
-		httperror.InternalServerError(ctx, w, fmt.Errorf("save state: %w", err))
+		s.renderer.Error(w, r, nil, fmt.Errorf("save state: %w", err))
 		return
 	}
 
@@ -155,32 +161,32 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 
 	rawPayload, err := s.cache.Load(ctx, state)
 	if err != nil {
-		httperror.NotFound(ctx, w, fmt.Errorf("state not found: %w", err))
+		s.renderer.Error(w, r, nil, httpModel.WrapNotFound(fmt.Errorf("state not found: %w", err)))
 		return
 	}
 
 	var payload State
 	if err := json.Unmarshal(rawPayload, &payload); err != nil {
-		httperror.NotFound(ctx, w, fmt.Errorf("unmarshal state: %w", err))
+		s.renderer.Error(w, r, nil, fmt.Errorf("unmarshal state: %w", err))
 		return
 	}
 
 	oauth2Token, err := s.config.Exchange(ctx, r.URL.Query().Get("code"), oauth2.VerifierOption(payload.Verifier))
 	if err != nil {
-		httperror.Unauthorized(ctx, w, fmt.Errorf("exchange token: %w", err))
+		s.renderer.Error(w, r, nil, fmt.Errorf("exchange token: %w", err))
 		return
 	}
 
 	client := s.config.Client(ctx, oauth2Token)
 	resp, err := client.Get("https://discord.com/api/users/@me")
 	if err != nil {
-		httperror.InternalServerError(ctx, w, fmt.Errorf("get discord /user: %w", err))
+		s.renderer.Error(w, r, nil, fmt.Errorf("get discord /user: %w", err))
 		return
 	}
 
 	discordUser, err := httpjson.Read[User](resp)
 	if err != nil {
-		httperror.InternalServerError(ctx, w, fmt.Errorf("read discord /user: %w", err))
+		s.renderer.Error(w, r, nil, fmt.Errorf("read discord /user: %w", err))
 		return
 	}
 
@@ -198,7 +204,7 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil && !errors.Is(err, model.ErrUnknownUser) {
-		httperror.InternalServerError(ctx, w, fmt.Errorf("get user: %w", err))
+		s.renderer.Error(w, r, nil, fmt.Errorf("get user: %w", err))
 		return
 	}
 
@@ -212,7 +218,7 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		httperror.InternalServerError(ctx, w, fmt.Errorf("get registration: %w", err))
+		s.renderer.Error(w, r, nil, fmt.Errorf("get registration: %w", err))
 		return
 	}
 
@@ -234,7 +240,7 @@ func (s Service) Callback(w http.ResponseWriter, r *http.Request) {
 
 		return s.provider.DeleteInvite(ctx, invite)
 	}); err != nil {
-		httperror.InternalServerError(ctx, w, fmt.Errorf("upsert user: %w", err))
+		s.renderer.Error(w, r, nil, fmt.Errorf("upsert user: %w", err))
 		return
 	}
 
