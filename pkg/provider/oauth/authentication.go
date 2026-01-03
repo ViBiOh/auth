@@ -1,4 +1,4 @@
-package discord
+package oauth
 
 import (
 	"context"
@@ -19,7 +19,7 @@ var updateMethods = []string{
 	http.MethodDelete,
 }
 
-func (s Service) GetUser(ctx context.Context, r *http.Request) (model.User, error) {
+func (s Service[T, I]) GetUser(ctx context.Context, r *http.Request) (model.User, error) {
 	claim, err := s.cookie.Get(r, cookieName)
 	if err != nil {
 		return model.User{}, err
@@ -30,7 +30,7 @@ func (s Service) GetUser(ctx context.Context, r *http.Request) (model.User, erro
 		key := updateCacheKey + claim.User.ID
 
 		if content, _ := s.cache.Load(ctx, key); content == nil {
-			if _, err := s.config.Client(ctx, claim.Token).Get("https://discord.com/api/users/@me"); err != nil {
+			if _, err := s.config.Client(ctx, claim.Token).Get(s.getURL); err != nil {
 				return model.User{}, fmt.Errorf("refresh user: %w", err)
 			}
 
@@ -41,6 +41,6 @@ func (s Service) GetUser(ctx context.Context, r *http.Request) (model.User, erro
 	return claim.User, nil
 }
 
-func (s Service) OnUnauthorized(w http.ResponseWriter, r *http.Request, err error) {
+func (s Service[T, I]) OnUnauthorized(w http.ResponseWriter, r *http.Request, err error) {
 	s.redirect(w, r, "", r.URL.String())
 }

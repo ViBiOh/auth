@@ -90,7 +90,7 @@ func main() {
 
 	mux := http.NewServeMux()
 	discordService.Mux("/oauth/discord", mux)
-	discordService.Mux("/oauth/github", mux)
+	githubService.Mux("/oauth/github", mux)
 
 	mux.Handle("/hello/world", authMiddleware.Middleware(authMux))
 

@@ -1,4 +1,4 @@
-package discord
+package oauth
 
 import (
 	"github.com/ViBiOh/auth/v3/pkg/model"
@@ -10,12 +10,6 @@ type State struct {
 	Verifier     string `json:"verifier"`
 	Registration string `json:"registration"`
 	Redirection  string `json:"redirect"`
-}
-
-type User struct {
-	Username string `json:"global_name"`
-	Avatar   string `json:"avatar"`
-	ID       string `json:"id"`
 }
 
 type AuthClaims struct {

@@ -24,12 +24,12 @@ INSERT INTO
 )
 `
 
-func (s Service) CreateGithub(ctx context.Context, invite model.User, id uint64, login string) (model.User, error) {
-	invite.Name = login
+func (s Service) CreateGithub(ctx context.Context, invite model.User, user model.GitHubUser) (model.User, error) {
+	invite.Name = user.Login
 	invite.Kind = model.GitHub
-	invite.Image = getGitHubImageURL(id)
+	invite.Image = getGitHubImageURL(user.ID)
 
-	return invite, s.db.One(ctx, githubCreateRegistrationQuery, id, invite.ID, login)
+	return invite, s.db.One(ctx, githubCreateRegistrationQuery, user.ID, invite.ID, user.Login)
 }
 
 const githubGetUserByIdQuery = `

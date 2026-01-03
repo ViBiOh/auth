@@ -25,12 +25,12 @@ INSERT INTO
 )
 `
 
-func (s Service) CreateDiscord(ctx context.Context, invite model.User, id, username, avatar string) (model.User, error) {
-	invite.Name = username
+func (s Service) CreateDiscord(ctx context.Context, invite model.User, user model.DiscordUser) (model.User, error) {
+	invite.Name = user.Username
 	invite.Kind = model.Discord
-	invite.Image = getDiscordImageURL(id, avatar)
+	invite.Image = getDiscordImageURL(user.ID, user.Avatar)
 
-	return invite, s.db.One(ctx, discordCreateRegistrationQuery, id, invite.ID, username, avatar)
+	return invite, s.db.One(ctx, discordCreateRegistrationQuery, user.ID, invite.ID, user.Username, user.Avatar)
 }
 
 const discordGetUserByIdQuery = `
