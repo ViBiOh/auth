@@ -12,8 +12,8 @@ import (
 	"github.com/ViBiOh/auth/v3/pkg/model"
 	"github.com/ViBiOh/flags"
 	"github.com/ViBiOh/httputils/v4/pkg/httperror"
+	"github.com/ViBiOh/httputils/v4/pkg/id"
 	"github.com/golang-jwt/jwt/v5"
-	"golang.org/x/oauth2"
 )
 
 var (
@@ -21,13 +21,16 @@ var (
 	signValidMethods = []string{signMethod.Alg()}
 )
 
-type AuthClaims struct {
-	Token *oauth2.Token `json:"token"`
-	jwt.RegisteredClaims
-	User model.User `json:"user"`
+type ClaimUser interface {
+	GetSubject() string
 }
 
-type Service struct {
+type Claim[T ClaimUser] struct {
+	Content T
+	jwt.RegisteredClaims
+}
+
+type Service[T ClaimUser] struct {
 	hmacSecret    []byte
 	jwtExpiration time.Duration
 	devMode       bool
@@ -47,16 +50,20 @@ func Flags(fs *flag.FlagSet, prefix string, overrides ...flags.Override) *Config
 	return &config
 }
 
-func New(config *Config) Service {
-	return Service{
+func New[T ClaimUser](config *Config) Service[T] {
+	return Service[T]{
 		hmacSecret:    []byte(config.hmacSecret),
 		jwtExpiration: config.jwtExpiration,
 		devMode:       os.Getenv("ENV") == "dev",
 	}
 }
 
-func (s Service) Get(r *http.Request, name string) (AuthClaims, error) {
-	var claim AuthClaims
+func (s Service[T]) IsEnabled() bool {
+	return len(s.hmacSecret) != 0
+}
+
+func (s Service[T]) Get(r *http.Request, name string) (Claim[T], error) {
+	var claim Claim[T]
 
 	auth, err := r.Cookie(name)
 	if err != nil {
@@ -74,8 +81,8 @@ func (s Service) Get(r *http.Request, name string) (AuthClaims, error) {
 	return claim, nil
 }
 
-func (s Service) Set(ctx context.Context, w http.ResponseWriter, oauth2Token *oauth2.Token, user model.User, name string) bool {
-	token := jwt.NewWithClaims(signMethod, s.newClaim(oauth2Token, user))
+func (s Service[T]) Set(ctx context.Context, w http.ResponseWriter, name string, content T) bool {
+	token := jwt.NewWithClaims(signMethod, s.newClaim(content))
 
 	tokenString, err := token.SignedString(s.hmacSecret)
 	if err != nil {
@@ -83,11 +90,11 @@ func (s Service) Set(ctx context.Context, w http.ResponseWriter, oauth2Token *oa
 		return false
 	}
 
-	s.setCallbackCookie(w, name, tokenString)
+	s.setCookie(w, name, tokenString)
 	return true
 }
 
-func (s Service) Clear(w http.ResponseWriter, name string) {
+func (s Service[T]) Clear(w http.ResponseWriter, name string) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     name,
 		Value:    "",
@@ -99,28 +106,27 @@ func (s Service) Clear(w http.ResponseWriter, name string) {
 	})
 }
 
-func (s Service) jwtKeyFunc(_ *jwt.Token) (any, error) {
+func (s Service[T]) jwtKeyFunc(_ *jwt.Token) (any, error) {
 	return s.hmacSecret, nil
 }
 
-func (s Service) newClaim(token *oauth2.Token, user model.User) AuthClaims {
+func (s Service[T]) newClaim(content T) Claim[T] {
 	now := time.Now()
 
-	return AuthClaims{
-		User:  user,
-		Token: token,
+	return Claim[T]{
 		RegisteredClaims: jwt.RegisteredClaims{
+			ID:        id.New(),
+			Subject:   content.GetSubject(),
 			ExpiresAt: jwt.NewNumericDate(now.Add(s.jwtExpiration)),
 			IssuedAt:  jwt.NewNumericDate(now),
 			NotBefore: jwt.NewNumericDate(now),
 			Issuer:    "auth",
-			Subject:   user.Name,
-			ID:        user.ID,
 		},
+		Content: content,
 	}
 }
 
-func (s Service) setCallbackCookie(w http.ResponseWriter, name, value string) {
+func (s Service[T]) setCookie(w http.ResponseWriter, name, value string) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     name,
 		Value:    value,

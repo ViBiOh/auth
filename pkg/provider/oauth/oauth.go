@@ -61,12 +61,12 @@ type Service[T ProviderUser[I], I comparable] struct {
 	name          string
 	getURL        string
 	onSuccessPath string
-	cookie        cookie.Service
+	cookie        cookie.Service[model.OAuthClaim]
 }
 
 var _ model.Authentication = Service[ProviderUser[string], string]{}
 
-func New[T ProviderUser[I], I comparable](name, getURL, onSuccessPath string, config oauth2.Config, cache Cache, storage Storage, linkHandler LinkHandler, createHandler CreateHandler[T, I], getHandler GetHandler[I], renderer *renderer.Service, cookie cookie.Service) Service[T, I] {
+func New[T ProviderUser[I], I comparable](name, getURL, onSuccessPath string, config oauth2.Config, cache Cache, storage Storage, linkHandler LinkHandler, createHandler CreateHandler[T, I], getHandler GetHandler[I], renderer *renderer.Service, cookie cookie.Service[model.OAuthClaim]) Service[T, I] {
 	return Service[T, I]{
 		name:          name,
 		getURL:        getURL,
@@ -235,7 +235,7 @@ func (s Service[T, I]) callbackSuccess(ctx context.Context, w http.ResponseWrite
 		slog.ErrorContext(ctx, "unable to delete state", slog.Any("error", err))
 	}
 
-	if !s.cookie.Set(ctx, w, oauth2Token, user, cookieName) {
+	if !s.cookie.Set(ctx, w, cookieName, model.OAuthClaim{Token: oauth2Token, User: user}) {
 		return
 	}
 

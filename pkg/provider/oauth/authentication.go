@@ -2,6 +2,7 @@ package oauth
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"slices"
@@ -25,12 +26,16 @@ func (s Service[T, I]) GetUser(ctx context.Context, r *http.Request) (model.User
 		return model.User{}, err
 	}
 
+	if len(claim.Content.User.ID) == 0 {
+		return model.User{}, errors.New("no content")
+	}
+
 	if slices.Contains(updateMethods, r.Method) {
 		ctx := r.Context()
-		key := updateCacheKey + claim.User.ID
+		key := updateCacheKey + claim.Content.User.ID
 
 		if content, _ := s.cache.Load(ctx, key); content == nil {
-			if _, err := s.config.Client(ctx, claim.Token).Get(s.getURL); err != nil {
+			if _, err := s.config.Client(ctx, claim.Content.Token).Get(s.getURL); err != nil {
 				return model.User{}, fmt.Errorf("refresh user: %w", err)
 			}
 
@@ -38,7 +43,7 @@ func (s Service[T, I]) GetUser(ctx context.Context, r *http.Request) (model.User
 		}
 	}
 
-	return claim.User, nil
+	return claim.Content.User, nil
 }
 
 func (s Service[T, I]) OnUnauthorized(w http.ResponseWriter, r *http.Request, err error) {

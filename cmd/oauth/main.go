@@ -71,7 +71,7 @@ func main() {
 
 	linkHandler := func(ctx context.Context, old, new model.User) error { return nil }
 
-	cookieService := cookie.New(cookieConfig)
+	cookieService := cookie.New[model.OAuthClaim](cookieConfig)
 	discordService := discord.New(discordConfig, redisClient, dbService, linkHandler, rendererService, cookieService)
 	githubService := github.New(githubConfig, redisClient, dbService, linkHandler, rendererService, cookieService)
 

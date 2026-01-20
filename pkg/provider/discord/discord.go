@@ -38,7 +38,7 @@ func Flags(fs *flag.FlagSet, prefix string, overrides ...flags.Override) *Config
 	return &config
 }
 
-func New(config *Config, cache oauth.Cache, storage Storage, linkHandler oauth.LinkHandler, renderer *renderer.Service, cookie cookie.Service) oauth.Service[model.DiscordUser, string] {
+func New(config *Config, cache oauth.Cache, storage Storage, linkHandler oauth.LinkHandler, renderer *renderer.Service, cookie cookie.Service[model.OAuthClaim]) oauth.Service[model.DiscordUser, string] {
 	return oauth.New("discord", "https://discord.com/api/users/@me", config.onSuccessPath, oauth2.Config{
 		ClientID:     config.clientID,
 		ClientSecret: config.clientSecret,
