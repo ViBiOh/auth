@@ -20,7 +20,7 @@ var updateMethods = []string{
 	http.MethodDelete,
 }
 
-func (s Service[T, I]) GetUser(ctx context.Context, r *http.Request) (model.User, error) {
+func (s Service[T, I]) GetUser(ctx context.Context, w http.ResponseWriter, r *http.Request) (model.User, error) {
 	claim, err := s.cookie.Get(r, cookieName)
 	if err != nil {
 		return model.User{}, err
@@ -35,11 +35,21 @@ func (s Service[T, I]) GetUser(ctx context.Context, r *http.Request) (model.User
 		key := updateCacheKey + claim.Content.User.ID
 
 		if content, _ := s.cache.Load(ctx, key); content == nil {
-			if _, err := s.config.Client(ctx, claim.Content.Token).Get(s.getURL); err != nil {
+			initialToken := claim.Content.Token.AccessToken
+
+			_, err := s.config.Client(ctx, claim.Content.Token).Get(s.getURL)
+			if err != nil {
 				return model.User{}, fmt.Errorf("refresh user: %w", err)
 			}
 
 			_ = s.cache.Store(ctx, key, time.Now(), updateCheckTTL)
+
+			if initialToken != claim.Content.Token.AccessToken {
+				s.cookie.Set(ctx, w, cookieName, model.OAuthClaim{
+					Token: claim.Content.Token,
+					User:  claim.Content.User,
+				})
+			}
 		}
 	}
 

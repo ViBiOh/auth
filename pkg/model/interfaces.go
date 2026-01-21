@@ -20,7 +20,7 @@ type Storage interface {
 }
 
 type Authentication interface {
-	GetUser(context.Context, *http.Request) (User, error)
+	GetUser(context.Context, http.ResponseWriter, *http.Request) (User, error)
 	OnUnauthorized(http.ResponseWriter, *http.Request, error)
 }
 

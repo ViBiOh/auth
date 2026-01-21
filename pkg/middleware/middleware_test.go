@@ -16,7 +16,7 @@ var errTestProvider = errors.New("decode")
 
 type testProvider struct{}
 
-func (t testProvider) GetUser(_ context.Context, r *http.Request) (model.User, error) {
+func (t testProvider) GetUser(_ context.Context, _ http.ResponseWriter, r *http.Request) (model.User, error) {
 	if r.Header.Get("Authorization") == "Basic Z3Vlc3Q6Z3Vlc3Q=" {
 		return model.NewUser("guest"), nil
 	} else if r.Header.Get("Authorization") == "Basic YWRtaW46cGFzc3dvcmQ=" {

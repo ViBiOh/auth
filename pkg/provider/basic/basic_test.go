@@ -55,7 +55,7 @@ func TestGetUser(t *testing.T) {
 		t.Run(intention, func(t *testing.T) {
 			t.Parallel()
 
-			got, gotErr := New(testProvider{}).GetUser(context.Background(), testCase.request)
+			got, gotErr := New(testProvider{}).GetUser(context.Background(), httptest.NewRecorder(), testCase.request)
 
 			failed := false
 
@@ -146,9 +146,10 @@ func BenchmarkGetUser(b *testing.B) {
 	ctx := context.Background()
 
 	req := getRequestWithAuthorization("admin", "secret")
+	w := httptest.NewRecorder()
 
 	for b.Loop() {
-		_, _ = service.GetUser(ctx, req)
+		_, _ = service.GetUser(ctx, w, req)
 	}
 }
 

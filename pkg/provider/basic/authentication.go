@@ -10,7 +10,7 @@ import (
 	"github.com/ViBiOh/httputils/v4/pkg/httperror"
 )
 
-func (s Service) GetUser(ctx context.Context, r *http.Request) (model.User, error) {
+func (s Service) GetUser(ctx context.Context, _ http.ResponseWriter, r *http.Request) (model.User, error) {
 	login, password, ok := r.BasicAuth()
 	if !ok {
 		return model.User{}, model.ErrMalformedContent

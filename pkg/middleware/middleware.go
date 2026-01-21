@@ -57,7 +57,7 @@ func (s Service) Middleware(next http.Handler) http.Handler {
 
 		ctx := r.Context()
 
-		user, err := s.identification.GetUser(ctx, r)
+		user, err := s.identification.GetUser(ctx, w, r)
 		if err != nil {
 			s.identification.OnUnauthorized(w, r, err)
 			return
