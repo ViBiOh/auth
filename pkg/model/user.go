@@ -32,6 +32,10 @@ func NewUser(name string) User {
 	}
 }
 
+func (u User) GetSubject() string {
+	return u.Name
+}
+
 func StoreUser(ctx context.Context, user User) context.Context {
 	return context.WithValue(ctx, ctxUserKey, user)
 }

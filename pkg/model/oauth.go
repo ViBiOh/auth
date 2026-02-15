@@ -10,7 +10,7 @@ type OAuthClaim struct {
 }
 
 func (oac OAuthClaim) GetSubject() string {
-	return oac.User.Name
+	return oac.User.GetSubject()
 }
 
 type DiscordUser struct {
