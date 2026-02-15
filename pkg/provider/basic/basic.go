@@ -5,8 +5,11 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/ViBiOh/auth/v3/pkg/cookie"
 	"github.com/ViBiOh/auth/v3/pkg/model"
 )
+
+const cookieName = "_basic_auth"
 
 var _ model.Authentication = Service{}
 
@@ -20,6 +23,7 @@ type Service struct {
 	provider    Provider
 	onForbidden ForbiddenHandler
 	realm       string
+	cookie      cookie.Service[model.User]
 }
 
 func New(provider Provider, options ...Option) Service {
@@ -41,6 +45,14 @@ func WithRealm(realm string) Option {
 		if len(realm) != 0 {
 			instance.realm = fmt.Sprintf("realm=\"%s\" ", realm)
 		}
+
+		return instance
+	}
+}
+
+func WithCookie(cookie cookie.Service[model.User]) Option {
+	return func(instance Service) Service {
+		instance.cookie = cookie
 
 		return instance
 	}
