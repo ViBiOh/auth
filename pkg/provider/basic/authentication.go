@@ -44,3 +44,7 @@ func (s Service) OnUnauthorized(w http.ResponseWriter, r *http.Request, err erro
 	w.Header().Add("WWW-Authenticate", fmt.Sprintf("Basic %scharset=\"UTF-8\"", s.realm))
 	httperror.Unauthorized(r.Context(), w, err)
 }
+
+func (s Service) Logout(w http.ResponseWriter, r *http.Request) {
+	s.cookie.Clear(w, cookieName)
+}
