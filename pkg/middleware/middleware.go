@@ -10,7 +10,7 @@ import (
 
 var _ httpmodel.Middleware = Service{}.Middleware
 
-type Provider interface{}
+type Provider any
 
 type Service struct {
 	tracer         trace.Tracer
