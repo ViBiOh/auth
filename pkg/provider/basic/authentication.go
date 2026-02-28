@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log/slog"
 	"net/http"
 
 	"github.com/ViBiOh/auth/v3/pkg/model"
@@ -14,10 +13,6 @@ import (
 func (s Service) GetUser(ctx context.Context, w http.ResponseWriter, r *http.Request) (model.User, error) {
 	if s.cookie.IsEnabled() {
 		claim, err := s.cookie.Get(r, cookieName)
-		if !errors.Is(err, model.ErrMalformedContent) {
-			slog.Error(fmt.Sprintf("unable to read cookie `%s`", cookieName), slog.Any("error", err))
-		}
-
 		if err == nil {
 			return claim.Content, nil
 		}
