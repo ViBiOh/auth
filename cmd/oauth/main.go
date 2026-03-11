@@ -12,6 +12,7 @@ import (
 	"github.com/ViBiOh/auth/v3/pkg/cookie"
 	"github.com/ViBiOh/auth/v3/pkg/middleware"
 	"github.com/ViBiOh/auth/v3/pkg/model"
+	"github.com/ViBiOh/auth/v3/pkg/provider/chooser"
 	"github.com/ViBiOh/auth/v3/pkg/provider/discord"
 	"github.com/ViBiOh/auth/v3/pkg/provider/github"
 	dbStore "github.com/ViBiOh/auth/v3/pkg/store/db"
@@ -75,7 +76,15 @@ func main() {
 	discordService := discord.New(discordConfig, redisClient, dbService, linkHandler, rendererService, cookieService)
 	githubService := github.New(githubConfig, redisClient, dbService, linkHandler, rendererService, cookieService)
 
-	authMiddleware := middleware.New(githubService)
+	discordPrefix := "/oauth/discord"
+	githubPrefix := "/oauth/github"
+
+	chooserService := chooser.New(rendererService,
+		chooser.Provider{Auth: discordService, Name: "Discord", RegisterPath: discordService.RegisterPath(discordPrefix)},
+		chooser.Provider{Auth: githubService, Name: "GitHub", RegisterPath: githubService.RegisterPath(githubPrefix)},
+	)
+
+	authMiddleware := middleware.New(chooserService)
 
 	authMux := http.NewServeMux()
 	authMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -89,8 +98,8 @@ func main() {
 	})
 
 	mux := http.NewServeMux()
-	discordService.Mux("/oauth/discord", mux)
-	githubService.Mux("/oauth/github", mux)
+	discordService.Mux(discordPrefix, mux)
+	githubService.Mux(githubPrefix, mux)
 
 	mux.Handle("/hello/world", authMiddleware.Middleware(authMux))
 

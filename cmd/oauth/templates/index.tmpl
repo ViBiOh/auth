@@ -412,7 +412,11 @@
 {{ end }}
 
 {{ define "auth" }}
-  {{ template "header-redirect" . }}
+  {{ if .Providers }}
+    {{ template "header" . }}
+  {{ else }}
+    {{ template "header-redirect" . }}
+  {{ end }}
 
   {{ template "message" .Message }}
 
@@ -423,14 +427,25 @@
   </style>
 
   <article class="flex flex-center">
-    <div>
-      {{ with .Image }}
-        <img class="auth-img" src="{{ . }}">
-      {{ end }}
+    {{ if .Providers }}
+      <div class="center">
+        <h2 class="no-margin margin-bottom">Sign in with</h2>
 
-      <a class="button bg-primary block margin-top" href="{{ .Redirect }}">Redirect in 3s...</a>
-    </div>
-  </article>
+        {{ range .Providers }}
+          <a class="button bg-primary block margin-top" href="{{ .URL }}">{{ .Name }}</a>
+        {{ end }}
+      </div>
+    {{ else }}
+      <div>
+        {{ with .Image }}
+          <img class="auth-img" src="{{ . }}">
+        {{ end }}
+
+        <a class="button bg-primary block margin-top" href="{{ .Redirect }}">Redirect in 3s...</a>
+      </div>
+    {{ end }}
+    </article>
+  {{ end }}
 
   {{ template "footer" . }}
 {{ end }}

@@ -83,9 +83,17 @@ func New[T ProviderUser[I], I comparable](name, getURL, onSuccessPath string, co
 	}
 }
 
+func (s Service[T, I]) Name() string {
+	return s.name
+}
+
+func (s Service[T, I]) RegisterPath(prefix string) string {
+	return prefix + "/register"
+}
+
 func (s Service[T, I]) Mux(prefix string, mux *http.ServeMux) {
 	mux.HandleFunc(prefix+"/logout", s.Logout)
-	mux.HandleFunc(prefix+"/register", s.Register)
+	mux.HandleFunc(s.RegisterPath(prefix), s.Register)
 	mux.HandleFunc(prefix+"/callback", s.Callback)
 }
 
