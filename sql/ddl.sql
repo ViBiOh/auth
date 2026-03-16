@@ -1,6 +1,7 @@
 -- clean
 DROP TABLE IF EXISTS auth.invite;
 DROP TABLE IF EXISTS auth.discord;
+DROP TABLE IF EXISTS auth.google;
 DROP TABLE IF EXISTS auth.github;
 DROP TABLE IF EXISTS auth.basic;
 DROP TABLE IF EXISTS auth.user_profile;
@@ -12,6 +13,8 @@ DROP INDEX IF EXISTS discord_id;
 DROP INDEX IF EXISTS discord_user_id;
 DROP INDEX IF EXISTS github_login;
 DROP INDEX IF EXISTS github_user_id;
+DROP INDEX IF EXISTS google_id;
+DROP INDEX IF EXISTS google_user_id;
 DROP INDEX IF EXISTS basic_login;
 DROP INDEX IF EXISTS basic_user_id;
 DROP INDEX IF EXISTS user_profile_user_id;
@@ -82,6 +85,18 @@ CREATE TABLE auth.discord (
 
 CREATE UNIQUE INDEX discord_user_id ON auth.discord(user_id);
 CREATE        INDEX discord_id      ON auth.discord(id);
+
+-- google
+CREATE TABLE auth.google (
+  user_id  TEXT                     NOT NULL REFERENCES auth.user(id) ON DELETE CASCADE,
+  id       TEXT                     NOT NULL,
+  name     TEXT                     NOT NULL,
+  picture  TEXT                     NOT NULL,
+  creation TIMESTAMP WITH TIME ZONE          DEFAULT now()
+);
+
+CREATE UNIQUE INDEX google_user_id ON auth.google(user_id);
+CREATE        INDEX google_id      ON auth.google(id);
 
 -- invite
 CREATE TABLE auth.invite (

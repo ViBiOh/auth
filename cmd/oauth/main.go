@@ -15,6 +15,7 @@ import (
 	"github.com/ViBiOh/auth/v3/pkg/provider/chooser"
 	"github.com/ViBiOh/auth/v3/pkg/provider/discord"
 	"github.com/ViBiOh/auth/v3/pkg/provider/github"
+	"github.com/ViBiOh/auth/v3/pkg/provider/google"
 	dbStore "github.com/ViBiOh/auth/v3/pkg/store/db"
 	"github.com/ViBiOh/flags"
 	"github.com/ViBiOh/httputils/v4/pkg/db"
@@ -42,6 +43,7 @@ func main() {
 	cookieConfig := cookie.Flags(fs, "cookie")
 	discordConfig := discord.Flags(fs, "discord")
 	githubConfig := github.Flags(fs, "github")
+	googleConfig := google.Flags(fs, "google")
 	rendererConfig := renderer.Flags(fs, "", flags.NewOverride("Title", "OAuth"))
 	dbConfig := db.Flags(fs, "db")
 
@@ -66,6 +68,7 @@ func main() {
 
 	fmt.Printf("Connect to http://127.0.0.1:%d/oauth/discord/register?registration=%s&redirect=/hello/world\n", serverConfig.Port, registration)
 	fmt.Printf("Connect to http://127.0.0.1:%d/oauth/github/register?registration=%s&redirect=/hello/world\n", serverConfig.Port, registration)
+	fmt.Printf("Connect to http://127.0.0.1:%d/oauth/google/register?registration=%s&redirect=/hello/world\n", serverConfig.Port, registration)
 
 	rendererService, err := renderer.New(ctx, rendererConfig, content, nil, nil, nil)
 	logger.FatalfOnErr(ctx, err, "renderer")
@@ -75,13 +78,16 @@ func main() {
 	cookieService := cookie.New[model.OAuthClaim](cookieConfig)
 	discordService := discord.New(discordConfig, redisClient, dbService, linkHandler, rendererService, cookieService)
 	githubService := github.New(githubConfig, redisClient, dbService, linkHandler, rendererService, cookieService)
+	googleService := google.New(googleConfig, redisClient, dbService, linkHandler, rendererService, cookieService)
 
 	discordPrefix := "/oauth/discord"
 	githubPrefix := "/oauth/github"
+	googlePrefix := "/oauth/google"
 
 	chooserService := chooser.New(rendererService,
 		chooser.Provider{Auth: discordService, Name: "Discord", RegisterPath: discordService.RegisterPath(discordPrefix)},
 		chooser.Provider{Auth: githubService, Name: "GitHub", RegisterPath: githubService.RegisterPath(githubPrefix)},
+		chooser.Provider{Auth: googleService, Name: "Google", RegisterPath: googleService.RegisterPath(googlePrefix)},
 	)
 
 	authMiddleware := middleware.New(chooserService)
@@ -100,6 +106,7 @@ func main() {
 	mux := http.NewServeMux()
 	discordService.Mux(discordPrefix, mux)
 	githubService.Mux(githubPrefix, mux)
+	googleService.Mux(googlePrefix, mux)
 
 	mux.Handle("/hello/world", authMiddleware.Middleware(authMux))
 

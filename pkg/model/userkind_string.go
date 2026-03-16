@@ -12,11 +12,12 @@ func _() {
 	_ = x[GitHub-1]
 	_ = x[Discord-2]
 	_ = x[Basic-3]
+	_ = x[Google-4]
 }
 
-const _UserKind_name = "InviteGitHubDiscordBasic"
+const _UserKind_name = "InviteGitHubDiscordBasicGoogle"
 
-var _UserKind_index = [...]uint8{0, 6, 12, 19, 24}
+var _UserKind_index = [...]uint8{0, 6, 12, 19, 24, 30}
 
 func (i UserKind) String() string {
 	idx := int(i) - 0

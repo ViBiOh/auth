@@ -58,6 +58,7 @@ const (
 	GitHub
 	Discord
 	Basic
+	Google
 )
 
 var ErrUnknownUserKind = errors.New("unknown UserKind")

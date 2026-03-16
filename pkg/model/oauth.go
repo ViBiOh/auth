@@ -31,3 +31,13 @@ type GitHubUser struct {
 func (gu GitHubUser) GetID() uint64 {
 	return gu.ID
 }
+
+type GoogleUser struct {
+	Sub     string `json:"sub"`
+	Name    string `json:"name"`
+	Picture string `json:"picture"`
+}
+
+func (gu GoogleUser) GetID() string {
+	return gu.Sub
+}
