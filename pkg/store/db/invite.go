@@ -35,6 +35,31 @@ func (s Service) CreateInvite(ctx context.Context, description string) (model.Us
 	return user, token, s.db.One(ctx, createInviteQuery, user.ID, token, description)
 }
 
+const getInviteByID = `
+SELECT
+  user_id,
+  description,
+  token
+FROM
+  auth.invite
+WHERE
+  user_id = $1
+`
+
+func (s Service) GetInviteByID(ctx context.Context, id string) (model.User, error) {
+	var item model.User
+
+	return item, s.db.Get(ctx, func(row pgx.Row) error {
+		err := row.Scan(&item.ID, &item.Name, &item.Image)
+
+		if errors.Is(err, pgx.ErrNoRows) {
+			return model.ErrUnknownUser
+		}
+
+		return err
+	}, getInviteByID, id)
+}
+
 const getInviteByTokenQuery = `
 SELECT
   user_id,
