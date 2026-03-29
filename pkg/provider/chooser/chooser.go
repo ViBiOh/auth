@@ -9,10 +9,14 @@ import (
 	"github.com/ViBiOh/httputils/v4/pkg/renderer"
 )
 
+type Logout interface {
+	Logout(http.ResponseWriter, *http.Request)
+}
+
 type Provider struct {
 	Auth         model.Authentication
-	Name         string
 	RegisterPath string
+	Kind         model.UserKind
 }
 
 type Service struct {
@@ -49,15 +53,34 @@ func (s Service) OnUnauthorized(w http.ResponseWriter, r *http.Request, err erro
 		URL  string
 	}
 
-	links := make([]providerLink, len(s.providers))
-	for i, p := range s.providers {
-		links[i] = providerLink{
-			Name: p.Name,
-			URL:  p.RegisterPath + "?redirect=" + url.QueryEscape(redirect),
-		}
+	redirection := "?redirect=" + url.QueryEscape(redirect)
+
+	links := make([]providerLink, 0, len(s.providers))
+	for _, provider := range s.providers {
+		links = append(links, providerLink{
+			Name: provider.Kind.String(),
+			URL:  provider.RegisterPath + redirection,
+		})
 	}
 
 	s.renderer.Serve(w, r, renderer.NewPage("auth", http.StatusOK, map[string]any{
 		"Providers": links,
 	}))
+}
+
+func (s Service) Logout(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	user, err := s.GetUser(ctx, w, r)
+	if err != nil {
+		s.renderer.Redirect(w, r, "/", renderer.NewErrorMessage("unable to logout user: `%s`", err))
+		return
+	}
+
+	for _, provider := range s.providers {
+		if provider.Kind == user.Kind {
+			provider.Auth.Logout(w, r)
+			return
+		}
+	}
 }

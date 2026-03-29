@@ -40,6 +40,9 @@ func (t testProvider) OnForbidden(w http.ResponseWriter, _ *http.Request, user m
 	http.Error(w, fmt.Sprintf("%s is not authorized", user.Name), http.StatusForbidden)
 }
 
+func (t testProvider) Logout(w http.ResponseWriter, _ *http.Request) {
+}
+
 func TestMiddleware(t *testing.T) {
 	t.Parallel()
 

@@ -85,9 +85,9 @@ func main() {
 	googlePrefix := "/oauth/google"
 
 	chooserService := chooser.New(rendererService,
-		chooser.Provider{Auth: discordService, Name: "Discord", RegisterPath: discordService.RegisterPath(discordPrefix)},
-		chooser.Provider{Auth: githubService, Name: "GitHub", RegisterPath: githubService.RegisterPath(githubPrefix)},
-		chooser.Provider{Auth: googleService, Name: "Google", RegisterPath: googleService.RegisterPath(googlePrefix)},
+		chooser.Provider{Auth: discordService, Kind: model.Discord, RegisterPath: discordService.RegisterPath(discordPrefix)},
+		chooser.Provider{Auth: githubService, Kind: model.GitHub, RegisterPath: githubService.RegisterPath(githubPrefix)},
+		chooser.Provider{Auth: googleService, Kind: model.Google, RegisterPath: googleService.RegisterPath(googlePrefix)},
 	)
 
 	authMiddleware := middleware.New(chooserService)
